@@ -1,0 +1,3 @@
+[submodule "cairo_p256"]
+	url = https://github.com/cartridge-gg/cairo-p256
+	path = lib/cairo_p256
