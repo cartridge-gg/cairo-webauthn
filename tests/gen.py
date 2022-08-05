@@ -5,6 +5,7 @@ from pyasn1.type.univ import Integer
 from pyasn1.type.namedtype import NamedTypes
 from pyasn1.type.namedtype import NamedType
 import binascii
+import hashlib
 
 BASE = 2 ** 86
 
@@ -24,65 +25,6 @@ def split(G):
 
     return (G0, G1, G2)
 
-# request
-# {
-#     "data": {
-#         "beginRegistration": {
-#             "publicKey": {
-#                 "challenge": "pnmCf/BbS0PvHDG5xYNbvv8rNsX4mWOewp66UgXOMwI=",
-#                 "rp": {
-#                     "name": "Cartridge",
-#                     "icon": "https://cartridge.gg/android-chrome-512x512.png",
-#                     "id": "cartridge.gg"
-#                 },
-#                 "user": {
-#                     "name": "vitalik",
-#                     "icon": "https://cartridge.gg/android-chrome-512x512.png",
-#                     "displayName": "vitalik",
-#                     "id": "dml0YWxpaw=="
-#                 },
-#                 "pubKeyCredParams": [
-#                     {
-#                         "type": "public-key",
-#                         "alg": -7
-#                     }
-#                 ],
-#                 "authenticatorSelection": {
-#                     "authenticatorAttachment": "platform",
-#                     "residentKey": "preferred",
-#                     "userVerification": "required"
-#                 },
-#                 "timeout": 60000,
-#                 "attestation": "none"
-#             }
-#         }
-#     }
-# }
-
-# response
-# {
-#     "id": "wPoJLandf4mte3vo2z0IdCvjz4m-IBkNNMMFxM4WMvYZupeb2lmkTMmua2NOt24NUjfpKWuxd0daOMnT7ZgwtJcbmzADfBC-iLhBwkkqqXo0AmmAKvypSqOSSopXPc5IGzQx5JLRn3ijllFvLnp4Ww",
-#     "rawId": "wPoJLandf4mte3vo2z0IdCvjz4m-IBkNNMMFxM4WMvYZupeb2lmkTMmua2NOt24NUjfpKWuxd0daOMnT7ZgwtJcbmzADfBC-iLhBwkkqqXo0AmmAKvypSqOSSopXPc5IGzQx5JLRn3ijllFvLnp4Ww",
-#     "type": "public-key",
-#     "response": {
-#         "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVj0IKl-w_jvvCrKDPfKu0ILSgnQrsmQVGbJrfeVhPp1_tNFAAAAAK3OAAI1vMYKZIsLJfHwVQMAcMD6CS2p3X-JrXt76Ns9CHQr48-JviAZDTTDBcTOFjL2GbqXm9pZpEzJrmtjTrduDVI36SlrsXdHWjjJ0-2YMLSXG5swA3wQvoi4QcJJKql6NAJpgCr8qUqjkkqKVz3OSBs0MeSS0Z94o5ZRby56eFulAQIDJiABIVgg-h-cPLElarPVdYG6ZJDmoR5RDdZ9q6DWFeBUChc7RL8iWCCXmqHdyKxX0hn5j1nwjWOowfT1M61HFPA_Fz1fhwmnBw",
-#         "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoicG5tQ2ZfQmJTMFB2SERHNXhZTmJ2djhyTnNYNG1XT2V3cDY2VWdYT013SSIsIm9yaWdpbiI6Imh0dHBzOi8vY29udHJvbGxlci1lMTNwdDl3d3YucHJldmlldy5jYXJ0cmlkZ2UuZ2ciLCJjcm9zc09yaWdpbiI6ZmFsc2UsIm90aGVyX2tleXNfY2FuX2JlX2FkZGVkX2hlcmUiOiJkbyBub3QgY29tcGFyZSBjbGllbnREYXRhSlNPTiBhZ2FpbnN0IGEgdGVtcGxhdGUuIFNlZSBodHRwczovL2dvby5nbC95YWJQZXgifQ"
-#     }
-# }
-
-# credential:
-# {
-#     "ID": "wPoJLandf4mte3vo2z0IdCvjz4m+IBkNNMMFxM4WMvYZupeb2lmkTMmua2NOt24NUjfpKWuxd0daOMnT7ZgwtJcbmzADfBC+iLhBwkkqqXo0AmmAKvypSqOSSopXPc5IGzQx5JLRn3ijllFvLnp4Ww==",
-#     "PublicKey": "pQECAyYgASFYIPofnDyxJWqz1XWBumSQ5qEeUQ3Wfaug1hXgVAoXO0S/Ilggl5qh3cisV9IZ+Y9Z8I1jqMH09TOtRxTwPxc9X4cJpwc=",
-#     "Transport": null,
-#     "Authenticator": {
-#         "AAGUID": "rc4AAjW8xgpkiwsl8fBVAw==",
-#         "SignCount": 0,
-#         "CloneWarning": false
-#     },
-#     "AttestationType": "none"
-# }
-
 pubkey = decode_credential_public_key(base64url_to_bytes("pQECAyYgASFYIPofnDyxJWqz1XWBumSQ5qEeUQ3Wfaug1hXgVAoXO0S/Ilggl5qh3cisV9IZ+Y9Z8I1jqMH09TOtRxTwPxc9X4cJpwc="))
 challenge = bytes.fromhex("044e3adc845e501b01c6904dd2b0cd0d084bb01240966d39c3165481dfcae654")
 authenticator_data_bytes = bytes.fromhex("20a97ec3f8efbc2aca0cf7cabb420b4a09d0aec9905466c9adf79584fa75fed30500000000")
@@ -92,9 +34,16 @@ signature = "3045022024c32f5128206df9fa8102e0f7a2a908b8cae76fee717d50ecaa95eeb12
 x0, x1, x2 = split(int.from_bytes(pubkey.x, "big"))
 y0, y1, y2 = split(int.from_bytes(pubkey.y, "big"))
 
+client_data_hash = hashlib.sha256()
+client_data_hash.update(client_data_bytes)
+client_data_hash_bytes = client_data_hash.digest()
+
 client_data_rem = len(client_data_bytes) % 4
 for _ in range(4 - client_data_rem):
     client_data_bytes = client_data_bytes + b'\x00'
+
+authenticator_data_rem = len(authenticator_data_bytes) % 4
+print(authenticator_data_rem)
 
 authenticator_data = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
 client_data_json = [int.from_bytes(client_data_bytes[i:i+4], 'big') for i in range(0, len(client_data_bytes), 4)]
@@ -106,10 +55,43 @@ if len(rest) != 0:
 r0, r1, r2 = split(int(sig['r']))
 s0, s1, s2 = split(int(sig['s']))
 
-print(x0, x1, x2)
-print(y0, y1, y2)
-print(challenge)
-print(authenticator_data)
-print(client_data_json)
-print(r0, r1, r2)
-print(s0, s1, s2)
+print("x", x0, x1, x2)
+print("y", y0, y1, y2)
+print("challenge", challenge)
+print("authenticator_data", authenticator_data)
+print("r", r0, r1, r2)
+print("s", s0, s1, s2)
+
+msg_data = authenticator_data_bytes + client_data_hash_bytes
+msg_data_hash = hashlib.sha256()
+msg_data_hash.update(msg_data)
+msg_data_hash_bytes = msg_data_hash.digest()
+# print(msg_data_hash_bytes.hex())
+
+# msg_data_rem = len(msg_data) % 4
+# for _ in range(4 - msg_data_rem):
+#     msg_data = msg_data + b'\x00'
+
+msg_data_parts = [int.from_bytes(msg_data[i:i+4], 'big') for i in range(0, len(msg_data), 4)]
+# print(msg_data_parts)
+
+sign_data = bytes.fromhex("20a97ec3f8efbc2aca0cf7cabb420b4a09d0aec9905466c9adf79584fa75fed3050000000008ad1974216096a76ff36a54159891a357d21a902c358e6feb02f14ccaf48fcd")
+sign_data_hash = hashlib.sha256()
+sign_data_hash.update(sign_data)
+sign_data_hash_bytes = sign_data_hash.digest()
+
+sign_data_parts = [int.from_bytes(sign_data[i:i+4], 'big') for i in range(0, len(sign_data), 4)]
+
+client_data_hash_parts = [int.from_bytes(client_data_hash_bytes[i:i+4], 'big') for i in range(0, len(client_data_hash_bytes), 4)]
+
+print("\n") 
+
+print("authenticator_data", authenticator_data)
+print("client_data_json_parts", client_data_json)
+print("client_data_hash_bytes", client_data_hash_bytes.hex())
+print("client_data_hash_parts", client_data_hash_parts)
+print("sign_data_parts", sign_data_parts)
+print("sign_data_hash_bytes", sign_data_hash_bytes.hex())
+
+
+# 145561972, 559978151, 1878223444, 362320291, 1473387152, 741707375, 3942838604, 3405025229
