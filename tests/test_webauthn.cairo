@@ -16,8 +16,39 @@ func test_verify{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuilt
     let r = BigInt3(59829153764609223375002003, 13920919192349440464502713, 2777691488451091769567248)
     let s = BigInt3(60763034848352918061918403, 34664502757747413800664556, 11406538044313554183849549)
 
-    let challenge_len = 10
+    let type_offset_len = 2
+    let type_offset_rem = 1
+
+    let challenge_offset_len = 9
+    let challenge_offset_rem = 0
+    let challenge_len = 8
     let (challenge) = alloc()
+    assert challenge[0] = 72235740
+    assert challenge[1] = 2220773403
+    assert challenge[2] = 29790285
+    assert challenge[3] = 3534802189
+    assert challenge[4] = 139178002
+    assert challenge[5] = 1083600185
+    assert challenge[6] = 3273020545
+    assert challenge[7] = 3754616404
+
+    let origin_offset_len = 28
+    let origin_offset_rem = 2
+    let origin_len = 13
+    let (origin) = alloc()
+    assert origin[0] = 1752462448
+    assert origin[1] = 1933193007
+    assert origin[2] = 1668247156
+    assert origin[3] = 1919904876
+    assert origin[4] = 1701981541
+    assert origin[5] = 825454708
+    assert origin[6] = 964130678
+    assert origin[7] = 779121253
+    assert origin[8] = 1986618743
+    assert origin[9] = 778264946
+    assert origin[10] = 1953655140
+    assert origin[11] = 1734684263
+    assert origin[12] = 103
 
     let client_data_json_len = 47
     let client_data_json_rem = 3
@@ -84,8 +115,10 @@ func test_verify{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuilt
     assert authenticator_data[8] = 83886080
     assert authenticator_data[9] = 0
 
-    Webauthn.verify(public_key_pt, r, s, 
-        challenge_len, challenge,
+    Webauthn.verify(public_key_pt, r, s,
+        type_offset_len, type_offset_rem,
+        challenge_offset_len, challenge_offset_rem, challenge_len, challenge,
+        origin_offset_len, origin_offset_rem, origin_len, origin,
         client_data_json_len, client_data_json_rem, client_data_json,
         authenticator_data_len, authenticator_data_rem, authenticator_data
     )

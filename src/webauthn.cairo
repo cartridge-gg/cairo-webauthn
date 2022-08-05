@@ -11,19 +11,26 @@ from src.ec import EcPoint
 from src.bigint import BigInt3
 from src.ecdsa import verify_ecdsa
 
-from src.sha256 import sha256
-# , finalize_sha256
+from src.sha256 import sha256, finalize_sha256
 
 namespace Webauthn:
-    # Verify a webauthn authentication credential.
+    # Verify a webauthn authentication credential according to: https://www.w3.org/TR/webauthn/#sctn-verifying-assertion
     # `client_data_json` and `authenticator_data` must be passed
     # as felt* with 32-bit words.
     func verify{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
             pub: EcPoint,
             r: BigInt3,
             s: BigInt3,
+            type_offset_len: felt,
+            type_offset_rem: felt,
+            challenge_offset_len: felt,
+            challenge_offset_rem: felt,
             challenge_len: felt,
             challenge: felt*,
+            origin_offset_len: felt,
+            origin_offset_rem: felt,
+            origin_len: felt,
+            origin: felt*,
             client_data_json_len: felt,
             client_data_json_rem: felt,
             client_data_json: felt*,
@@ -32,12 +39,24 @@ namespace Webauthn:
             authenticator_data: felt*) -> (is_valid: felt):
         alloc_locals
 
+        # 11. Verify that the value of C.type is the string webauthn.get
+
+
+        # 12. Verify that the value of C.challenge equals the base64url encoding of options.challenge.
+        
+
+        # 13. Verify that the value of C.origin matches the Relying Party's origin.
+
+        # 15. Verify that the rpIdHash in authData is the SHA-256 hash of the RP ID expected by the Relying Party.
+
+        # 16-17: Verify that the User Present bit of the flags in authData is set.
+
         # We're doing using the sphinx cairo sha256 implementation until the cario hints support more efficient sha256
-        # let (local sha256_ptr_start : felt*) = alloc()
-        # let sha256_ptr = sha256_ptr_start
-        # let (client_data_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(client_data_json, client_data_json_len * 4 - client_data_json_rem)
-        # finalize_sha256(sha256_ptr, sha256_ptr)
-        let (client_data_hash: felt*) = sha256(client_data_json, client_data_json_len * 4 - client_data_json_rem)
+        # let (client_data_hash: felt*) = sha256(client_data_json, client_data_json_len * 4 - client_data_json_rem)
+        let (local sha256_ptr_start : felt*) = alloc()
+        let sha256_ptr = sha256_ptr_start
+        let (client_data_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(client_data_json, client_data_json_len * 4 - client_data_json_rem)
+        finalize_sha256(sha256_ptr, sha256_ptr)
 
         let (msg_data_ptr) = alloc()
         let msg_data_start_ptr = msg_data_ptr
@@ -45,11 +64,11 @@ namespace Webauthn:
         _concat_msg_data{msg_data_ptr=msg_data_ptr}(authenticator_data_len, authenticator_data_rem, authenticator_data, client_data_hash)
 
         # We're doing using the sphinx cairo sha256 implementation until the cario hints support more efficient sha256
-        # let (local sha256_ptr_start : felt*) = alloc()
-        # let sha256_ptr = sha256_ptr_start
-        # let (output: felt*) = sha256{sha256_ptr=sha256_ptr}(input, 32)
-        # finalize_sha256(sha256_ptr, sha256_ptr)
-        let (msg_hash: felt*) = sha256(msg_data_start_ptr, authenticator_data_len * 4 - authenticator_data_rem + 32)
+        # let (msg_hash: felt*) = sha256(msg_data_start_ptr, authenticator_data_len * 4 - authenticator_data_rem + 32)
+        let (local sha256_ptr_start : felt*) = alloc()
+        let sha256_ptr = sha256_ptr_start
+        let (msg_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(msg_data_start_ptr, authenticator_data_len * 4 - authenticator_data_rem + 32)
+        finalize_sha256(sha256_ptr, sha256_ptr)
 
         # Construct 86bit hash limbs
         let (h02) = bitwise_and(msg_hash[5], 4194303)

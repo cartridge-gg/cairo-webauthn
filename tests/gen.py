@@ -54,44 +54,41 @@ if len(rest) != 0:
 r0, r1, r2 = split(int(sig['r']))
 s0, s1, s2 = split(int(sig['s']))
 
+authenticator_data_parts = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
+challenge_parts = [int.from_bytes(challenge[i:i+4], 'big') for i in range(0, len(challenge), 4)]
+
+# {"type":"webauthn.get","challenge":"0x044e3adc845e501b01c6904dd2b0cd0d084bb01240966d39c3165481dfcae65w","origin":"https://controller-e13pt9wwv.preview.cartridge.gg","crossOrigin":false}
+origin = b'https://controller-e13pt9wwv.preview.cartridge.gg'
+origin_parts = [int.from_bytes(origin[i:i+4], 'big') for i in range(0, len(origin), 4)]
+origin_offset_bytes = client_data_bytes.find(b'"origin":"') + len(b'"origin":"')
+
+type = b'webauthn.get'
+type_parts = [int.from_bytes(type[i:i+4], 'big') for i in range(0, len(type), 4)]
+type_offset_bytes = client_data_bytes.find(b'"type":"') + len(b'"type":"')
+
+challenge_offset_bytes = client_data_bytes.find(b'"challenge":"') + len(b'"challenge":"')
+
 print("x", x0, x1, x2)
 print("y", y0, y1, y2)
-print("challenge", challenge)
 print("r", r0, r1, r2)
 print("s", s0, s1, s2)
-
-msg_data = authenticator_data_bytes + client_data_hash_bytes
-msg_data_hash = hashlib.sha256()
-msg_data_hash.update(msg_data)
-msg_data_hash_bytes = msg_data_hash.digest()
-# print(msg_data_hash_bytes.hex())
-
-# msg_data_rem = len(msg_data) % 4
-# for _ in range(4 - msg_data_rem):
-#     msg_data = msg_data + b'\x00'
-
-msg_data_parts = [int.from_bytes(msg_data[i:i+4], 'big') for i in range(0, len(msg_data), 4)]
-# print(msg_data_parts)
-
-sign_data = bytes.fromhex("20a97ec3f8efbc2aca0cf7cabb420b4a09d0aec9905466c9adf79584fa75fed3050000000008ad1974216096a76ff36a54159891a357d21a902c358e6feb02f14ccaf48fcd")
-sign_data_hash = hashlib.sha256()
-sign_data_hash.update(sign_data)
-sign_data_hash_bytes = sign_data_hash.digest()
-
-sign_data_parts = [int.from_bytes(sign_data[i:i+4], 'big') for i in range(0, len(sign_data), 4)]
-
-authenticator_data_parts = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
-
-print("\n") 
-
+print("challenge_parts_len", len(challenge_parts))
+print("challenge_parts", challenge_parts)
+print("origin_offset_len", origin_offset_bytes // 4)
+print("origin_offset_rem", origin_offset_bytes % 4)
+print("origin_len", len(origin_parts))
+print("origin", origin_parts)
+print("type_parts", type_parts)
+print("type_offset_len", type_offset_bytes // 4)
+print("type_offset_rem", type_offset_bytes % 4)
+print("challenge_offset_len", challenge_offset_bytes // 4)
+print("challenge_offset_rem", challenge_offset_bytes % 4)
 print("client_data_json_parts", client_data_json)
 print("client_data_json_len", len(client_data_json))
 print("client_data_json_rem", 4 - client_data_rem)
 print("authenticator_data_parts", authenticator_data_parts)
 print("authenticator_data_len", len(authenticator_data_parts))
 print("authenticator_data_rem", 4 - authenticator_data_rem)
-print("sign_data_parts", sign_data_parts)
-print("sign_data_hash_bytes", sign_data_hash_bytes.hex())
 
-
-# 145561972, 559978151, 1878223444, 362320291, 1473387152, 741707375, 3942838604, 3405025229
+# test_verify (time=19.81s, steps=389459, memory_holes=1619)                                                                                         
+#        range_check_builtin=27838 bitwise_builtin=2
