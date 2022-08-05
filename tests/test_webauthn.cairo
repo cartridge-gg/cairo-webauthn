@@ -20,6 +20,7 @@ func test_verify{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuilt
     let (challenge) = alloc()
 
     let client_data_json_len = 47
+    let client_data_json_rem = 3
     let (client_data_json) = alloc()
     assert client_data_json[0] = 2065855609
     assert client_data_json[1] = 1885676090
@@ -70,6 +71,7 @@ func test_verify{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuilt
     assert client_data_json[46] = 2097152000
 
     let authenticator_data_len = 10
+    let authenticator_data_rem = 3
     let (authenticator_data) = alloc()
     assert authenticator_data[0] = 547978947
     assert authenticator_data[1] = 4176460842
@@ -84,8 +86,8 @@ func test_verify{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuilt
 
     Webauthn.verify(public_key_pt, r, s, 
         challenge_len, challenge,
-        client_data_json_len, client_data_json,
-        authenticator_data_len, authenticator_data
+        client_data_json_len, client_data_json_rem, client_data_json,
+        authenticator_data_len, authenticator_data_rem, authenticator_data
     )
 
     return ()

@@ -43,7 +43,6 @@ for _ in range(4 - client_data_rem):
     client_data_bytes = client_data_bytes + b'\x00'
 
 authenticator_data_rem = len(authenticator_data_bytes) % 4
-print(authenticator_data_rem)
 
 authenticator_data = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
 client_data_json = [int.from_bytes(client_data_bytes[i:i+4], 'big') for i in range(0, len(client_data_bytes), 4)]
@@ -58,7 +57,6 @@ s0, s1, s2 = split(int(sig['s']))
 print("x", x0, x1, x2)
 print("y", y0, y1, y2)
 print("challenge", challenge)
-print("authenticator_data", authenticator_data)
 print("r", r0, r1, r2)
 print("s", s0, s1, s2)
 
@@ -82,14 +80,16 @@ sign_data_hash_bytes = sign_data_hash.digest()
 
 sign_data_parts = [int.from_bytes(sign_data[i:i+4], 'big') for i in range(0, len(sign_data), 4)]
 
-client_data_hash_parts = [int.from_bytes(client_data_hash_bytes[i:i+4], 'big') for i in range(0, len(client_data_hash_bytes), 4)]
+authenticator_data_parts = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
 
 print("\n") 
 
-print("authenticator_data", authenticator_data)
 print("client_data_json_parts", client_data_json)
-print("client_data_hash_bytes", client_data_hash_bytes.hex())
-print("client_data_hash_parts", client_data_hash_parts)
+print("client_data_json_len", len(client_data_json))
+print("client_data_json_rem", 4 - client_data_rem)
+print("authenticator_data_parts", authenticator_data_parts)
+print("authenticator_data_len", len(authenticator_data_parts))
+print("authenticator_data_rem", 4 - authenticator_data_rem)
 print("sign_data_parts", sign_data_parts)
 print("sign_data_hash_bytes", sign_data_hash_bytes.hex())
 
