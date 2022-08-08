@@ -21,16 +21,26 @@ func test_verify{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuilt
 
     let challenge_offset_len = 9
     let challenge_offset_rem = 0
-    let challenge_len = 8
+    let challenge_len = 17
+    let challenge_rem = 2
     let (challenge) = alloc()
-    assert challenge[0] = 72235740
-    assert challenge[1] = 2220773403
-    assert challenge[2] = 29790285
-    assert challenge[3] = 3534802189
-    assert challenge[4] = 139178002
-    assert challenge[5] = 1083600185
-    assert challenge[6] = 3273020545
-    assert challenge[7] = 3754616404
+    assert challenge[0] = 813183028
+    assert challenge[1] = 879047521
+    assert challenge[2] = 1684224052
+    assert challenge[3] = 895825200
+    assert challenge[4] = 828518449
+    assert challenge[5] = 1664497968
+    assert challenge[6] = 878994482
+    assert challenge[7] = 1647338340
+    assert challenge[8] = 811872312
+    assert challenge[9] = 878862896
+    assert challenge[10] = 825373744
+    assert challenge[11] = 959854180
+    assert challenge[12] = 859398963
+    assert challenge[13] = 825636148
+    assert challenge[14] = 942761062
+    assert challenge[15] = 1667327286
+    assert challenge[16] = 13687
 
     let origin_offset_len = 28
     let origin_offset_rem = 2
@@ -117,7 +127,7 @@ func test_verify{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuilt
 
     Webauthn.verify(public_key_pt, r, s,
         type_offset_len, type_offset_rem,
-        challenge_offset_len, challenge_offset_rem, challenge_len, challenge,
+        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge,
         origin_offset_len, origin_offset_rem, origin_len, origin,
         client_data_json_len, client_data_json_rem, client_data_json,
         authenticator_data_len, authenticator_data_rem, authenticator_data

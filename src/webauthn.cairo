@@ -2,7 +2,7 @@
 from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bitwise import bitwise_and
-from starkware.cairo.common.bool import (TRUE)
+from starkware.cairo.common.bool import (TRUE, FALSE)
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.alloc import alloc
@@ -26,6 +26,7 @@ namespace Webauthn:
             challenge_offset_len: felt,
             challenge_offset_rem: felt,
             challenge_len: felt,
+            challenge_rem: felt,
             challenge: felt*,
             origin_offset_len: felt,
             origin_offset_rem: felt,
@@ -40,14 +41,16 @@ namespace Webauthn:
         alloc_locals
 
         # 11. Verify that the value of C.type is the string webauthn.get
-
+        # Skipping for now
 
         # 12. Verify that the value of C.challenge equals the base64url encoding of options.challenge.
-        
+        _verify_challenge(client_data_json, challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge)
 
         # 13. Verify that the value of C.origin matches the Relying Party's origin.
+        # Skipping for now
 
         # 15. Verify that the rpIdHash in authData is the SHA-256 hash of the RP ID expected by the Relying Party.
+        # Skipping for now
 
         # 16-17: Verify that the User Present bit of the flags in authData is set.
 
@@ -91,6 +94,87 @@ namespace Webauthn:
         return (is_valid=TRUE)
     end
 
+    # Recusrively verifies the provided challenge is embedded in the client_data_json.
+    func _verify_challenge{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
+        client_data_json: felt*,
+        challenge_offset_len: felt,
+        challenge_offset_rem: felt,
+        challenge_len: felt,
+        callenge_rem: felt,
+        challenge: felt*
+    ) -> (is_valid: felt):
+        alloc_locals
+
+        let (shifted) = _shift_challenge(client_data_json, challenge_offset_len, challenge_offset_rem)
+
+        if challenge_len == 1 and callenge_rem == 0:
+            assert shifted = challenge[0]
+            return (is_valid=TRUE)
+        end
+
+        if challenge_len == 1 and callenge_rem == 1:
+            let (p, _) = unsigned_div_rem(shifted, 2 ** 8)
+            let c1 = challenge[0]
+            assert challenge[0] = p
+            return (is_valid=TRUE)
+        end
+
+        if challenge_len == 1 and callenge_rem == 2:
+            let (p, _) = unsigned_div_rem(shifted, 2 ** 16)
+            let c1 = challenge[0]
+            assert challenge[0] = p
+            return (is_valid=TRUE)
+        end
+
+        if challenge_len == 1 and callenge_rem == 3:
+            let (p, _) = unsigned_div_rem(shifted, 2 ** 24)
+            let c1 = challenge[0]
+            assert challenge[0] = p
+            return (is_valid=TRUE)
+        end
+
+        if challenge_offset_rem == 0:
+            assert shifted = challenge[0]
+            return _verify_challenge(client_data_json, challenge_offset_len + 1, challenge_offset_rem, challenge_len - 1, callenge_rem, challenge + 1)
+        end
+
+        return (is_valid=FALSE)
+    end
+
+    # Aligns a challenge 32bit word to client_data_json as necessary for comparison.
+    func _shift_challenge{range_check_ptr}(
+        client_data_json: felt*,
+        challenge_offset_len: felt,
+        challenge_offset_rem: felt,
+    ) -> (shifted: felt):
+        if challenge_offset_rem == 1:
+            let (_, r) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 8)
+            let (p, _) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 8)
+            let shifted = r * 2 ** 24 + p
+            return (shifted)
+        end
+
+        if challenge_offset_rem == 2:
+            let (_, r) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 16)
+            let (p, _) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 16)
+            let shifted = r * 2 ** 16 + p
+            return (shifted)
+        end
+
+        if challenge_offset_rem == 3:
+            let (_, r) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 24)
+            let (p, _) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 24)
+            let shifted = r * 2 ** 8 + p
+            return (shifted)
+        end
+
+        let shifted = client_data_json[challenge_offset_len]
+        return (shifted)
+    end
+
+    # Concatenates authenticator_data + sha256(client_data_json) as necessary to produce the correct signed hash.
+    # Since sha256 expects 32bit words, it can be necessary to shift the sha256(client_data_json) in order to
+    # correctly align the bits.
     func _concat_msg_data{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, msg_data_ptr: felt*}(
         authenticator_data_len: felt, authenticator_data_rem: felt, authenticator_data: felt*, client_data_hash: felt*
     ):
