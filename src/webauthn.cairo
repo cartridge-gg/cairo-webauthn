@@ -47,12 +47,16 @@ namespace Webauthn:
         _verify_challenge(client_data_json, challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge)
 
         # 13. Verify that the value of C.origin matches the Relying Party's origin.
-        # Skipping for now
+        # Skipping for now.
 
         # 15. Verify that the rpIdHash in authData is the SHA-256 hash of the RP ID expected by the Relying Party.
-        # Skipping for now
+        # Skipping for now. This protects against authenticator cloning which is generally not
+        # a concern of blockchain wallets today.
+        # Authenticator Data layout looks like: [ RP ID hash - 32 bytes ] [ Flags - 1 byte ] [ Counter - 4 byte ] [ ... ]
+        # See: https://w3c.github.io/webauthn/#sctn-authenticator-data
 
         # 16-17: Verify that the User Present bit of the flags in authData is set.
+        _verify_auth_flags(authenticator_data)
 
         # We're doing using the sphinx cairo sha256 implementation until the cario hints support more efficient sha256
         let (client_data_hash: felt*) = sha256(client_data_json, client_data_json_len * 4 - client_data_json_rem)
@@ -94,7 +98,7 @@ namespace Webauthn:
         return (is_valid=TRUE)
     end
 
-    # Recusrively verifies the provided challenge is embedded in the client_data_json.
+    # Recursively verifies the provided challenge is embedded in the client_data_json.
     func _verify_challenge{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
         client_data_json: felt*,
         challenge_offset_len: felt,
@@ -102,35 +106,35 @@ namespace Webauthn:
         challenge_len: felt,
         callenge_rem: felt,
         challenge: felt*
-    ) -> (is_valid: felt):
+    ):
         alloc_locals
 
         let (shifted) = _shift_challenge(client_data_json, challenge_offset_len, challenge_offset_rem)
 
         if challenge_len == 1 and callenge_rem == 0:
             assert shifted = challenge[0]
-            return (is_valid=TRUE)
+            return ()
         end
 
         if challenge_len == 1 and callenge_rem == 1:
             let (p, _) = unsigned_div_rem(shifted, 2 ** 8)
             let c1 = challenge[0]
             assert challenge[0] = p
-            return (is_valid=TRUE)
+            return ()
         end
 
         if challenge_len == 1 and callenge_rem == 2:
             let (p, _) = unsigned_div_rem(shifted, 2 ** 16)
             let c1 = challenge[0]
             assert challenge[0] = p
-            return (is_valid=TRUE)
+            return ()
         end
 
         if challenge_len == 1 and callenge_rem == 3:
             let (p, _) = unsigned_div_rem(shifted, 2 ** 24)
             let c1 = challenge[0]
             assert challenge[0] = p
-            return (is_valid=TRUE)
+            return ()
         end
 
         if challenge_offset_rem == 0:
@@ -138,7 +142,22 @@ namespace Webauthn:
             return _verify_challenge(client_data_json, challenge_offset_len + 1, challenge_offset_rem, challenge_len - 1, callenge_rem, challenge + 1)
         end
 
-        return (is_valid=FALSE)
+        return ()
+    end
+
+    # Verify the User Present and User Verified flags are set.
+    #   Bit 0: User Present (UP) result.
+    #   Bit 2: User Verified (UV) result.
+    func _verify_auth_flags{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(authenticator_data: felt*):
+        let flags = authenticator_data[8]
+        let (p, _) = unsigned_div_rem(flags, 2 ** 24)
+        let (uv) = bitwise_and(p, 1)
+        let (up) = bitwise_and(p, 4)
+
+        assert uv = 1
+        assert up = 4
+
+        return ()
     end
 
     # Aligns a challenge 32bit word to client_data_json as necessary for comparison.

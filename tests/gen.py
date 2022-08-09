@@ -91,4 +91,3 @@ print("client_data_json_rem", 4 - client_data_rem)
 print("authenticator_data_parts", authenticator_data_parts)
 print("authenticator_data_len", len(authenticator_data_parts))
 print("authenticator_data_rem", 4 - authenticator_data_rem)
-
