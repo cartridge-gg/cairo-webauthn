@@ -104,45 +104,45 @@ namespace Webauthn:
         challenge_offset_len: felt,
         challenge_offset_rem: felt,
         challenge_len: felt,
-        callenge_rem: felt,
+        challenge_rem: felt,
         challenge: felt*
     ):
         alloc_locals
 
         let (shifted) = _shift_challenge(client_data_json, challenge_offset_len, challenge_offset_rem)
 
-        if challenge_len == 1 and callenge_rem == 0:
+        if challenge_len == 1 and challenge_rem == 0:
             assert shifted = challenge[0]
             return ()
         end
 
-        if challenge_len == 1 and callenge_rem == 1:
+        if challenge_len == 1 and challenge_rem == 1:
             let (p, _) = unsigned_div_rem(shifted, 2 ** 24)
             let c1 = challenge[0]
             assert challenge[0] = p
             return ()
         end
 
-        if challenge_len == 1 and callenge_rem == 2:
+        if challenge_len == 1 and challenge_rem == 2:
             let (p, _) = unsigned_div_rem(shifted, 2 ** 16)
             let c1 = challenge[0]
             assert challenge[0] = p
             return ()
         end
 
-        if challenge_len == 1 and callenge_rem == 3:
+        if challenge_len == 1 and challenge_rem == 3:
             let (p, _) = unsigned_div_rem(shifted, 2 ** 8)
             let c1 = challenge[0]
             assert challenge[0] = p
             return ()
         end
 
-        if challenge_offset_rem == 0:
-            assert shifted = challenge[0]
-            return _verify_challenge(client_data_json, challenge_offset_len + 1, challenge_offset_rem, challenge_len - 1, callenge_rem, challenge + 1)
-        end
+        # if challenge_offset_rem == 0:
+        assert shifted = challenge[0]
+        return _verify_challenge(client_data_json, challenge_offset_len + 1, challenge_offset_rem, challenge_len - 1, challenge_rem, challenge + 1)
+        # end
 
-        return ()
+        # return ()
     end
 
     # Verify the User Present and User Verified flags are set.

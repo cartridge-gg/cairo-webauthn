@@ -1,3 +1,4 @@
+
 %lang starknet
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
@@ -8,13 +9,13 @@ from src.bigint import BigInt3
 from src.webauthn import Webauthn
 
 @external
-func test_verify_1{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
+func test_0{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
     let public_key_pt = EcPoint(
-        BigInt3(52743338060272243486442687, 8356564404182767302564342, 18898795645626225295972184),
-        BigInt3(8561359831707316770154247, 74234461271779437484232373, 11454876819198723055787928),
+        BigInt3(52743338060272243486442687,8356564404182767302564342,18898795645626225295972184),
+        BigInt3(8561359831707316770154247,74234461271779437484232373,11454876819198723055787928),
     )
-    let r = BigInt3(59829153764609223375002003, 13920919192349440464502713, 2777691488451091769567248)
-    let s = BigInt3(60763034848352918061918403, 34664502757747413800664556, 11406538044313554183849549)
+    let r = BigInt3(59829153764609223375002003,13920919192349440464502713,2777691488451091769567248)
+    let s = BigInt3(60763034848352918061918403,34664502757747413800664556,11406538044313554183849549)
 
     let type_offset_len = 2
     let type_offset_rem = 1
@@ -41,6 +42,7 @@ func test_verify_1{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBui
     assert challenge[14] = 942761062
     assert challenge[15] = 1667327286
     assert challenge[16] = 13687
+
 
     let origin_offset_len = 28
     let origin_offset_rem = 2
@@ -111,6 +113,7 @@ func test_verify_1{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBui
     assert client_data_json[45] = 1634497381
     assert client_data_json[46] = 2097152000
 
+
     let authenticator_data_len = 10
     let authenticator_data_rem = 1
     let (authenticator_data) = alloc()
@@ -125,6 +128,7 @@ func test_verify_1{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBui
     assert authenticator_data[8] = 83886080
     assert authenticator_data[9] = 0
 
+
     Webauthn.verify(public_key_pt, r, s,
         type_offset_len, type_offset_rem,
         challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge,
@@ -137,13 +141,13 @@ func test_verify_1{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBui
 end
 
 @external
-func test_verify_2{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
+func test_1{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
     let public_key_pt = EcPoint(
-        BigInt3(68771434430694404260836634, 66633780841359531151283366, 14259391536917482115299254),
-        BigInt3(15143078500912722485799317, 6719228382483657703164717, 5845062894556851529125),
+        BigInt3(68771434430694404260836634,66633780841359531151283366,14259391536917482115299254),
+        BigInt3(15143078500912722485799317,6719228382483657703164717,5845062894556851529125),
     )
-    let r = BigInt3(37278954292573957828508155, 63210244753363287212884911, 6138938596067845166121299)
-    let s = BigInt3(37109308354591296024590714, 14601938862236783601648223, 2072435219191356476548166)
+    let r = BigInt3(37278954292573957828508155,63210244753363287212884911,6138938596067845166121299)
+    let s = BigInt3(37109308354591296024590714,14601938862236783601648223,2072435219191356476548166)
 
     let type_offset_len = 2
     let type_offset_rem = 1
@@ -169,6 +173,7 @@ func test_verify_2{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBui
     assert challenge[13] = 878785074
     assert challenge[14] = 959983669
     assert challenge[15] = 842282547
+
 
     let origin_offset_len = 28
     let origin_offset_rem = 2
@@ -263,6 +268,7 @@ func test_verify_2{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBui
     assert authenticator_data[7] = 4202036947
     assert authenticator_data[8] = 83886080
     assert authenticator_data[9] = 0
+
 
     Webauthn.verify(public_key_pt, r, s,
         type_offset_len, type_offset_rem,
