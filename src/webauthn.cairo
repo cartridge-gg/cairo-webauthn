@@ -59,10 +59,10 @@ namespace Webauthn:
         _verify_auth_flags(authenticator_data)
 
         # We're doing using the sphinx cairo sha256 implementation until the cario hints support more efficient sha256
-        let (client_data_hash: felt*) = sha256(client_data_json, client_data_json_len * 4 - client_data_json_rem)
+        let (client_data_hash: felt*) = sha256(client_data_json, client_data_json_len * 4 - (4 - client_data_json_rem))
         # let (local sha256_ptr_start : felt*) = alloc()
         # let sha256_ptr = sha256_ptr_start
-        # let (client_data_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(client_data_json, client_data_json_len * 4 - client_data_json_rem)
+        # let (client_data_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(client_data_json, client_data_json_len * 4 - (4 - client_data_json_rem))
         # finalize_sha256(sha256_ptr, sha256_ptr)
 
         let (msg_data_ptr) = alloc()
@@ -71,10 +71,10 @@ namespace Webauthn:
         _concat_msg_data{msg_data_ptr=msg_data_ptr}(authenticator_data_len, authenticator_data_rem, authenticator_data, client_data_hash)
 
         # We're doing using the sphinx cairo sha256 implementation until the cario hints support more efficient sha256
-        let (msg_hash: felt*) = sha256(msg_data_start_ptr, authenticator_data_len * 4 - authenticator_data_rem + 32)
+        let (msg_hash: felt*) = sha256(msg_data_start_ptr, authenticator_data_len * 4 - (4 - authenticator_data_rem) + 32)
         # let (local sha256_ptr_start : felt*) = alloc()
         # let sha256_ptr = sha256_ptr_start
-        # let (msg_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(msg_data_start_ptr, authenticator_data_len * 4 - authenticator_data_rem + 32)
+        # let (msg_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(msg_data_start_ptr, authenticator_data_len * 4 (4 - authenticator_data_rem) + 32)
         # finalize_sha256(sha256_ptr, sha256_ptr)
 
         # Construct 86bit hash limbs
@@ -117,7 +117,7 @@ namespace Webauthn:
         end
 
         if challenge_len == 1 and callenge_rem == 1:
-            let (p, _) = unsigned_div_rem(shifted, 2 ** 8)
+            let (p, _) = unsigned_div_rem(shifted, 2 ** 24)
             let c1 = challenge[0]
             assert challenge[0] = p
             return ()
@@ -131,7 +131,7 @@ namespace Webauthn:
         end
 
         if challenge_len == 1 and callenge_rem == 3:
-            let (p, _) = unsigned_div_rem(shifted, 2 ** 24)
+            let (p, _) = unsigned_div_rem(shifted, 2 ** 8)
             let c1 = challenge[0]
             assert challenge[0] = p
             return ()
@@ -167,9 +167,9 @@ namespace Webauthn:
         challenge_offset_rem: felt,
     ) -> (shifted: felt):
         if challenge_offset_rem == 1:
-            let (_, r) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 8)
-            let (p, _) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 8)
-            let shifted = r * 2 ** 24 + p
+            let (_, r) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 24)
+            let (p, _) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 24)
+            let shifted = r * 2 ** 8 + p
             return (shifted)
         end
 
@@ -181,9 +181,9 @@ namespace Webauthn:
         end
 
         if challenge_offset_rem == 3:
-            let (_, r) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 24)
-            let (p, _) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 24)
-            let shifted = r * 2 ** 8 + p
+            let (_, r) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 8)
+            let (p, _) = unsigned_div_rem(client_data_json[challenge_offset_len], 2 ** 8)
+            let shifted = r * 2 ** 24 + p
             return (shifted)
         end
 
@@ -209,24 +209,24 @@ namespace Webauthn:
             let authenticator_data = authenticator_data + authenticator_data_len - 1
             let msg_data_ptr = msg_data_ptr + authenticator_data_len - 1
 
-            let (p0, r0) = unsigned_div_rem(client_data_hash[0], 2 ** 24)
-            let (p1, r1) = unsigned_div_rem(client_data_hash[1], 2 ** 24)
-            let (p2, r2) = unsigned_div_rem(client_data_hash[2], 2 ** 24)
-            let (p3, r3) = unsigned_div_rem(client_data_hash[3], 2 ** 24)
-            let (p4, r4) = unsigned_div_rem(client_data_hash[4], 2 ** 24)
-            let (p5, r5) = unsigned_div_rem(client_data_hash[5], 2 ** 24)
-            let (p6, r6) = unsigned_div_rem(client_data_hash[6], 2 ** 24)
-            let (p7, r7) = unsigned_div_rem(client_data_hash[7], 2 ** 24)
+            let (p0, r0) = unsigned_div_rem(client_data_hash[0], 2 ** 8)
+            let (p1, r1) = unsigned_div_rem(client_data_hash[1], 2 ** 8)
+            let (p2, r2) = unsigned_div_rem(client_data_hash[2], 2 ** 8)
+            let (p3, r3) = unsigned_div_rem(client_data_hash[3], 2 ** 8)
+            let (p4, r4) = unsigned_div_rem(client_data_hash[4], 2 ** 8)
+            let (p5, r5) = unsigned_div_rem(client_data_hash[5], 2 ** 8)
+            let (p6, r6) = unsigned_div_rem(client_data_hash[6], 2 ** 8)
+            let (p7, r7) = unsigned_div_rem(client_data_hash[7], 2 ** 8)
 
-            assert msg_data_ptr[0] = authenticator_data[0] * 2 ** 8 + p0
-            assert msg_data_ptr[1] = r0 * 2 ** 8 + p1
-            assert msg_data_ptr[2] = r1 * 2 ** 8 + p2
-            assert msg_data_ptr[3] = r2 * 2 ** 8 + p3
-            assert msg_data_ptr[4] = r3 * 2 ** 8 + p4
-            assert msg_data_ptr[5] = r4 * 2 ** 8 + p5
-            assert msg_data_ptr[6] = r5 * 2 ** 8 + p6
-            assert msg_data_ptr[7] = r6 * 2 ** 8 + p7
-            assert msg_data_ptr[8] = r7 * 2 ** 8
+            assert msg_data_ptr[0] = authenticator_data[0] * 2 ** 24 + p0
+            assert msg_data_ptr[1] = r0 * 2 ** 24 + p1
+            assert msg_data_ptr[2] = r1 * 2 ** 24 + p2
+            assert msg_data_ptr[3] = r2 * 2 ** 24 + p3
+            assert msg_data_ptr[4] = r3 * 2 ** 24 + p4
+            assert msg_data_ptr[5] = r4 * 2 ** 24 + p5
+            assert msg_data_ptr[6] = r5 * 2 ** 24 + p6
+            assert msg_data_ptr[7] = r6 * 2 ** 24 + p7
+            assert msg_data_ptr[8] = r7 * 2 ** 24
 
             return()
         end
@@ -263,27 +263,28 @@ namespace Webauthn:
             let authenticator_data = authenticator_data + authenticator_data_len - 1
             let msg_data_ptr = msg_data_ptr + authenticator_data_len - 1
 
-            let (p0, r0) = unsigned_div_rem(client_data_hash[0], 2 ** 8)
-            let (p1, r1) = unsigned_div_rem(client_data_hash[1], 2 ** 8)
-            let (p2, r2) = unsigned_div_rem(client_data_hash[2], 2 ** 8)
-            let (p3, r3) = unsigned_div_rem(client_data_hash[3], 2 ** 8)
-            let (p4, r4) = unsigned_div_rem(client_data_hash[4], 2 ** 8)
-            let (p5, r5) = unsigned_div_rem(client_data_hash[5], 2 ** 8)
-            let (p6, r6) = unsigned_div_rem(client_data_hash[6], 2 ** 8)
-            let (p7, r7) = unsigned_div_rem(client_data_hash[7], 2 ** 8)
+            let (p0, r0) = unsigned_div_rem(client_data_hash[0], 2 ** 24)
+            let (p1, r1) = unsigned_div_rem(client_data_hash[1], 2 ** 24)
+            let (p2, r2) = unsigned_div_rem(client_data_hash[2], 2 ** 24)
+            let (p3, r3) = unsigned_div_rem(client_data_hash[3], 2 ** 24)
+            let (p4, r4) = unsigned_div_rem(client_data_hash[4], 2 ** 24)
+            let (p5, r5) = unsigned_div_rem(client_data_hash[5], 2 ** 24)
+            let (p6, r6) = unsigned_div_rem(client_data_hash[6], 2 ** 24)
+            let (p7, r7) = unsigned_div_rem(client_data_hash[7], 2 ** 24)
 
-            assert msg_data_ptr[0] = authenticator_data[0] * 2 ** 24 + p0
-            assert msg_data_ptr[1] = r0 * 2 ** 24 + p1
-            assert msg_data_ptr[2] = r1 * 2 ** 24 + p2
-            assert msg_data_ptr[3] = r2 * 2 ** 24 + p3
-            assert msg_data_ptr[4] = r3 * 2 ** 24 + p4
-            assert msg_data_ptr[5] = r4 * 2 ** 24 + p5
-            assert msg_data_ptr[6] = r5 * 2 ** 24 + p6
-            assert msg_data_ptr[7] = r6 * 2 ** 24 + p7
-            assert msg_data_ptr[8] = r7 * 2 ** 24
+            assert msg_data_ptr[0] = authenticator_data[0] * 2 ** 8 + p0
+            assert msg_data_ptr[1] = r0 * 2 ** 8 + p1
+            assert msg_data_ptr[2] = r1 * 2 ** 8 + p2
+            assert msg_data_ptr[3] = r2 * 2 ** 8 + p3
+            assert msg_data_ptr[4] = r3 * 2 ** 8 + p4
+            assert msg_data_ptr[5] = r4 * 2 ** 8 + p5
+            assert msg_data_ptr[6] = r5 * 2 ** 8 + p6
+            assert msg_data_ptr[7] = r6 * 2 ** 8 + p7
+            assert msg_data_ptr[8] = r7 * 2 ** 8
 
             return()
         end
+
         return ()
     end
 end
