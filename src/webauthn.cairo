@@ -10,6 +10,7 @@ from starkware.cairo.common.alloc import alloc
 from src.ec import EcPoint
 from src.bigint import BigInt3
 from src.ecdsa import verify_ecdsa
+from src.base64url import Base64URL
 
 from src.sha256 import sha256 #, finalize_sha256
 
@@ -110,35 +111,37 @@ namespace Webauthn:
         alloc_locals
 
         let (shifted) = _shift_challenge(client_data_json, challenge_offset_len, challenge_offset_rem)
+        let c = challenge[0]
 
-        if challenge_len == 1 and challenge_rem == 0:
-            assert shifted = challenge[0]
-            return ()
+        if challenge_len == 1:
+            if challenge_rem == 0:
+                let (c0, c1, c2, c3, _) = Base64URL.encode3(c)
+                let encoded = c0 * 2 ** 24 + c1 * 2 ** 16 + c2 * 2 ** 8 + c3
+                assert encoded = shifted
+                return ()
+            end
+
+            if challenge_rem == 1:
+                let (c0, c1, c2, c3, _) = Base64URL.encode3(c * 2 ** 8)
+                let encoded = c0 * 2 ** 24 + c1 * 2 ** 16 + c2 * 2 ** 8
+                let (masked) = bitwise_and(shifted, 4294967040)
+                assert encoded = masked
+                return ()
+            end
+
+            if challenge_rem == 2:
+                let (c0, c1, c2, c3, _) = Base64URL.encode3(c * 2 ** 16)
+                let encoded = c0 * 2 ** 24 + c1 * 2 ** 16
+                let (masked) = bitwise_and(shifted, 4294901760)
+                assert encoded = masked
+                return ()
+            end
         end
 
-        if challenge_len == 1 and challenge_rem == 1:
-            let (p, _) = unsigned_div_rem(shifted, 2 ** 24)
-            let c1 = challenge[0]
-            assert challenge[0] = p
-            return ()
-        end
+        let (c0, c1, c2, c3, _) = Base64URL.encode3(c)
+        let encoded = c0 * 2 ** 24 + c1 * 2 ** 16 + c2 * 2 ** 8 + c3
 
-        if challenge_len == 1 and challenge_rem == 2:
-            let (p, _) = unsigned_div_rem(shifted, 2 ** 16)
-            let c1 = challenge[0]
-            assert challenge[0] = p
-            return ()
-        end
-
-        if challenge_len == 1 and challenge_rem == 3:
-            let (p, _) = unsigned_div_rem(shifted, 2 ** 8)
-            let c1 = challenge[0]
-            assert challenge[0] = p
-            return ()
-        end
-
-        # if challenge_offset_rem == 0:
-        assert shifted = challenge[0]
+        assert shifted = encoded
         return _verify_challenge(client_data_json, challenge_offset_len + 1, challenge_offset_rem, challenge_len - 1, challenge_rem, challenge + 1)
         # end
 

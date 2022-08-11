@@ -6,6 +6,9 @@ from pyasn1.type.namedtype import NamedTypes
 from pyasn1.type.namedtype import NamedType
 import binascii
 import hashlib
+from nile.signer import from_call_to_call_array, get_transaction_hash
+
+from signer import P256Signer
 
 BASE = 2 ** 86
 
@@ -115,95 +118,139 @@ output = open("tests/test_webauthn_gen.cairo", "w")
 
 test = HEAD
 
-for i, item in enumerate(data):
-    pubkey = decode_credential_public_key(base64url_to_bytes(item["pubkey"]))
-    authenticator_data_bytes = bytes.fromhex(item["authenticator_data"])
-    client_data_bytes = bytes.fromhex(item["client_data"])
-    challenge = item["challenge"]
+# for i, item in enumerate(data):
+#     pubkey = decode_credential_public_key(base64url_to_bytes(item["pubkey"]))
+#     authenticator_data_bytes = bytes.fromhex(item["authenticator_data"])
+#     client_data_bytes = bytes.fromhex(item["client_data"])
+#     challenge = item["challenge"]
 
-    x0, x1, x2 = split(int.from_bytes(pubkey.x, "big"))
-    y0, y1, y2 = split(int.from_bytes(pubkey.y, "big"))
+#     x0, x1, x2 = split(int.from_bytes(pubkey.x, "big"))
+#     y0, y1, y2 = split(int.from_bytes(pubkey.y, "big"))
 
-    client_data_hash = hashlib.sha256()
-    client_data_hash.update(client_data_bytes)
-    client_data_hash_bytes = client_data_hash.digest()
+#     client_data_hash = hashlib.sha256()
+#     client_data_hash.update(client_data_bytes)
+#     client_data_hash_bytes = client_data_hash.digest()
 
-    client_data_rem = len(client_data_bytes) % 4
-    for _ in range(4 - client_data_rem):
-        client_data_bytes = client_data_bytes + b'\x00'
+#     client_data_rem = len(client_data_bytes) % 4
+#     for _ in range(4 - client_data_rem):
+#         client_data_bytes = client_data_bytes + b'\x00'
 
-    authenticator_data_rem = len(authenticator_data_bytes) % 4
+#     authenticator_data_rem = len(authenticator_data_bytes) % 4
 
-    authenticator_data = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
-    client_data_json_parts = [int.from_bytes(client_data_bytes[i:i+4], 'big') for i in range(0, len(client_data_bytes), 4)]
+#     authenticator_data = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
+#     client_data_json_parts = [int.from_bytes(client_data_bytes[i:i+4], 'big') for i in range(0, len(client_data_bytes), 4)]
 
-    sig, rest = der_decoder(binascii.unhexlify(item["signature"]), asn1Spec=DERSig())
-    if len(rest) != 0:
-        raise Exception('Bad encoding')
+#     sig, rest = der_decoder(binascii.unhexlify(item["signature"]), asn1Spec=DERSig())
+#     if len(rest) != 0:
+#         raise Exception('Bad encoding')
 
-    r0, r1, r2 = split(int(sig['r']))
-    s0, s1, s2 = split(int(sig['s']))
+#     r0, r1, r2 = split(int(sig['r']))
+#     s0, s1, s2 = split(int(sig['s']))
 
-    authenticator_data_parts = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
-    challenge_parts = [int.from_bytes(challenge[i:i+4], 'big') for i in range(0, len(challenge), 4)]
+#     authenticator_data_parts = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
+#     challenge_parts = [int.from_bytes(challenge[i:i+3], 'big') for i in range(0, len(challenge), 3)]
 
-    origin = b'https://controller-e13pt9wwv.preview.cartridge.gg'
-    origin_parts = [int.from_bytes(origin[i:i+4], 'big') for i in range(0, len(origin), 4)]
-    origin_offset_bytes = client_data_bytes.find(b'"origin":"') + len(b'"origin":"')
+#     origin = b'https://controller-e13pt9wwv.preview.cartridge.gg'
+#     origin_parts = [int.from_bytes(origin[i:i+4], 'big') for i in range(0, len(origin), 4)]
+#     origin_offset_bytes = client_data_bytes.find(b'"origin":"') + len(b'"origin":"')
 
-    type = b'webauthn.get'
-    type_parts = [int.from_bytes(type[i:i+4], 'big') for i in range(0, len(type), 4)]
-    type_offset_bytes = client_data_bytes.find(b'"type":"') + len(b'"type":"')
+#     type = b'webauthn.get'
+#     type_parts = [int.from_bytes(type[i:i+4], 'big') for i in range(0, len(type), 4)]
+#     type_offset_bytes = client_data_bytes.find(b'"type":"') + len(b'"type":"')
 
-    challenge_offset_bytes = client_data_bytes.find(b'"challenge":"') + len(b'"challenge":"')
+#     challenge_offset_bytes = client_data_bytes.find(b'"challenge":"') + len(b'"challenge":"')
 
-    # print("x", x0, x1, x2)
-    # print("y", y0, y1, y2)
-    # print("r", r0, r1, r2)
-    # print("s", s0, s1, s2)
-    # print("callenge_rem", (len(item["challenge"]) % 4))
-    # print("challenge_parts_len", len(challenge_parts))
-    # print("challenge_parts", challenge_parts)
-    # print("challenge_offset_len", challenge_offset_bytes // 4)
-    # print("challenge_offset_rem", challenge_offset_bytes % 4)
-    # print("origin_offset_len", origin_offset_bytes // 4)
-    # print("origin_offset_rem", origin_offset_bytes % 4)
-    # print("origin_len", len(origin_parts))
-    # print("origin", origin_parts)
-    # print("type_parts", type_parts)
-    # print("type_offset_len", type_offset_bytes // 4)
-    # print("type_offset_rem", type_offset_bytes % 4)
-    # print("client_dat_json", client_data_bytes)
-    # print("client_data_json_parts", client_data_json_parts)
-    # print("client_data_json_len", len(client_data_json))
-    # print("client_data_json_rem", client_data_rem)
-    # print("authenticator_data_parts", authenticator_data_parts)
-    # print("authenticator_data_len", len(authenticator_data_parts))
-    # print("authenticator_data_rem", authenticator_data_rem)
-    # print("\n\n")
+#     challenge_offset_len = challenge_offset_bytes // 4
+#     challenge_offset_rem = challenge_offset_bytes % 4
+#     challenge_len = len(challenge_parts)
+#     challenge_rem = len(challenge) % 3
+#     challenge = ""
+#     for j, c in enumerate(challenge_parts):
+#         challenge += "    assert challenge[{}] = {}\n".format(j, c)
 
-    challenge_offset_len = challenge_offset_bytes // 4
-    challenge_offset_rem = challenge_offset_bytes % 4
-    challenge_len = len(challenge_parts)
-    challenge_rem = len(challenge) % 4
+#     client_data_json_len=len(client_data_json_parts)
+#     client_data_json_rem=client_data_rem
+#     client_data_json = ""
+#     for j, c in enumerate(client_data_json_parts):
+#         client_data_json += "    assert client_data_json[{}] = {}\n".format(j, c)
+
+#     authenticator_data_len=len(authenticator_data_parts)
+#     authenticator_data_rem=authenticator_data_rem
+#     authenticator_data=""
+#     for j, c in enumerate(authenticator_data_parts):
+#         authenticator_data += "    assert authenticator_data[{}] = {}\n".format(j, c)
+
+#     test += TEST_CASE.format(
+#         title=i,
+#         # expect_revert=expect_revert,
+#         x0=x0,
+#         x1=x1,
+#         x2=x2,
+#         y0=y0,
+#         y1=y1,
+#         y2=y2,
+#         r0=r0,
+#         r1=r1,
+#         r2=r2,
+#         s0=s0,
+#         s1=s1,
+#         s2=s2,
+#         challenge_offset_len=challenge_offset_len,
+#         challenge_offset_rem=challenge_offset_rem,
+#         challenge_len=challenge_len,
+#         challenge_rem=challenge_rem,
+#         challenge=challenge,
+#         client_data_json_len=client_data_json_len,
+#         client_data_json_rem=client_data_json_rem,
+#         client_data_json=client_data_json,
+#         authenticator_data_len=authenticator_data_len,
+#         authenticator_data_rem=authenticator_data_rem,
+#         authenticator_data=authenticator_data
+#     )
+
+transactions = [(420, [(1234, 'add_public_key', [0])], 0, 0)]
+
+for i, txn in enumerate(transactions):
+    signer = P256Signer()
+
+    (contract_address, calls, nonce, max_fee) = txn
+
+    build_calls = []
+    for call in calls:
+        build_call = list(call)
+        build_call[0] = hex(build_call[0])
+        build_calls.append(build_call)
+
+    (call_array, calldata) = from_call_to_call_array(build_calls)
+    message_hash = get_transaction_hash(
+        contract_address, call_array, calldata, nonce, max_fee
+    )
+
+    (x0, x1, x2, y0, y1, y2) = signer.public_key
+    (r0, r1, r2, \
+        s0, s1, s2, \
+        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, \
+        client_data_json_len, client_data_json_rem, client_data_json_parts, \
+        authenticator_data_len, authenticator_data_rem, authenticator_data_parts \
+    ) = signer.sign_transaction(contract_address, call_array, calldata, nonce, max_fee)
+
+    challenge_bytes = message_hash.to_bytes(
+            32, byteorder="big")
+    challenge_parts = [int.from_bytes(challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
     challenge = ""
     for j, c in enumerate(challenge_parts):
         challenge += "    assert challenge[{}] = {}\n".format(j, c)
 
-    client_data_json_len=len(client_data_json_parts)
-    client_data_json_rem=client_data_rem
     client_data_json = ""
     for j, c in enumerate(client_data_json_parts):
         client_data_json += "    assert client_data_json[{}] = {}\n".format(j, c)
 
-    authenticator_data_len=len(authenticator_data_parts)
-    authenticator_data_rem=authenticator_data_rem
     authenticator_data=""
     for j, c in enumerate(authenticator_data_parts):
         authenticator_data += "    assert authenticator_data[{}] = {}\n".format(j, c)
 
     test += TEST_CASE.format(
-        title=i,
+        title="signer_{}".format(i),
         # expect_revert=expect_revert,
         x0=x0,
         x1=x1,

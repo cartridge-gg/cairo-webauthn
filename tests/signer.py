@@ -1,6 +1,7 @@
 from nile.signer import from_call_to_call_array, get_transaction_hash
 from fastecdsa import curve, ecdsa, keys
 import hashlib
+from webauthn.helpers import bytes_to_base64url
 
 BASE = 2 ** 86
 
@@ -24,13 +25,10 @@ class P256Signer():
 
         challenge_bytes = message_hash.to_bytes(
             32, byteorder="big")
-        challenge = challenge_bytes.hex()
-        challenge_parts = [int.from_bytes(challenge_bytes[i:i+4], 'big') for i in range(0, len(challenge_bytes), 4)]
-        print("challenge", challenge)
-        print("challenge_parts", challenge_parts)
-        client_data_json = f"""{{"type":"webauthn.get","challenge":"{message_hash}","origin":"https://cartridge.gg","crossOrigin":false}}"""
-        print(client_data_json)
-        client_data_bytes = client_data_json.encode()
+        challenge = bytes_to_base64url(challenge_bytes)
+        challenge_parts = [int.from_bytes(challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
+        client_data_json = f"""{{"type":"webauthn.get","challenge":"{challenge}","origin":"https://cartridge.gg","crossOrigin":false}}"""
+        client_data_bytes = client_data_json.encode("ASCII")
 
         client_data_hash = hashlib.sha256()
         client_data_hash.update(client_data_bytes)
@@ -43,12 +41,6 @@ class P256Signer():
         authenticator_data_bytes = bytes.fromhex("20a97ec3f8efbc2aca0cf7cabb420b4a09d0aec9905466c9adf79584fa75fed30500000000")
         authenticator_data_rem = len(authenticator_data_bytes) % 4
 
-        msg_data = authenticator_data_bytes + client_data_hash_bytes
-        msg_data_hash = hashlib.sha256()
-        msg_data_hash.update(msg_data)
-        msg_data_hash_bytes = msg_data_hash.digest()
-        print(msg_data_hash_bytes.hex())
-
         r, s = ecdsa.sign(authenticator_data_bytes + client_data_hash_bytes, self.private_key, curve.P256)
         r0, r1, r2 = split(r)
         s0, s1, s2 = split(s)
@@ -56,26 +48,18 @@ class P256Signer():
         authenticator_data = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
         client_data_json = [int.from_bytes(client_data_bytes[i:i+4], 'big') for i in range(0, len(client_data_bytes), 4)]
 
-        print("authenticator_data_len: ", len(authenticator_data), "authenticator_data_rem: ", authenticator_data_rem, "authenticator_data: ", authenticator_data)
-        print("client_data_json_len: ", len(client_data_json), "client_data_json_rem: ", client_data_rem, "client_data_json: ", client_data_json)
-
         challenge_offset_len = 9
-        challenge_offset_rem = 1
+        challenge_offset_rem = 0
         challenge_len = len(challenge_parts)
-        challenge_rem = len(challenge_parts) % 4
-
-        print("r", r0, r1, r2)
-        print("s", s0, s1, s2)
-
-        print("challenge_len", challenge_len, "challenge_rem", challenge_rem)
+        challenge_rem = len(challenge_parts) % 3
 
         # the hash and signature are returned for other tests to use
         return [
             r0, r1, r2,
             s0, s1, s2,
             challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem,
-            len(client_data_json), client_data_rem, *client_data_json,
-            len(authenticator_data), authenticator_data_rem, *authenticator_data,
+            len(client_data_json), client_data_rem, client_data_json,
+            len(authenticator_data), authenticator_data_rem, authenticator_data,
         ]
 
     async def send_transactions(self, account, calls, nonce=None, max_fee=0):
@@ -108,8 +92,4 @@ def split(G):
 
     return (G0, G1, G2)
 
-# 0750abcc093eae5d505d5a09141d53132dda4d1451f68ecaf0dbbc0597b05224
-# challenge_parts [122727372, 155102813, 1348295177, 337466131, 769281300, 1375112906, 4040932357, 2544914980]
-# 8da09f27898768c8642e82bfb92f072aee8b534e48bfc8b9f80aa190161094a4
-# authenticator_data_len:  10 authenticator_data_rem:  1 authenticator_data:  [547978947, 4176460842, 3389847498, 3141667658, 164671177, 2421450441, 2918684036, 4202036947, 83886080, 0]
-# client_data_json_len:  39 client_data_json_rem:  2 client_data_json:  [2065855609, 1885676090, 578250082, 1635087464, 1848534885, 1948396578, 1667785068, 1818586727, 1696741922, 808924464, 1633837923, 809055077, 1634022756, 892351844, 895561785, 825504100, 892547379, 845440097, 878981428, 892429878, 946168673, 1714447458, 1650667573, 959930928, 892482100, 573317743, 1919510377, 1847736866, 1752462448, 1933193007, 1667330676, 1919509607, 1697539943, 573317731, 1919906675, 1332898151, 1768825402, 1717660787, 1702690816]
+# b'\x04\xb4\x98}'
