@@ -1,5 +1,4 @@
 %lang starknet
-from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bitwise import bitwise_and
 from starkware.cairo.common.bool import (TRUE, FALSE)
@@ -11,7 +10,6 @@ from src.ec import EcPoint
 from src.bigint import BigInt3
 from src.ecdsa import verify_ecdsa
 from src.base64url import Base64URL
-
 from src.sha256 import sha256 #, finalize_sha256
 
 namespace Webauthn:

@@ -38,18 +38,6 @@ func test_signer_0{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBui
     assert challenge[9] = 2053312
     assert challenge[10] = 53650
 
-    # BLSY
-    # feMQ
-    # R_Bs
-    # nwaP
-    # 2nMY
-    # FH68
-    # 4aFx
-    # ONpQ
-    # hBQ7
-    # H1TA
-    # 0ZI
-
     let origin_offset_len = 28
     let origin_offset_rem = 2
     let origin_len = 13
