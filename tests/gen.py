@@ -54,8 +54,8 @@ func test_{title}{{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBui
 
     let challenge_offset_len = {challenge_offset_len}
     let challenge_offset_rem = {challenge_offset_rem}
-    let challenge_len = {challenge_len}
-    let challenge_rem = {challenge_rem}
+    let challenge_len = 11
+    let challenge_rem = 1
     let (challenge) = alloc()
 {challenge}
 
@@ -100,113 +100,108 @@ end
 """
 
 data = [{
-    'pubkey': "pQECAyYgASFYIPofnDyxJWqz1XWBumSQ5qEeUQ3Wfaug1hXgVAoXO0S/Ilggl5qh3cisV9IZ+Y9Z8I1jqMH09TOtRxTwPxc9X4cJpwc=",
-    'challenge': b"0x044e3adc845e501b01c6904dd2b0cd0d084bb01240966d39c3165481dfcae65w",
-    'authenticator_data': "20a97ec3f8efbc2aca0cf7cabb420b4a09d0aec9905466c9adf79584fa75fed30500000000",
-    # {"type":"webauthn.get","challenge":"0x044e3adc845e501b01c6904dd2b0cd0d084bb01240966d39c3165481dfcae65w","origin":"https://controller-e13pt9wwv.preview.cartridge.gg","crossOrigin":false}
-    'client_data': "7b2274797065223a22776562617574686e2e676574222c226368616c6c656e6765223a22307830343465336164633834356535303162303163363930346464326230636430643038346262303132343039363664333963333136353438316466636165363577222c226f726967696e223a2268747470733a2f2f636f6e74726f6c6c65722d6531337074397777762e707265766965772e6361727472696467652e6767222c2263726f73734f726967696e223a66616c73657d",
-    'signature': "3045022024c32f5128206df9fa8102e0f7a2a908b8cae76fee717d50ecaa95eeb125199302210096f6daa99ca841cc5064d72b1f9d6f11154909cf7b324312b82f2cc8736728c3"
-}, {
+    # b'{"type":"webauthn.get","challenge":"ALFEyQPE2bC7XWUmuMoDOAuCooKDVi-Y9vFKIpgFJGM","origin":"https://controller-git-tarrence-eng-195-credential-registration-976697.preview.cartridge.gg","crossOrigin":false}'
     'pubkey': "pQECAyYgASFYILy4sqBJQupsn3ttx5Af1lK8i75VKbji6u5EqOVkHzUaIlggABPNyK5iEFpOWlFjtoZuW8rVDoLLTIar7jFXqGIVaZU=",
-    'challenge': b"0xb144c903c4d9b0bb5d6526b8ca03380b82a28283562f98f6f14a2298052463",
+    'challenge': "ALFEyQPE2bC7XWUmuMoDOAuCooKDVi-Y9vFKIpgFJGM",
     'authenticator_data': "20a97ec3f8efbc2aca0cf7cabb420b4a09d0aec9905466c9adf79584fa75fed30500000000",
-    'client_data': "7b2274797065223a22776562617574686e2e676574222c226368616c6c656e6765223a2230786231343463393033633464396230626235643635323662386361303333383062383261323832383335363266393866366631346132323938303532343633222c226f726967696e223a2268747470733a2f2f636f6e74726f6c6c65722d6769742d74617272656e63652d656e672d3139352d63726564656e7469616c2d726567697374726174696f6e2d3937363639372e707265766965772e6361727472696467652e6767222c2263726f73734f726967696e223a66616c73657d",
-    'signature': "30440220513f88733910b29d0c153d12528efde67c76ad40ebded620295e9b2cbc4df9fb02201b6daf037a627ea8ae446305052c473824c5b88097deb233a30a2ea5236db97a"
+    'client_data': "7b2274797065223a22776562617574686e2e676574222c226368616c6c656e6765223a22414c464579515045326243375857556d754d6f444f4175436f6f4b4456692d593976464b497067464a474d222c226f726967696e223a2268747470733a2f2f636f6e74726f6c6c65722d6769742d74617272656e63652d656e672d3139352d63726564656e7469616c2d726567697374726174696f6e2d3937363639372e707265766965772e6361727472696467652e6767222c2263726f73734f726967696e223a66616c73657d",
+    'signature': "3046022100a6fc623a319a674ed15f72b544b9ddb277ccfa90e1b49269fdb3e4c6c41771ef022100b728edcbd35b9995e0e82b15456960d89b99884dd9aabf36295fd99ad23a9f3c"
 }]
 
 output = open("tests/test_webauthn_gen.cairo", "w")
 
 test = HEAD
 
-# for i, item in enumerate(data):
-#     pubkey = decode_credential_public_key(base64url_to_bytes(item["pubkey"]))
-#     authenticator_data_bytes = bytes.fromhex(item["authenticator_data"])
-#     client_data_bytes = bytes.fromhex(item["client_data"])
-#     challenge = item["challenge"]
+for i, item in enumerate(data):
+    pubkey = decode_credential_public_key(base64url_to_bytes(item["pubkey"]))
+    authenticator_data_bytes = bytes.fromhex(item["authenticator_data"])
+    client_data_bytes = bytes.fromhex(item["client_data"])
+    challenge = base64url_to_bytes(item["challenge"])
 
-#     x0, x1, x2 = split(int.from_bytes(pubkey.x, "big"))
-#     y0, y1, y2 = split(int.from_bytes(pubkey.y, "big"))
+    x0, x1, x2 = split(int.from_bytes(pubkey.x, "big"))
+    y0, y1, y2 = split(int.from_bytes(pubkey.y, "big"))
 
-#     client_data_hash = hashlib.sha256()
-#     client_data_hash.update(client_data_bytes)
-#     client_data_hash_bytes = client_data_hash.digest()
+    client_data_hash = hashlib.sha256()
+    client_data_hash.update(client_data_bytes)
+    client_data_hash_bytes = client_data_hash.digest()
 
-#     client_data_rem = len(client_data_bytes) % 4
-#     for _ in range(4 - client_data_rem):
-#         client_data_bytes = client_data_bytes + b'\x00'
+    client_data_rem = len(client_data_bytes) % 4
+    for _ in range(4 - client_data_rem):
+        client_data_bytes = client_data_bytes + b'\x00'
 
-#     authenticator_data_rem = len(authenticator_data_bytes) % 4
+    authenticator_data_rem = len(authenticator_data_bytes) % 4
 
-#     authenticator_data = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
-#     client_data_json_parts = [int.from_bytes(client_data_bytes[i:i+4], 'big') for i in range(0, len(client_data_bytes), 4)]
+    authenticator_data = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
+    client_data_json_parts = [int.from_bytes(client_data_bytes[i:i+4], 'big') for i in range(0, len(client_data_bytes), 4)]
 
-#     sig, rest = der_decoder(binascii.unhexlify(item["signature"]), asn1Spec=DERSig())
-#     if len(rest) != 0:
-#         raise Exception('Bad encoding')
+    sig, rest = der_decoder(binascii.unhexlify(item["signature"]), asn1Spec=DERSig())
+    if len(rest) != 0:
+        raise Exception('Bad encoding')
 
-#     r0, r1, r2 = split(int(sig['r']))
-#     s0, s1, s2 = split(int(sig['s']))
+    r0, r1, r2 = split(int(sig['r']))
+    s0, s1, s2 = split(int(sig['s']))
 
-#     authenticator_data_parts = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
-#     challenge_parts = [int.from_bytes(challenge[i:i+3], 'big') for i in range(0, len(challenge), 3)]
+    authenticator_data_parts = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
 
-#     origin = b'https://controller-e13pt9wwv.preview.cartridge.gg'
-#     origin_parts = [int.from_bytes(origin[i:i+4], 'big') for i in range(0, len(origin), 4)]
-#     origin_offset_bytes = client_data_bytes.find(b'"origin":"') + len(b'"origin":"')
+    for _ in range(32 - len(challenge)):
+        challenge = challenge + b'\x00'
+    challenge_parts = [int.from_bytes(challenge[i:i+3], 'big') for i in range(0, len(challenge), 3)]
 
-#     type = b'webauthn.get'
-#     type_parts = [int.from_bytes(type[i:i+4], 'big') for i in range(0, len(type), 4)]
-#     type_offset_bytes = client_data_bytes.find(b'"type":"') + len(b'"type":"')
+    origin = b'https://controller-e13pt9wwv.preview.cartridge.gg'
+    origin_parts = [int.from_bytes(origin[i:i+4], 'big') for i in range(0, len(origin), 4)]
+    origin_offset_bytes = client_data_bytes.find(b'"origin":"') + len(b'"origin":"')
 
-#     challenge_offset_bytes = client_data_bytes.find(b'"challenge":"') + len(b'"challenge":"')
+    type = b'webauthn.get'
+    type_parts = [int.from_bytes(type[i:i+4], 'big') for i in range(0, len(type), 4)]
+    type_offset_bytes = client_data_bytes.find(b'"type":"') + len(b'"type":"')
 
-#     challenge_offset_len = challenge_offset_bytes // 4
-#     challenge_offset_rem = challenge_offset_bytes % 4
-#     challenge_len = len(challenge_parts)
-#     challenge_rem = len(challenge) % 3
-#     challenge = ""
-#     for j, c in enumerate(challenge_parts):
-#         challenge += "    assert challenge[{}] = {}\n".format(j, c)
+    challenge_offset_bytes = client_data_bytes.find(b'"challenge":"') + len(b'"challenge":"')
 
-#     client_data_json_len=len(client_data_json_parts)
-#     client_data_json_rem=client_data_rem
-#     client_data_json = ""
-#     for j, c in enumerate(client_data_json_parts):
-#         client_data_json += "    assert client_data_json[{}] = {}\n".format(j, c)
+    challenge_offset_len = challenge_offset_bytes // 4
+    challenge_offset_rem = challenge_offset_bytes % 4
+    challenge_len = len(challenge_parts)
+    challenge_rem = len(challenge) % 3
+    challenge = ""
+    for j, c in enumerate(challenge_parts):
+        challenge += "    assert challenge[{}] = {}\n".format(j, c)
 
-#     authenticator_data_len=len(authenticator_data_parts)
-#     authenticator_data_rem=authenticator_data_rem
-#     authenticator_data=""
-#     for j, c in enumerate(authenticator_data_parts):
-#         authenticator_data += "    assert authenticator_data[{}] = {}\n".format(j, c)
+    client_data_json_len=len(client_data_json_parts)
+    client_data_json_rem=client_data_rem
+    client_data_json = ""
+    for j, c in enumerate(client_data_json_parts):
+        client_data_json += "    assert client_data_json[{}] = {}\n".format(j, c)
 
-#     test += TEST_CASE.format(
-#         title=i,
-#         # expect_revert=expect_revert,
-#         x0=x0,
-#         x1=x1,
-#         x2=x2,
-#         y0=y0,
-#         y1=y1,
-#         y2=y2,
-#         r0=r0,
-#         r1=r1,
-#         r2=r2,
-#         s0=s0,
-#         s1=s1,
-#         s2=s2,
-#         challenge_offset_len=challenge_offset_len,
-#         challenge_offset_rem=challenge_offset_rem,
-#         challenge_len=challenge_len,
-#         challenge_rem=challenge_rem,
-#         challenge=challenge,
-#         client_data_json_len=client_data_json_len,
-#         client_data_json_rem=client_data_json_rem,
-#         client_data_json=client_data_json,
-#         authenticator_data_len=authenticator_data_len,
-#         authenticator_data_rem=authenticator_data_rem,
-#         authenticator_data=authenticator_data
-#     )
+    authenticator_data_len=len(authenticator_data_parts)
+    authenticator_data_rem=authenticator_data_rem
+    authenticator_data=""
+    for j, c in enumerate(authenticator_data_parts):
+        authenticator_data += "    assert authenticator_data[{}] = {}\n".format(j, c)
+
+    test += TEST_CASE.format(
+        title=i,
+        # expect_revert=expect_revert,
+        x0=x0,
+        x1=x1,
+        x2=x2,
+        y0=y0,
+        y1=y1,
+        y2=y2,
+        r0=r0,
+        r1=r1,
+        r2=r2,
+        s0=s0,
+        s1=s1,
+        s2=s2,
+        challenge_offset_len=challenge_offset_len,
+        challenge_offset_rem=challenge_offset_rem,
+        challenge=challenge,
+        client_data_json_len=client_data_json_len,
+        client_data_json_rem=client_data_json_rem,
+        client_data_json=client_data_json,
+        authenticator_data_len=authenticator_data_len,
+        authenticator_data_rem=authenticator_data_rem,
+        authenticator_data=authenticator_data
+    )
 
 transactions = [(420, [(1234, 'add_public_key', [0])], 0, 0)]
 
@@ -266,8 +261,6 @@ for i, txn in enumerate(transactions):
         s2=s2,
         challenge_offset_len=challenge_offset_len,
         challenge_offset_rem=challenge_offset_rem,
-        challenge_len=challenge_len,
-        challenge_rem=challenge_rem,
         challenge=challenge,
         client_data_json_len=client_data_json_len,
         client_data_json_rem=client_data_json_rem,

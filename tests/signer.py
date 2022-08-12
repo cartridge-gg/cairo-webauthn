@@ -25,7 +25,10 @@ class P256Signer():
 
         challenge_bytes = message_hash.to_bytes(
             32, byteorder="big")
+        print(message_hash, len(challenge_bytes))
+        print(challenge_bytes)
         challenge = bytes_to_base64url(challenge_bytes)
+        print("challenge", challenge)
         challenge_parts = [int.from_bytes(challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
         client_data_json = f"""{{"type":"webauthn.get","challenge":"{challenge}","origin":"https://cartridge.gg","crossOrigin":false}}"""
         client_data_bytes = client_data_json.encode("ASCII")

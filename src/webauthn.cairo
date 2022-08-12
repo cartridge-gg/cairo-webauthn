@@ -138,12 +138,8 @@ namespace Webauthn:
 
         let (c0, c1, c2, c3, _) = Base64URL.encode3(c)
         let encoded = c0 * 2 ** 24 + c1 * 2 ** 16 + c2 * 2 ** 8 + c3
-
         assert shifted = encoded
         return _verify_challenge(client_data_json, challenge_offset_len + 1, challenge_offset_rem, challenge_len - 1, challenge_rem, challenge + 1)
-        # end
-
-        # return ()
     end
 
     # Verify the User Present and User Verified flags are set.
