@@ -13,9 +13,34 @@ from src.base64url import Base64URL
 from src.sha256 import sha256 #, finalize_sha256
 
 namespace Webauthn:
-    # Verify a webauthn authentication credential according to: https://www.w3.org/TR/webauthn/#sctn-verifying-assertion
-    # `client_data_json` and `authenticator_data` must be passed
-    # as felt* with 32-bit words.
+    # @notice Verify a webauthn authentication credential according to: https://www.w3.org/TR/webauthn/#sctn-verifying-assertion
+    # @dev `client_data_json` and `authenticator_data` must be passed
+    # as felt* of 32-bit felts and `challenge` should be passed as 24-bit felts.
+    # The challenge is subsequently base64 encoded into 32-bit felts for comparison
+    # with the challenge embedded in the `client_data_json`. We operate on 32-bit felts
+    # since the sha256 implementation expects them and it is more efficient to handle
+    # the data processing offchain.
+    # 
+    # @param pub (EcPoint): Public Key point.
+    # @param r (BigInt3): `r` component of the signature.
+    # @param s (BigInt3): `s` component of the signature.
+    # @param type_offset_len (felt): offset until type value starts in the client_data_json payload.
+    # @param type_offset_rem (felt): 
+    # @param challenge_offset_len (felt): offset until challenge value starts in the client_data_json payload.
+    # @param challenge_offset_rem (felt): 
+    # @param challenge_len (felt):
+    # @param challenge_rem: felt,
+    # @param challenge (felt*):
+    # @param origin_offset_len (felt):
+    # @param origin_offset_rem (felt):
+    # @param origin_len (felt):
+    # @param origin (felt*):
+    # @param client_data_json_len (felt):
+    # @param client_data_json_rem (felt):
+    # @param client_data_json (felt*):
+    # @param authenticator_data_len (felt):
+    # @param authenticator_data_rem (felt):
+    # @param authenticator_data (felt):
     func verify{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
             pub: EcPoint,
             r: BigInt3,
@@ -58,7 +83,7 @@ namespace Webauthn:
         _verify_auth_flags(authenticator_data)
 
         # We're doing using the sphinx cairo sha256 implementation until the cario hints support more efficient sha256
-        let (client_data_hash: felt*) = sha256(client_data_json, client_data_json_len * 4 - (4 - client_data_json_rem))
+        let (client_data_hash: felt*) = sha256(client_data_json, client_data_json_len * 4 - client_data_json_rem)
         # let (local sha256_ptr_start : felt*) = alloc()
         # let sha256_ptr = sha256_ptr_start
         # let (client_data_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(client_data_json, client_data_json_len * 4 - (4 - client_data_json_rem))
@@ -70,7 +95,7 @@ namespace Webauthn:
         _concat_msg_data{msg_data_ptr=msg_data_ptr}(authenticator_data_len, authenticator_data_rem, authenticator_data, client_data_hash)
 
         # We're doing using the sphinx cairo sha256 implementation until the cario hints support more efficient sha256
-        let (msg_hash: felt*) = sha256(msg_data_start_ptr, authenticator_data_len * 4 - (4 - authenticator_data_rem) + 32)
+        let (msg_hash: felt*) = sha256(msg_data_start_ptr, authenticator_data_len * 4 - authenticator_data_rem + 32)
         # let (local sha256_ptr_start : felt*) = alloc()
         # let sha256_ptr = sha256_ptr_start
         # let (msg_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(msg_data_start_ptr, authenticator_data_len * 4 (4 - authenticator_data_rem) + 32)
@@ -201,7 +226,7 @@ namespace Webauthn:
             return ()
         end
 
-        if authenticator_data_rem == 1:
+        if authenticator_data_rem == 3:
             memcpy(msg_data_ptr, authenticator_data, authenticator_data_len - 1)
             let authenticator_data = authenticator_data + authenticator_data_len - 1
             let msg_data_ptr = msg_data_ptr + authenticator_data_len - 1
@@ -255,7 +280,7 @@ namespace Webauthn:
             return()
         end
 
-        if authenticator_data_rem == 3:
+        if authenticator_data_rem == 1:
             memcpy(msg_data_ptr, authenticator_data, authenticator_data_len - 1)
             let authenticator_data = authenticator_data + authenticator_data_len - 1
             let msg_data_ptr = msg_data_ptr + authenticator_data_len - 1
