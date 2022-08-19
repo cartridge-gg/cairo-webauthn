@@ -9,7 +9,7 @@ from src.bigint import BigInt3
 from src.webauthn import Webauthn
 
 @external
-func test_invoke_1{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
+func test_prod_1{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
     let public_key_pt = EcPoint(
         BigInt3(36525844496041675964996035,10241496462396168495243035,12073459884027443802026668),
         BigInt3(73415393325312837716378057,28653761284285941667865366,16362988822458663408564975),
@@ -122,7 +122,7 @@ func test_invoke_1{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBui
 end
 
 @external
-func test_invoke_2{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
+func test_prod_2{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
     let public_key_pt = EcPoint(
         BigInt3(45000653924379414565202930,51812511094343427049224986,18903611379613879028297546),
         BigInt3(26962128820636107505728448,54108962260802805464287940,777853010800331311018185),
