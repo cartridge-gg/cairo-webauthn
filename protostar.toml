@@ -1,10 +1,10 @@
 ["protostar.config"]
-protostar_version = "0.3.1"
+protostar_version = "0.3.2"
 
 ["protostar.project"]
 libs_path = "lib"
 
 ["protostar.contracts"]
 main = [
-    "src/main.cairo",
+    "src/webauthn.cairo",
 ]
