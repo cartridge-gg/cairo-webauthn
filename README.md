@@ -13,3 +13,9 @@ Webauthn.verify(public_key, r, s,
     authenticator_data_len, authenticator_data_rem, authenticator_data
 )
 ```
+
+## Development
+
+```sh
+pip install webauthn pyasn1
+```

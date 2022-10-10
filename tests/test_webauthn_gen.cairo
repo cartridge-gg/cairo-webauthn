@@ -1,3 +1,4 @@
+
 %lang starknet
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
@@ -8,17 +9,13 @@ from src.bigint import BigInt3
 from src.webauthn import Webauthn
 
 @external
-func test_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
+func test_0{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
     let public_key_pt = EcPoint(
-        BigInt3(68771434430694404260836634, 66633780841359531151283366, 14259391536917482115299254),
-        BigInt3(15143078500912722485799317, 6719228382483657703164717, 5845062894556851529125),
+        BigInt3(68771434430694404260836634,66633780841359531151283366,14259391536917482115299254),
+        BigInt3(15143078500912722485799317,6719228382483657703164717,5845062894556851529125),
     );
-    let r = BigInt3(
-        63555563315794279560344047, 13095470977131083448599430, 12617095898995832105276919
-    );
-    let s = BigInt3(
-        51677855527563245207068476, 53594536522197615937402726, 13839169138395057433218690
-    );
+    let r = BigInt3(63555563315794279560344047,13095470977131083448599430,12617095898995832105276919);
+    let s = BigInt3(51677855527563245207068476,53594536522197615937402726,13839169138395057433218690);
 
     let type_offset_len = 2;
     let type_offset_rem = 1;
@@ -39,6 +36,7 @@ func test_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}()
     assert challenge[8] = 16183626;
     assert challenge[9] = 2267141;
     assert challenge[10] = 9315;
+
 
     let origin_offset_len = 28;
     let origin_offset_rem = 2;
@@ -113,6 +111,7 @@ func test_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}()
     assert client_data_json[49] = 574252641;
     assert client_data_json[50] = 1819501949;
 
+
     let authenticator_data_len = 10;
     let authenticator_data_rem = 3;
     let (authenticator_data) = alloc();
@@ -127,44 +126,26 @@ func test_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}()
     assert authenticator_data[8] = 83886080;
     assert authenticator_data[9] = 0;
 
-    Webauthn.verify(
-        public_key_pt,
-        r,
-        s,
-        type_offset_len,
-        type_offset_rem,
-        challenge_offset_len,
-        challenge_offset_rem,
-        challenge_len,
-        challenge_rem,
-        challenge,
-        origin_offset_len,
-        origin_offset_rem,
-        origin_len,
-        origin,
-        client_data_json_len,
-        client_data_json_rem,
-        client_data_json,
-        authenticator_data_len,
-        authenticator_data_rem,
-        authenticator_data,
+
+    Webauthn.verify(public_key_pt, r, s,
+        type_offset_len, type_offset_rem,
+        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge,
+        origin_offset_len, origin_offset_rem, origin_len, origin,
+        client_data_json_len, client_data_json_rem, client_data_json,
+        authenticator_data_len, authenticator_data_rem, authenticator_data
     );
 
     return ();
 }
 
 @external
-func test_signer_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
+func test_signer_0{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
     let public_key_pt = EcPoint(
-        BigInt3(25760171930652144217185068, 32068541556870573761232590, 13797202893288408174281844),
-        BigInt3(12023251181684780489161710, 70247614754882397296496088, 2493355613196942977075715),
+        BigInt3(25012752436441115105478499,49124124378805125750268719,5135324779956089724268905),
+        BigInt3(30076439151137788477390432,64305721886035337334904854,13358739848599777779525208),
     );
-    let r = BigInt3(
-        75058429540073154809997664, 16117088969378175025004874, 6794859814446335188227798
-    );
-    let s = BigInt3(
-        778027464278423483385406, 40663062971808498561013768, 17706897557216519140269823
-    );
+    let r = BigInt3(13519050929327361622390891,46009319887487158475017241,6369176689454961212384116);
+    let s = BigInt3(47558491905712022979728254,43633185616126321104281705,3979852399736810048845255);
 
     let type_offset_len = 2;
     let type_offset_rem = 1;
@@ -174,17 +155,18 @@ func test_signer_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     let challenge_len = 11;
     let challenge_rem = 1;
     let (challenge) = alloc();
-    assert challenge[0] = 308376;
-    assert challenge[1] = 8250128;
-    assert challenge[2] = 4714604;
-    assert challenge[3] = 10421903;
-    assert challenge[4] = 14316312;
-    assert challenge[5] = 1343164;
-    assert challenge[6] = 14786929;
-    assert challenge[7] = 3725904;
-    assert challenge[8] = 8655931;
-    assert challenge[9] = 2053312;
-    assert challenge[10] = 53650;
+    assert challenge[0] = 408217;
+    assert challenge[1] = 10299169;
+    assert challenge[2] = 5755576;
+    assert challenge[3] = 11627221;
+    assert challenge[4] = 8924337;
+    assert challenge[5] = 648760;
+    assert challenge[6] = 10369204;
+    assert challenge[7] = 10869868;
+    assert challenge[8] = 6934518;
+    assert challenge[9] = 16061922;
+    assert challenge[10] = 7711;
+
 
     let origin_offset_len = 28;
     let origin_offset_rem = 2;
@@ -216,17 +198,17 @@ func test_signer_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[6] = 1667785068;
     assert client_data_json[7] = 1818586727;
     assert client_data_json[8] = 1696741922;
-    assert client_data_json[9] = 1112298329;
-    assert client_data_json[10] = 1717914961;
-    assert client_data_json[11] = 1381974643;
-    assert client_data_json[12] = 1853317456;
-    assert client_data_json[13] = 846089561;
-    assert client_data_json[14] = 1179137592;
-    assert client_data_json[15] = 878790264;
-    assert client_data_json[16] = 1330540625;
-    assert client_data_json[17] = 1749176631;
-    assert client_data_json[18] = 1211192385;
-    assert client_data_json[19] = 811223361;
+    assert client_data_json[9] = 1114272090;
+    assert client_data_json[10] = 1850958696;
+    assert client_data_json[11] = 1446595380;
+    assert client_data_json[12] = 1935110742;
+    assert client_data_json[13] = 1766029688;
+    assert client_data_json[14] = 1130715444;
+    assert client_data_json[15] = 1852467504;
+    assert client_data_json[16] = 1885632627;
+    assert client_data_json[17] = 1633902386;
+    assert client_data_json[18] = 961697897;
+    assert client_data_json[19] = 1214789697;
     assert client_data_json[20] = 1094795585;
     assert client_data_json[21] = 573317743;
     assert client_data_json[22] = 1919510377;
@@ -246,6 +228,7 @@ func test_signer_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[36] = 1634497381;
     assert client_data_json[37] = 2097152000;
 
+
     let authenticator_data_len = 10;
     let authenticator_data_rem = 3;
     let (authenticator_data) = alloc();
@@ -260,44 +243,26 @@ func test_signer_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert authenticator_data[8] = 83886080;
     assert authenticator_data[9] = 0;
 
-    Webauthn.verify(
-        public_key_pt,
-        r,
-        s,
-        type_offset_len,
-        type_offset_rem,
-        challenge_offset_len,
-        challenge_offset_rem,
-        challenge_len,
-        challenge_rem,
-        challenge,
-        origin_offset_len,
-        origin_offset_rem,
-        origin_len,
-        origin,
-        client_data_json_len,
-        client_data_json_rem,
-        client_data_json,
-        authenticator_data_len,
-        authenticator_data_rem,
-        authenticator_data,
+
+    Webauthn.verify(public_key_pt, r, s,
+        type_offset_len, type_offset_rem,
+        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge,
+        origin_offset_len, origin_offset_rem, origin_len, origin,
+        client_data_json_len, client_data_json_rem, client_data_json,
+        authenticator_data_len, authenticator_data_rem, authenticator_data
     );
 
     return ();
 }
 
 @external
-func test_signer_1{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
+func test_signer_1{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
     let public_key_pt = EcPoint(
-        BigInt3(36551267051905699018646970, 28498347870562362253846039, 17185273288657963468083968),
-        BigInt3(71194959876607486613003661, 55986233559482261153311711, 1277819852157934310649112),
+        BigInt3(74008420287490269973695952,69596811224342283934917154,6880738978779621517917106),
+        BigInt3(61180058060495205121751286,57130280693735662652504978,17047533010952980511229966),
     );
-    let r = BigInt3(
-        30005288274251490540322732, 75232237571376517256311951, 15918505113995799101436148
-    );
-    let s = BigInt3(
-        22992447307859184456987328, 46642451501936371138254603, 1661472446755099220276568
-    );
+    let r = BigInt3(74311940929082661625824445,14425671446953098605849986,5671486697498487142449318);
+    let s = BigInt3(51138854942948771027198350,70500805923408752316884275,9296185290945178587295779);
 
     let type_offset_len = 2;
     let type_offset_rem = 1;
@@ -307,17 +272,18 @@ func test_signer_1{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     let challenge_len = 11;
     let challenge_rem = 1;
     let (challenge) = alloc();
-    assert challenge[0] = 308376;
-    assert challenge[1] = 8250128;
-    assert challenge[2] = 4714604;
-    assert challenge[3] = 10421903;
-    assert challenge[4] = 14316312;
-    assert challenge[5] = 1343164;
-    assert challenge[6] = 14786929;
-    assert challenge[7] = 3725904;
-    assert challenge[8] = 8655931;
-    assert challenge[9] = 2053312;
-    assert challenge[10] = 53650;
+    assert challenge[0] = 408217;
+    assert challenge[1] = 10299169;
+    assert challenge[2] = 5755576;
+    assert challenge[3] = 11627221;
+    assert challenge[4] = 8924337;
+    assert challenge[5] = 648760;
+    assert challenge[6] = 10369204;
+    assert challenge[7] = 10869868;
+    assert challenge[8] = 6934518;
+    assert challenge[9] = 16061922;
+    assert challenge[10] = 7711;
+
 
     let origin_offset_len = 28;
     let origin_offset_rem = 2;
@@ -349,17 +315,17 @@ func test_signer_1{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[6] = 1667785068;
     assert client_data_json[7] = 1818586727;
     assert client_data_json[8] = 1696741922;
-    assert client_data_json[9] = 1112298329;
-    assert client_data_json[10] = 1717914961;
-    assert client_data_json[11] = 1381974643;
-    assert client_data_json[12] = 1853317456;
-    assert client_data_json[13] = 846089561;
-    assert client_data_json[14] = 1179137592;
-    assert client_data_json[15] = 878790264;
-    assert client_data_json[16] = 1330540625;
-    assert client_data_json[17] = 1749176631;
-    assert client_data_json[18] = 1211192385;
-    assert client_data_json[19] = 811223361;
+    assert client_data_json[9] = 1114272090;
+    assert client_data_json[10] = 1850958696;
+    assert client_data_json[11] = 1446595380;
+    assert client_data_json[12] = 1935110742;
+    assert client_data_json[13] = 1766029688;
+    assert client_data_json[14] = 1130715444;
+    assert client_data_json[15] = 1852467504;
+    assert client_data_json[16] = 1885632627;
+    assert client_data_json[17] = 1633902386;
+    assert client_data_json[18] = 961697897;
+    assert client_data_json[19] = 1214789697;
     assert client_data_json[20] = 1094795585;
     assert client_data_json[21] = 573317743;
     assert client_data_json[22] = 1919510377;
@@ -370,6 +336,7 @@ func test_signer_1{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[27] = 1734962722;
     assert client_data_json[28] = 979788140;
     assert client_data_json[29] = 1936030976;
+
 
     let authenticator_data_len = 10;
     let authenticator_data_rem = 3;
@@ -385,44 +352,26 @@ func test_signer_1{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert authenticator_data[8] = 83886080;
     assert authenticator_data[9] = 0;
 
-    Webauthn.verify(
-        public_key_pt,
-        r,
-        s,
-        type_offset_len,
-        type_offset_rem,
-        challenge_offset_len,
-        challenge_offset_rem,
-        challenge_len,
-        challenge_rem,
-        challenge,
-        origin_offset_len,
-        origin_offset_rem,
-        origin_len,
-        origin,
-        client_data_json_len,
-        client_data_json_rem,
-        client_data_json,
-        authenticator_data_len,
-        authenticator_data_rem,
-        authenticator_data,
+
+    Webauthn.verify(public_key_pt, r, s,
+        type_offset_len, type_offset_rem,
+        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge,
+        origin_offset_len, origin_offset_rem, origin_len, origin,
+        client_data_json_len, client_data_json_rem, client_data_json,
+        authenticator_data_len, authenticator_data_rem, authenticator_data
     );
 
     return ();
 }
 
 @external
-func test_signer_2{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
+func test_signer_2{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
     let public_key_pt = EcPoint(
-        BigInt3(74221456455340304468914311, 76243887401157693143479692, 1737205609488046265298201),
-        BigInt3(59954067020306188383223705, 61157685282075898430989480, 1633860405967725038928253),
+        BigInt3(295836725683628380410594,10141506841375708210940384,10848579052503748245865010),
+        BigInt3(38300071478067146902748441,59677079152624038680554339,7066108923619905425936442),
     );
-    let r = BigInt3(
-        58468766165818579457731141, 71632859631983659766292210, 16597957639503060857875411
-    );
-    let s = BigInt3(
-        36821628610644384771789886, 59128503035488810450994937, 3649559649222303632123885
-    );
+    let r = BigInt3(69993467096008535915811219,46155820988214537674178233,4653774339050625947048036);
+    let s = BigInt3(12477040337686037287454384,24271108472674503260330493,866092695564587603094513);
 
     let type_offset_len = 2;
     let type_offset_rem = 1;
@@ -432,17 +381,18 @@ func test_signer_2{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     let challenge_len = 11;
     let challenge_rem = 1;
     let (challenge) = alloc();
-    assert challenge[0] = 308376;
-    assert challenge[1] = 8250128;
-    assert challenge[2] = 4714604;
-    assert challenge[3] = 10421903;
-    assert challenge[4] = 14316312;
-    assert challenge[5] = 1343164;
-    assert challenge[6] = 14786929;
-    assert challenge[7] = 3725904;
-    assert challenge[8] = 8655931;
-    assert challenge[9] = 2053312;
-    assert challenge[10] = 53650;
+    assert challenge[0] = 408217;
+    assert challenge[1] = 10299169;
+    assert challenge[2] = 5755576;
+    assert challenge[3] = 11627221;
+    assert challenge[4] = 8924337;
+    assert challenge[5] = 648760;
+    assert challenge[6] = 10369204;
+    assert challenge[7] = 10869868;
+    assert challenge[8] = 6934518;
+    assert challenge[9] = 16061922;
+    assert challenge[10] = 7711;
+
 
     let origin_offset_len = 28;
     let origin_offset_rem = 2;
@@ -474,17 +424,17 @@ func test_signer_2{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[6] = 1667785068;
     assert client_data_json[7] = 1818586727;
     assert client_data_json[8] = 1696741922;
-    assert client_data_json[9] = 1112298329;
-    assert client_data_json[10] = 1717914961;
-    assert client_data_json[11] = 1381974643;
-    assert client_data_json[12] = 1853317456;
-    assert client_data_json[13] = 846089561;
-    assert client_data_json[14] = 1179137592;
-    assert client_data_json[15] = 878790264;
-    assert client_data_json[16] = 1330540625;
-    assert client_data_json[17] = 1749176631;
-    assert client_data_json[18] = 1211192385;
-    assert client_data_json[19] = 811223361;
+    assert client_data_json[9] = 1114272090;
+    assert client_data_json[10] = 1850958696;
+    assert client_data_json[11] = 1446595380;
+    assert client_data_json[12] = 1935110742;
+    assert client_data_json[13] = 1766029688;
+    assert client_data_json[14] = 1130715444;
+    assert client_data_json[15] = 1852467504;
+    assert client_data_json[16] = 1885632627;
+    assert client_data_json[17] = 1633902386;
+    assert client_data_json[18] = 961697897;
+    assert client_data_json[19] = 1214789697;
     assert client_data_json[20] = 1094795585;
     assert client_data_json[21] = 573317743;
     assert client_data_json[22] = 1919510377;
@@ -495,6 +445,7 @@ func test_signer_2{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[27] = 1768384878;
     assert client_data_json[28] = 574252641;
     assert client_data_json[29] = 1819501949;
+
 
     let authenticator_data_len = 10;
     let authenticator_data_rem = 3;
@@ -510,44 +461,26 @@ func test_signer_2{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert authenticator_data[8] = 83886080;
     assert authenticator_data[9] = 0;
 
-    Webauthn.verify(
-        public_key_pt,
-        r,
-        s,
-        type_offset_len,
-        type_offset_rem,
-        challenge_offset_len,
-        challenge_offset_rem,
-        challenge_len,
-        challenge_rem,
-        challenge,
-        origin_offset_len,
-        origin_offset_rem,
-        origin_len,
-        origin,
-        client_data_json_len,
-        client_data_json_rem,
-        client_data_json,
-        authenticator_data_len,
-        authenticator_data_rem,
-        authenticator_data,
+
+    Webauthn.verify(public_key_pt, r, s,
+        type_offset_len, type_offset_rem,
+        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge,
+        origin_offset_len, origin_offset_rem, origin_len, origin,
+        client_data_json_len, client_data_json_rem, client_data_json,
+        authenticator_data_len, authenticator_data_rem, authenticator_data
     );
 
     return ();
 }
 
 @external
-func test_signer_3{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
+func test_signer_3{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
     let public_key_pt = EcPoint(
-        BigInt3(56403849990004304111072824, 74362332543896245548958574, 14131655404782512978288830),
-        BigInt3(23067879079001393540883477, 20971221835550589391879441, 15125591164054873838597505),
+        BigInt3(7809580098988105499883009,63805916707544711087471639,11650147277277846578541959),
+        BigInt3(46906755652529858019579995,67775866544992805070903831,12145009258358054763018593),
     );
-    let r = BigInt3(
-        58257748763284148239062022, 33697351232426634997986720, 5730017552132388003695179
-    );
-    let s = BigInt3(
-        62791671829616950974938253, 36404921943391197667108673, 17973615942629226038330120
-    );
+    let r = BigInt3(6101344783415369747085871,76672342793799188531236163,1714649115976478921442457);
+    let s = BigInt3(72103187295440827555022801,30610168348889020412678765,4882800483465824039428906);
 
     let type_offset_len = 2;
     let type_offset_rem = 1;
@@ -557,17 +490,18 @@ func test_signer_3{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     let challenge_len = 11;
     let challenge_rem = 1;
     let (challenge) = alloc();
-    assert challenge[0] = 308376;
-    assert challenge[1] = 8250128;
-    assert challenge[2] = 4714604;
-    assert challenge[3] = 10421903;
-    assert challenge[4] = 14316312;
-    assert challenge[5] = 1343164;
-    assert challenge[6] = 14786929;
-    assert challenge[7] = 3725904;
-    assert challenge[8] = 8655931;
-    assert challenge[9] = 2053312;
-    assert challenge[10] = 53650;
+    assert challenge[0] = 408217;
+    assert challenge[1] = 10299169;
+    assert challenge[2] = 5755576;
+    assert challenge[3] = 11627221;
+    assert challenge[4] = 8924337;
+    assert challenge[5] = 648760;
+    assert challenge[6] = 10369204;
+    assert challenge[7] = 10869868;
+    assert challenge[8] = 6934518;
+    assert challenge[9] = 16061922;
+    assert challenge[10] = 7711;
+
 
     let origin_offset_len = 28;
     let origin_offset_rem = 2;
@@ -599,17 +533,17 @@ func test_signer_3{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[6] = 1667785068;
     assert client_data_json[7] = 1818586727;
     assert client_data_json[8] = 1696741922;
-    assert client_data_json[9] = 1112298329;
-    assert client_data_json[10] = 1717914961;
-    assert client_data_json[11] = 1381974643;
-    assert client_data_json[12] = 1853317456;
-    assert client_data_json[13] = 846089561;
-    assert client_data_json[14] = 1179137592;
-    assert client_data_json[15] = 878790264;
-    assert client_data_json[16] = 1330540625;
-    assert client_data_json[17] = 1749176631;
-    assert client_data_json[18] = 1211192385;
-    assert client_data_json[19] = 811223361;
+    assert client_data_json[9] = 1114272090;
+    assert client_data_json[10] = 1850958696;
+    assert client_data_json[11] = 1446595380;
+    assert client_data_json[12] = 1935110742;
+    assert client_data_json[13] = 1766029688;
+    assert client_data_json[14] = 1130715444;
+    assert client_data_json[15] = 1852467504;
+    assert client_data_json[16] = 1885632627;
+    assert client_data_json[17] = 1633902386;
+    assert client_data_json[18] = 961697897;
+    assert client_data_json[19] = 1214789697;
     assert client_data_json[20] = 1094795585;
     assert client_data_json[21] = 573317743;
     assert client_data_json[22] = 1919510377;
@@ -621,6 +555,7 @@ func test_signer_3{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[28] = 1847736934;
     assert client_data_json[29] = 1634497381;
     assert client_data_json[30] = 2097152000;
+
 
     let authenticator_data_len = 10;
     let authenticator_data_rem = 3;
@@ -636,44 +571,26 @@ func test_signer_3{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert authenticator_data[8] = 83886080;
     assert authenticator_data[9] = 0;
 
-    Webauthn.verify(
-        public_key_pt,
-        r,
-        s,
-        type_offset_len,
-        type_offset_rem,
-        challenge_offset_len,
-        challenge_offset_rem,
-        challenge_len,
-        challenge_rem,
-        challenge,
-        origin_offset_len,
-        origin_offset_rem,
-        origin_len,
-        origin,
-        client_data_json_len,
-        client_data_json_rem,
-        client_data_json,
-        authenticator_data_len,
-        authenticator_data_rem,
-        authenticator_data,
+
+    Webauthn.verify(public_key_pt, r, s,
+        type_offset_len, type_offset_rem,
+        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge,
+        origin_offset_len, origin_offset_rem, origin_len, origin,
+        client_data_json_len, client_data_json_rem, client_data_json,
+        authenticator_data_len, authenticator_data_rem, authenticator_data
     );
 
     return ();
 }
 
 @external
-func test_signer_4{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
+func test_signer_4{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
     let public_key_pt = EcPoint(
-        BigInt3(73151308418410296443681707, 4026780844593732239200737, 15533482936332148686331247),
-        BigInt3(47323179872348418795566782, 65084837696000726171930957, 7958482415077784898500590),
+        BigInt3(36676515121821640394681515,45892728070133938449630438,1237900174564046800547172),
+        BigInt3(762608308731299248742716,51525479024707853009168561,308616411423965500375862),
     );
-    let r = BigInt3(
-        51625305160786376153522009, 36372896870724203639987059, 13630531080504629457046006
-    );
-    let s = BigInt3(
-        40289127773377078333942354, 56889599624906185296406024, 4143335259770152485878839
-    );
+    let r = BigInt3(37912955325190875284445090,59032440523663722742133294,5672010022783318891464454);
+    let s = BigInt3(3282665679438232385320569,56129081917896712085739136,3107619281104091344758484);
 
     let type_offset_len = 2;
     let type_offset_rem = 1;
@@ -683,17 +600,18 @@ func test_signer_4{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     let challenge_len = 11;
     let challenge_rem = 1;
     let (challenge) = alloc();
-    assert challenge[0] = 308376;
-    assert challenge[1] = 8250128;
-    assert challenge[2] = 4714604;
-    assert challenge[3] = 10421903;
-    assert challenge[4] = 14316312;
-    assert challenge[5] = 1343164;
-    assert challenge[6] = 14786929;
-    assert challenge[7] = 3725904;
-    assert challenge[8] = 8655931;
-    assert challenge[9] = 2053312;
-    assert challenge[10] = 53650;
+    assert challenge[0] = 408217;
+    assert challenge[1] = 10299169;
+    assert challenge[2] = 5755576;
+    assert challenge[3] = 11627221;
+    assert challenge[4] = 8924337;
+    assert challenge[5] = 648760;
+    assert challenge[6] = 10369204;
+    assert challenge[7] = 10869868;
+    assert challenge[8] = 6934518;
+    assert challenge[9] = 16061922;
+    assert challenge[10] = 7711;
+
 
     let origin_offset_len = 28;
     let origin_offset_rem = 2;
@@ -725,17 +643,17 @@ func test_signer_4{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[6] = 1667785068;
     assert client_data_json[7] = 1818586727;
     assert client_data_json[8] = 1696741922;
-    assert client_data_json[9] = 1112298329;
-    assert client_data_json[10] = 1717914961;
-    assert client_data_json[11] = 1381974643;
-    assert client_data_json[12] = 1853317456;
-    assert client_data_json[13] = 846089561;
-    assert client_data_json[14] = 1179137592;
-    assert client_data_json[15] = 878790264;
-    assert client_data_json[16] = 1330540625;
-    assert client_data_json[17] = 1749176631;
-    assert client_data_json[18] = 1211192385;
-    assert client_data_json[19] = 811223361;
+    assert client_data_json[9] = 1114272090;
+    assert client_data_json[10] = 1850958696;
+    assert client_data_json[11] = 1446595380;
+    assert client_data_json[12] = 1935110742;
+    assert client_data_json[13] = 1766029688;
+    assert client_data_json[14] = 1130715444;
+    assert client_data_json[15] = 1852467504;
+    assert client_data_json[16] = 1885632627;
+    assert client_data_json[17] = 1633902386;
+    assert client_data_json[18] = 961697897;
+    assert client_data_json[19] = 1214789697;
     assert client_data_json[20] = 1094795585;
     assert client_data_json[21] = 573317743;
     assert client_data_json[22] = 1919510377;
@@ -747,6 +665,7 @@ func test_signer_4{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[28] = 1768825402;
     assert client_data_json[29] = 1717660787;
     assert client_data_json[30] = 1702690816;
+
 
     let authenticator_data_len = 10;
     let authenticator_data_rem = 3;
@@ -762,44 +681,26 @@ func test_signer_4{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert authenticator_data[8] = 83886080;
     assert authenticator_data[9] = 0;
 
-    Webauthn.verify(
-        public_key_pt,
-        r,
-        s,
-        type_offset_len,
-        type_offset_rem,
-        challenge_offset_len,
-        challenge_offset_rem,
-        challenge_len,
-        challenge_rem,
-        challenge,
-        origin_offset_len,
-        origin_offset_rem,
-        origin_len,
-        origin,
-        client_data_json_len,
-        client_data_json_rem,
-        client_data_json,
-        authenticator_data_len,
-        authenticator_data_rem,
-        authenticator_data,
+
+    Webauthn.verify(public_key_pt, r, s,
+        type_offset_len, type_offset_rem,
+        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge,
+        origin_offset_len, origin_offset_rem, origin_len, origin,
+        client_data_json_len, client_data_json_rem, client_data_json,
+        authenticator_data_len, authenticator_data_rem, authenticator_data
     );
 
     return ();
 }
 
 @external
-func test_signer_5{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
+func test_signer_5{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
     let public_key_pt = EcPoint(
-        BigInt3(25683276147112624207028632, 14740352669400185103164493, 17647894587026382919523780),
-        BigInt3(2172573602643879111421122, 65788057709669631640459187, 2841294509863129108200854),
+        BigInt3(68035886564654719105871768,53720227906054259432474415,1042374330031080527485182),
+        BigInt3(11868168205554176683298917,51529470237980775115043320,542905823742810284998074),
     );
-    let r = BigInt3(
-        34208144372223917959647955, 8235235591399641944995408, 17610492983085559455648797
-    );
-    let s = BigInt3(
-        57843155227047969778821311, 62714608048995079885904650, 15032049747010645965550993
-    );
+    let r = BigInt3(74296998440730428146738536,2752801252076334017394554,16636656090868371063600847);
+    let s = BigInt3(57358826183012051314835862,15347814872943536831707297,3737687977084843884813824);
 
     let type_offset_len = 2;
     let type_offset_rem = 1;
@@ -809,17 +710,18 @@ func test_signer_5{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     let challenge_len = 11;
     let challenge_rem = 1;
     let (challenge) = alloc();
-    assert challenge[0] = 308376;
-    assert challenge[1] = 8250128;
-    assert challenge[2] = 4714604;
-    assert challenge[3] = 10421903;
-    assert challenge[4] = 14316312;
-    assert challenge[5] = 1343164;
-    assert challenge[6] = 14786929;
-    assert challenge[7] = 3725904;
-    assert challenge[8] = 8655931;
-    assert challenge[9] = 2053312;
-    assert challenge[10] = 53650;
+    assert challenge[0] = 408217;
+    assert challenge[1] = 10299169;
+    assert challenge[2] = 5755576;
+    assert challenge[3] = 11627221;
+    assert challenge[4] = 8924337;
+    assert challenge[5] = 648760;
+    assert challenge[6] = 10369204;
+    assert challenge[7] = 10869868;
+    assert challenge[8] = 6934518;
+    assert challenge[9] = 16061922;
+    assert challenge[10] = 7711;
+
 
     let origin_offset_len = 28;
     let origin_offset_rem = 2;
@@ -851,17 +753,17 @@ func test_signer_5{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[6] = 1667785068;
     assert client_data_json[7] = 1818586727;
     assert client_data_json[8] = 1696741922;
-    assert client_data_json[9] = 1112298329;
-    assert client_data_json[10] = 1717914961;
-    assert client_data_json[11] = 1381974643;
-    assert client_data_json[12] = 1853317456;
-    assert client_data_json[13] = 846089561;
-    assert client_data_json[14] = 1179137592;
-    assert client_data_json[15] = 878790264;
-    assert client_data_json[16] = 1330540625;
-    assert client_data_json[17] = 1749176631;
-    assert client_data_json[18] = 1211192385;
-    assert client_data_json[19] = 811223361;
+    assert client_data_json[9] = 1114272090;
+    assert client_data_json[10] = 1850958696;
+    assert client_data_json[11] = 1446595380;
+    assert client_data_json[12] = 1935110742;
+    assert client_data_json[13] = 1766029688;
+    assert client_data_json[14] = 1130715444;
+    assert client_data_json[15] = 1852467504;
+    assert client_data_json[16] = 1885632627;
+    assert client_data_json[17] = 1633902386;
+    assert client_data_json[18] = 961697897;
+    assert client_data_json[19] = 1214789697;
     assert client_data_json[20] = 1094795585;
     assert client_data_json[21] = 573317743;
     assert client_data_json[22] = 1919510377;
@@ -873,6 +775,7 @@ func test_signer_5{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[28] = 1734962722;
     assert client_data_json[29] = 979788140;
     assert client_data_json[30] = 1936030976;
+
 
     let authenticator_data_len = 10;
     let authenticator_data_rem = 3;
@@ -888,44 +791,26 @@ func test_signer_5{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert authenticator_data[8] = 83886080;
     assert authenticator_data[9] = 0;
 
-    Webauthn.verify(
-        public_key_pt,
-        r,
-        s,
-        type_offset_len,
-        type_offset_rem,
-        challenge_offset_len,
-        challenge_offset_rem,
-        challenge_len,
-        challenge_rem,
-        challenge,
-        origin_offset_len,
-        origin_offset_rem,
-        origin_len,
-        origin,
-        client_data_json_len,
-        client_data_json_rem,
-        client_data_json,
-        authenticator_data_len,
-        authenticator_data_rem,
-        authenticator_data,
+
+    Webauthn.verify(public_key_pt, r, s,
+        type_offset_len, type_offset_rem,
+        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge,
+        origin_offset_len, origin_offset_rem, origin_len, origin,
+        client_data_json_len, client_data_json_rem, client_data_json,
+        authenticator_data_len, authenticator_data_rem, authenticator_data
     );
 
     return ();
 }
 
 @external
-func test_invoke_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
+func test_invoke_0{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
     let public_key_pt = EcPoint(
-        BigInt3(18429879044278490260098551, 56029233481007147284932680, 2037976146929856349747775),
-        BigInt3(70840069926882074167622098, 21864696605377867683594565, 6822006481759038492420837),
+        BigInt3(18429879044278490260098551,56029233481007147284932680,2037976146929856349747775),
+        BigInt3(70840069926882074167622098,21864696605377867683594565,6822006481759038492420837),
     );
-    let r = BigInt3(
-        2223599465377360746283669, 25752496995673689528630163, 705762337381700509015780
-    );
-    let s = BigInt3(
-        58393142204606773616845190, 12894059864184526358390250, 19065811591212739232406187
-    );
+    let r = BigInt3(2223599465377360746283669,25752496995673689528630163,705762337381700509015780);
+    let s = BigInt3(58393142204606773616845190,12894059864184526358390250,19065811591212739232406187);
 
     let type_offset_len = 2;
     let type_offset_rem = 1;
@@ -946,6 +831,7 @@ func test_invoke_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert challenge[8] = 10944597;
     assert challenge[9] = 6294853;
     assert challenge[10] = 47345;
+
 
     let origin_offset_len = 28;
     let origin_offset_rem = 2;
@@ -1005,6 +891,7 @@ func test_invoke_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert client_data_json[34] = 574252641;
     assert client_data_json[35] = 1819501949;
 
+
     let authenticator_data_len = 10;
     let authenticator_data_rem = 3;
     let (authenticator_data) = alloc();
@@ -1019,27 +906,13 @@ func test_invoke_0{syscall_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
     assert authenticator_data[8] = 486539264;
     assert authenticator_data[9] = 0;
 
-    Webauthn.verify(
-        public_key_pt,
-        r,
-        s,
-        type_offset_len,
-        type_offset_rem,
-        challenge_offset_len,
-        challenge_offset_rem,
-        challenge_len,
-        challenge_rem,
-        challenge,
-        origin_offset_len,
-        origin_offset_rem,
-        origin_len,
-        origin,
-        client_data_json_len,
-        client_data_json_rem,
-        client_data_json,
-        authenticator_data_len,
-        authenticator_data_rem,
-        authenticator_data,
+
+    Webauthn.verify(public_key_pt, r, s,
+        type_offset_len, type_offset_rem,
+        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge,
+        origin_offset_len, origin_offset_rem, origin_len, origin,
+        client_data_json_len, client_data_json_rem, client_data_json,
+        authenticator_data_len, authenticator_data_rem, authenticator_data
     );
 
     return ();

@@ -1,26 +1,71 @@
-from nile.signer import from_call_to_call_array, get_transaction_hash
-from fastecdsa import curve, ecdsa, keys
+from starkware.starknet.core.os.transaction_hash.transaction_hash import (
+    TransactionHashPrefix,
+    calculate_transaction_hash_common
+)
+from starkware.starknet.definitions.general_config import StarknetChainId
+from starkware.starknet.public.abi import get_selector_from_name
+from nile.signer import from_call_to_call_array
+from ecdsa import SigningKey, NIST256p
+from base64 import urlsafe_b64encode
 import hashlib
-from webauthn.helpers import bytes_to_base64url
+
+TRANSACTION_VERSION = 1
+
+def from_call_to_call_array(calls):
+    """Transform from Call to CallArray."""
+    call_array = []
+    calldata = []
+    for _, call in enumerate(calls):
+        assert len(call) == 3, "Invalid call parameters"
+        entry = (
+            call[0],
+            get_selector_from_name(call[1]),
+            len(calldata),
+            len(call[2]),
+        )
+        call_array.append(entry)
+        calldata.extend(call[2])
+    return (call_array, calldata)
+
+def get_transaction_hash(prefix, account, calldata, nonce, max_fee):
+    """Compute the hash of a transaction."""
+    return calculate_transaction_hash_common(
+        tx_hash_prefix=prefix,
+        version=TRANSACTION_VERSION,
+        contract_address=account,
+        entry_point_selector=0,
+        calldata=calldata,
+        max_fee=max_fee,
+        chain_id=StarknetChainId.TESTNET.value,
+        additional_data=[nonce],
+    )
+
+def bytes_to_base64url(val: bytes) -> str:
+    """
+    Base64URL-encode the provided bytes
+    """
+    return urlsafe_b64encode(val).decode("utf-8").replace("=", "")
+
+def sigencode(r, s, order):
+    return (r, s)
 
 BASE = 2 ** 86
 
-class P256Signer():
+class WebauthnSigner():
     def __init__(self):
-        private_key = keys.gen_private_key(curve.P256)
-        pt = keys.get_public_key(private_key, curve.P256)
-        x0, x1, x2 = split(pt.x)
-        y0, y1, y2 = split(pt.y)
+        self.signing_key = SigningKey.generate(curve=NIST256p)
+        pt = self.signing_key.verifying_key.pubkey.point
+        x0, x1, x2 = split(pt.x())
+        y0, y1, y2 = split(pt.y())
 
         self.public_key = (x0, x1, x2, y0, y1, y2)
-        self.private_key = private_key
 
     async def send_transaction(self, account, to, selector_name, calldata, nonce=None, max_fee=0):
         return await self.send_transactions(account, [(to, selector_name, calldata)], nonce, max_fee)
 
     def sign_transaction(self, origin, contract_address, call_array, calldata, nonce, max_fee):
         message_hash = get_transaction_hash(
-            contract_address, call_array, calldata, nonce, max_fee
+            TransactionHashPrefix.INVOKE, contract_address, calldata, nonce, max_fee
         )
 
         challenge_bytes = message_hash.to_bytes(
@@ -49,7 +94,7 @@ class P256Signer():
         if authenticator_data_rem == 4:
             authenticator_data_rem = 0
 
-        r, s = ecdsa.sign(authenticator_data_bytes + client_data_hash_bytes, self.private_key, curve.P256)
+        (r, s) = self.signing_key.sign(authenticator_data_bytes + client_data_hash_bytes, hashfunc=hashlib.sha256, sigencode=sigencode)
         r0, r1, r2 = split(r)
         s0, s1, s2 = split(s)
 

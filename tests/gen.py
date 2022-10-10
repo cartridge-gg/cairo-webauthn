@@ -1,3 +1,4 @@
+from starkware.starknet.core.os.transaction_hash.transaction_hash import TransactionHashPrefix
 from webauthn.helpers import base64url_to_bytes, bytes_to_base64url, decode_credential_public_key, decoded_public_key_to_cryptography, verify_signature
 from pyasn1.codec.der.decoder import decode as der_decoder
 from pyasn1.codec.der.encoder import encode as der_encoder
@@ -9,10 +10,8 @@ from pyasn1.type import univ
 
 import binascii
 import hashlib
-from nile.signer import from_call_to_call_array, get_transaction_hash
-from cryptography.exceptions import InvalidSignature
 
-from signer import P256Signer
+from signer import WebauthnSigner, from_call_to_call_array, get_transaction_hash
 
 BASE = 2 ** 86
 
@@ -57,50 +56,50 @@ from src.webauthn import Webauthn
 
 TEST_CASE = """
 @external
-func test_{title}{{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}}():
+func test_{title}{{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}}() {{
     let public_key_pt = EcPoint(
         BigInt3({x0},{x1},{x2}),
         BigInt3({y0},{y1},{y2}),
-    )
-    let r = BigInt3({r0},{r1},{r2})
-    let s = BigInt3({s0},{s1},{s2})
+    );
+    let r = BigInt3({r0},{r1},{r2});
+    let s = BigInt3({s0},{s1},{s2});
 
-    let type_offset_len = 2
-    let type_offset_rem = 1
+    let type_offset_len = 2;
+    let type_offset_rem = 1;
 
-    let challenge_offset_len = {challenge_offset_len}
-    let challenge_offset_rem = {challenge_offset_rem}
-    let challenge_len = 11
-    let challenge_rem = 1
-    let (challenge) = alloc()
+    let challenge_offset_len = {challenge_offset_len};
+    let challenge_offset_rem = {challenge_offset_rem};
+    let challenge_len = 11;
+    let challenge_rem = 1;
+    let (challenge) = alloc();
 {challenge}
 
-    let origin_offset_len = 28
-    let origin_offset_rem = 2
-    let origin_len = 13
-    let (origin) = alloc()
-    assert origin[0] = 1752462448
-    assert origin[1] = 1933193007
-    assert origin[2] = 1668247156
-    assert origin[3] = 1919904876
-    assert origin[4] = 1701981541
-    assert origin[5] = 825454708
-    assert origin[6] = 964130678
-    assert origin[7] = 779121253
-    assert origin[8] = 1986618743
-    assert origin[9] = 778264946
-    assert origin[10] = 1953655140
-    assert origin[11] = 1734684263
-    assert origin[12] = 103
+    let origin_offset_len = 28;
+    let origin_offset_rem = 2;
+    let origin_len = 13;
+    let (origin) = alloc();
+    assert origin[0] = 1752462448;
+    assert origin[1] = 1933193007;
+    assert origin[2] = 1668247156;
+    assert origin[3] = 1919904876;
+    assert origin[4] = 1701981541;
+    assert origin[5] = 825454708;
+    assert origin[6] = 964130678;
+    assert origin[7] = 779121253;
+    assert origin[8] = 1986618743;
+    assert origin[9] = 778264946;
+    assert origin[10] = 1953655140;
+    assert origin[11] = 1734684263;
+    assert origin[12] = 103;
 
-    let client_data_json_len = {client_data_json_len}
-    let client_data_json_rem = {client_data_json_rem}
-    let (client_data_json) = alloc()
+    let client_data_json_len = {client_data_json_len};
+    let client_data_json_rem = {client_data_json_rem};
+    let (client_data_json) = alloc();
 {client_data_json}
 
-    let authenticator_data_len = {authenticator_data_len}
-    let authenticator_data_rem = {authenticator_data_rem}
-    let (authenticator_data) = alloc()
+    let authenticator_data_len = {authenticator_data_len};
+    let authenticator_data_rem = {authenticator_data_rem};
+    let (authenticator_data) = alloc();
 {authenticator_data}
 
     Webauthn.verify(public_key_pt, r, s,
@@ -109,10 +108,10 @@ func test_{title}{{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBui
         origin_offset_len, origin_offset_rem, origin_len, origin,
         client_data_json_len, client_data_json_rem, client_data_json,
         authenticator_data_len, authenticator_data_rem, authenticator_data
-    )
+    );
 
-    return ()
-end
+    return ();
+}}
 """
 
 data = [{
@@ -194,20 +193,20 @@ for i, item in enumerate(data):
     challenge_rem = len(challenge) % 3
     challenge = ""
     for j, c in enumerate(challenge_parts):
-        challenge += "    assert challenge[{}] = {}\n".format(j, c)
+        challenge += "    assert challenge[{}] = {};\n".format(j, c)
 
     client_data_json_len = len(client_data_json_parts)
     client_data_json_rem = client_data_rem
     client_data_json = ""
     for j, c in enumerate(client_data_json_parts):
-        client_data_json += "    assert client_data_json[{}] = {}\n".format(
+        client_data_json += "    assert client_data_json[{}] = {};\n".format(
             j, c)
 
     authenticator_data_len = len(authenticator_data_parts)
     authenticator_data_rem = authenticator_data_rem
     authenticator_data = ""
     for j, c in enumerate(authenticator_data_parts):
-        authenticator_data += "    assert authenticator_data[{}] = {}\n".format(
+        authenticator_data += "    assert authenticator_data[{}] = {};\n".format(
             j, c)
 
     test += TEST_CASE.format(
@@ -257,7 +256,7 @@ cases = [{
 }]
 
 for i, case in enumerate(cases):
-    signer = P256Signer()
+    signer = WebauthnSigner()
 
     (contract_address, calls, nonce, max_fee) = case["transaction"]
 
@@ -269,7 +268,7 @@ for i, case in enumerate(cases):
 
     (call_array, calldata) = from_call_to_call_array(build_calls)
     message_hash = get_transaction_hash(
-        contract_address, call_array, calldata, nonce, max_fee
+        TransactionHashPrefix.INVOKE, contract_address, calldata, nonce, max_fee
     )
 
     (x0, x1, x2, y0, y1, y2) = signer.public_key
@@ -286,16 +285,16 @@ for i, case in enumerate(cases):
         challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
     challenge = ""
     for j, c in enumerate(challenge_parts):
-        challenge += "    assert challenge[{}] = {}\n".format(j, c)
+        challenge += "    assert challenge[{}] = {};\n".format(j, c)
 
     client_data_json = ""
     for j, c in enumerate(client_data_json_parts):
-        client_data_json += "    assert client_data_json[{}] = {}\n".format(
+        client_data_json += "    assert client_data_json[{}] = {};\n".format(
             j, c)
 
     authenticator_data = ""
     for j, c in enumerate(authenticator_data_parts):
-        authenticator_data += "    assert authenticator_data[{}] = {}\n".format(
+        authenticator_data += "    assert authenticator_data[{}] = {};\n".format(
             j, c)
 
     test += TEST_CASE.format(
@@ -350,7 +349,7 @@ for i, item in enumerate(invokes):
     client_data_json = ""
     client_data_bytes = b""
     for j, c in enumerate(client_data_json_parts):
-        client_data_json += "    assert client_data_json[{}] = {}\n".format(
+        client_data_json += "    assert client_data_json[{}] = {};\n".format(
             j, c)
         client_data_bytes += c.to_bytes(4, "big")
     client_data_bytes = client_data_bytes[:-1 * client_data_json_rem]
@@ -366,7 +365,7 @@ for i, item in enumerate(invokes):
                                                         1 * authenticator_data_rem]
     authenticator_data = ""
     for j, c in enumerate(authenticator_data_parts):
-        authenticator_data += "    assert authenticator_data[{}] = {}\n".format(
+        authenticator_data += "    assert authenticator_data[{}] = {};\n".format(
             j, c)
 
     challenge_bytes = int(item["transaction_hash"], 16).to_bytes(
@@ -377,7 +376,7 @@ for i, item in enumerate(invokes):
         challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
     challenge = ""
     for j, c in enumerate(challenge_parts):
-        challenge += "    assert challenge[{}] = {}\n".format(j, c)
+        challenge += "    assert challenge[{}] = {};\n".format(j, c)
 
     challenge_offset_len = 9
     challenge_offset_rem = 0
