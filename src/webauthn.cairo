@@ -10,7 +10,7 @@ from src.ec import EcPoint
 from src.bigint import BigInt3
 from src.ecdsa import verify_ecdsa
 from src.base64url import Base64URL
-from src.sha256 import sha256  // , finalize_sha256
+from src.sha256 import sha256, finalize_sha256
 
 namespace Webauthn {
     // @notice Verify a webauthn authentication credential according to: https://www.w3.org/TR/webauthn/#sctn-verifying-assertion
@@ -90,14 +90,10 @@ namespace Webauthn {
         // 16-17: Verify that the User Present bit of the flags in authData is set.
         _verify_auth_flags(authenticator_data);
 
-        // We're doing using the sphinx cairo sha256 implementation until the cario hints support more efficient sha256
-        let (client_data_hash: felt*) = sha256(
-            client_data_json, client_data_json_len * 4 - client_data_json_rem
-        );
-        // let (local sha256_ptr_start : felt*) = alloc()
-        // let sha256_ptr = sha256_ptr_start
-        // let (client_data_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(client_data_json, client_data_json_len * 4 - (4 - client_data_json_rem))
-        // finalize_sha256(sha256_ptr, sha256_ptr)
+        let (local sha256_ptr_start : felt*) = alloc();
+        let sha256_ptr = sha256_ptr_start;
+        let (client_data_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(client_data_json, client_data_json_len * 4 - client_data_json_rem);
+        finalize_sha256(sha256_ptr, sha256_ptr);
 
         let (msg_data_ptr) = alloc();
         let msg_data_start_ptr = msg_data_ptr;
@@ -106,14 +102,10 @@ namespace Webauthn {
             authenticator_data_len, authenticator_data_rem, authenticator_data, client_data_hash
         );
 
-        // We're doing using the sphinx cairo sha256 implementation until the cario hints support more efficient sha256
-        let (msg_hash: felt*) = sha256(
-            msg_data_start_ptr, authenticator_data_len * 4 - authenticator_data_rem + 32
-        );
-        // let (local sha256_ptr_start : felt*) = alloc()
-        // let sha256_ptr = sha256_ptr_start
-        // let (msg_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(msg_data_start_ptr, authenticator_data_len * 4 (4 - authenticator_data_rem) + 32)
-        // finalize_sha256(sha256_ptr, sha256_ptr)
+        let (local sha256_ptr_start : felt*) = alloc();
+        let sha256_ptr = sha256_ptr_start;
+        let (msg_hash: felt*) = sha256{sha256_ptr=sha256_ptr}(msg_data_start_ptr, authenticator_data_len * 4 - authenticator_data_rem + 32);
+        finalize_sha256(sha256_ptr, sha256_ptr);
 
         // Construct 86bit hash limbs
         let (h02) = bitwise_and(msg_hash[5], 4194303);
