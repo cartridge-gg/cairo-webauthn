@@ -1,0 +1,3 @@
+[crate_roots]
+webauthn = "src"
+alexandria_math = "lib/alexandria/alexandria/math/src"
