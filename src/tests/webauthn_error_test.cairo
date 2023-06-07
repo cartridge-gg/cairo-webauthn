@@ -1,0 +1,351 @@
+use webauthn::webauthn::get_msg_and_validate;
+use array::ArrayTrait;
+use webauthn::tests::{assert_equal_arrays, get_auth};
+
+#[test]
+#[should_panic]
+#[available_gas(20000000000)]
+fn webauthn_test_no_uv_flag() {
+    let msg = get_msg_and_validate(
+        9_usize,
+        36_usize,
+        64_usize,
+        get_sample_client_data(),
+        get_sample_challenge(),
+        get_sample_origin(),
+        get_auth_no_uv()
+    );
+}
+
+#[test]
+#[should_panic]
+#[available_gas(20000000000)]
+fn webauthn_test_no_up_flag() {
+    let msg = get_msg_and_validate(
+        9_usize,
+        36_usize,
+        64_usize,
+        get_sample_client_data(),
+        get_sample_challenge(),
+        get_sample_origin(),
+        get_auth_no_up()
+    );
+}
+
+#[test]
+#[should_panic]
+#[available_gas(20000000000)]
+fn webauthn_test_wrong_challenge_offset() {
+    let msg = get_msg_and_validate(
+        9_usize,
+        40_usize,
+        64_usize,
+        get_sample_client_data(),
+        get_sample_challenge(),
+        get_sample_origin(),
+        get_auth()
+    );
+    assert_equal_arrays(msg, get_sample_expected());
+}
+
+fn get_auth_no_uv() -> Array<u8> {
+    let mut res = ArrayTrait::<u8>::new();
+    res.append(0xe3);
+    res.append(0xb0);
+    res.append(0xc4);
+    res.append(0x42);
+    res.append(0x98);
+    res.append(0xfc);
+    res.append(0x1c);
+    res.append(0x14);
+    res.append(0x9a);
+    res.append(0xfb);
+    res.append(0xf4);
+    res.append(0xc8);
+    res.append(0x99);
+    res.append(0x6f);
+    res.append(0xb9);
+    res.append(0x24);
+    res.append(0x27);
+    res.append(0xae);
+    res.append(0x41);
+    res.append(0xe4);
+    res.append(0x64);
+    res.append(0x9b);
+    res.append(0x93);
+    res.append(0x4c);
+    res.append(0xa4);
+    res.append(0x95);
+    res.append(0x99);
+    res.append(0x1b);
+    res.append(0x78);
+    res.append(0x52);
+    res.append(0xb8);
+    res.append(0x55);
+    res.append(0x01);
+    res.append(0x00);
+    res.append(0x00);
+    res.append(0x00);
+    res.append(0x00);
+    res
+}
+
+fn get_auth_no_up() -> Array<u8> {
+    let mut res = ArrayTrait::<u8>::new();
+    res.append(0xe3);
+    res.append(0xb0);
+    res.append(0xc4);
+    res.append(0x42);
+    res.append(0x98);
+    res.append(0xfc);
+    res.append(0x1c);
+    res.append(0x14);
+    res.append(0x9a);
+    res.append(0xfb);
+    res.append(0xf4);
+    res.append(0xc8);
+    res.append(0x99);
+    res.append(0x6f);
+    res.append(0xb9);
+    res.append(0x24);
+    res.append(0x27);
+    res.append(0xae);
+    res.append(0x41);
+    res.append(0xe4);
+    res.append(0x64);
+    res.append(0x9b);
+    res.append(0x93);
+    res.append(0x4c);
+    res.append(0xa4);
+    res.append(0x95);
+    res.append(0x99);
+    res.append(0x1b);
+    res.append(0x78);
+    res.append(0x52);
+    res.append(0xb8);
+    res.append(0x55);
+    res.append(0x04);
+    res.append(0x00);
+    res.append(0x00);
+    res.append(0x00);
+    res.append(0x00);
+    res
+}
+
+
+fn get_sample_expected() -> Array<u8> {
+    let mut res = ArrayTrait::<u8>::new();
+    res.append(0xe3);
+    res.append(0xb0);
+    res.append(0xc4);
+    res.append(0x42);
+    res.append(0x98);
+    res.append(0xfc);
+    res.append(0x1c);
+    res.append(0x14);
+    res.append(0x9a);
+    res.append(0xfb);
+    res.append(0xf4);
+    res.append(0xc8);
+    res.append(0x99);
+    res.append(0x6f);
+    res.append(0xb9);
+    res.append(0x24);
+    res.append(0x27);
+    res.append(0xae);
+    res.append(0x41);
+    res.append(0xe4);
+    res.append(0x64);
+    res.append(0x9b);
+    res.append(0x93);
+    res.append(0x4c);
+    res.append(0xa4);
+    res.append(0x95);
+    res.append(0x99);
+    res.append(0x1b);
+    res.append(0x78);
+    res.append(0x52);
+    res.append(0xb8);
+    res.append(0x55);
+    res.append(0x05);
+    res.append(0x00);
+    res.append(0x00);
+    res.append(0x00);
+    res.append(0x00);
+    res.append(0xb8);
+    res.append(0x3a);
+    res.append(0x3c);
+    res.append(0xb8);
+    res.append(0x10);
+    res.append(0x16);
+    res.append(0xbd);
+    res.append(0xfd);
+    res.append(0x15);
+    res.append(0x2f);
+    res.append(0x23);
+    res.append(0xbc);
+    res.append(0x0a);
+    res.append(0x6a);
+    res.append(0xee);
+    res.append(0x7a);
+    res.append(0xe0);
+    res.append(0xe0);
+    res.append(0xdb);
+    res.append(0x49);
+    res.append(0x0e);
+    res.append(0xd7);
+    res.append(0xff);
+    res.append(0x46);
+    res.append(0x56);
+    res.append(0xd4);
+    res.append(0x42);
+    res.append(0x17);
+    res.append(0x2e);
+    res.append(0x1d);
+    res.append(0x95);
+    res.append(0x99);
+    res
+}
+
+fn get_sample_client_data() -> Array<u8> {
+    let mut res = ArrayTrait::<u8>::new();
+    res.append(0x7b);
+    res.append(0x22);
+    res.append(0x74);
+    res.append(0x79);
+    res.append(0x70);
+    res.append(0x65);
+    res.append(0x22);
+    res.append(0x3a);
+    res.append(0x22);
+    res.append(0x77);
+    res.append(0x65);
+    res.append(0x62);
+    res.append(0x61);
+    res.append(0x75);
+    res.append(0x74);
+    res.append(0x68);
+    res.append(0x6e);
+    res.append(0x2e);
+    res.append(0x67);
+    res.append(0x65);
+    res.append(0x74);
+    res.append(0x22);
+    res.append(0x2c);
+    res.append(0x22);
+    res.append(0x63);
+    res.append(0x68);
+    res.append(0x61);
+    res.append(0x6c);
+    res.append(0x6c);
+    res.append(0x65);
+    res.append(0x6e);
+    res.append(0x67);
+    res.append(0x65);
+    res.append(0x22);
+    res.append(0x3a);
+    res.append(0x22);
+    res.append(0x73);
+    res.append(0x61);
+    res.append(0x6d);
+    res.append(0x70);
+    res.append(0x6c);
+    res.append(0x65);
+    res.append(0x5f);
+    res.append(0x63);
+    res.append(0x68);
+    res.append(0x61);
+    res.append(0x6c);
+    res.append(0x6c);
+    res.append(0x65);
+    res.append(0x6e);
+    res.append(0x67);
+    res.append(0x65);
+    res.append(0x22);
+    res.append(0x2c);
+    res.append(0x22);
+    res.append(0x6f);
+    res.append(0x72);
+    res.append(0x69);
+    res.append(0x67);
+    res.append(0x69);
+    res.append(0x6e);
+    res.append(0x22);
+    res.append(0x3a);
+    res.append(0x22);
+    res.append(0x73);
+    res.append(0x61);
+    res.append(0x6d);
+    res.append(0x70);
+    res.append(0x6c);
+    res.append(0x65);
+    res.append(0x5f);
+    res.append(0x6f);
+    res.append(0x72);
+    res.append(0x69);
+    res.append(0x67);
+    res.append(0x69);
+    res.append(0x6e);
+    res.append(0x22);
+    res.append(0x2c);
+    res.append(0x22);
+    res.append(0x63);
+    res.append(0x72);
+    res.append(0x6f);
+    res.append(0x73);
+    res.append(0x73);
+    res.append(0x4f);
+    res.append(0x72);
+    res.append(0x69);
+    res.append(0x67);
+    res.append(0x69);
+    res.append(0x6e);
+    res.append(0x22);
+    res.append(0x3a);
+    res.append(0x66);
+    res.append(0x61);
+    res.append(0x6c);
+    res.append(0x73);
+    res.append(0x65);
+    res.append(0x7d);
+    res
+}
+
+fn get_sample_challenge() -> Array<u8> {
+    let mut res = ArrayTrait::<u8>::new();
+    res.append(0x73);
+    res.append(0x61);
+    res.append(0x6d);
+    res.append(0x70);
+    res.append(0x6c);
+    res.append(0x65);
+    res.append(0x5f);
+    res.append(0x63);
+    res.append(0x68);
+    res.append(0x61);
+    res.append(0x6c);
+    res.append(0x6c);
+    res.append(0x65);
+    res.append(0x6e);
+    res.append(0x67);
+    res.append(0x65);
+    res
+}
+
+fn get_sample_origin() -> Array<u8> {
+    let mut res = ArrayTrait::<u8>::new();
+    res.append(0x73);
+    res.append(0x61);
+    res.append(0x6d);
+    res.append(0x70);
+    res.append(0x6c);
+    res.append(0x65);
+    res.append(0x5f);
+    res.append(0x6f);
+    res.append(0x72);
+    res.append(0x69);
+    res.append(0x67);
+    res.append(0x69);
+    res.append(0x6e);
+    res
+}

@@ -2,8 +2,7 @@
 name = "webauthn"
 version = "0.1.0"
 
-# See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest
-
 [dependencies]
-alexandria_encoding = { path = "lib/alexandria/alexandria/encoding" }
-alexandria_math = { path = "lib/alexandria/alexandria/math" }
+alexandria_math = { git = "https://github.com/keep-starknet-strange/alexandria" }
+
+# See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest

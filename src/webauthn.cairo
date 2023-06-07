@@ -1,43 +1,46 @@
 use alexandria_math::sha256::sha256;
 use array::ArrayTrait;
 use integer::upcast;
-// use clone::Clone;
-// use array::ArrayTCloneImpl;
+use debug::PrintTrait;
 
 fn verify(
-    pub: EcPoint,
-    r: u256,
-    s: u256,
-    type_offset: usize,
-    type_len: usize,
-    challenge_offset: usize,
-    challenge_len: usize,
-    origin_offset: usize,
-    origin_len: usize,
-    client_data_json: Array<u8>,
-    origin: Array<u8>,
-    challenge: Array<u8>,
-    authenticator_data: Array<u8>
+    pub: EcPoint, // public key as point on elliptic curve
+    r: u256, // 'r' part from ecdsa
+    s: u256, // 's' part from ecdsa
+    type_offset: usize, // offset to 'type' field in json
+    challenge_offset: usize, // offset to 'challenge' field in json
+    origin_offset: usize, // offset to 'origin' field in json
+    client_data_json: Array<u8>, // json with client_data as 1-byte array 
+    challenge: Array<u8>, // origin as 1-byte array
+    origin: Array<u8>, // challenge as 1-byte array
+    authenticator_data: Array<u8> // authenticator data as 1-byte array
 ) {
-    let msg = get_msg_and_validate(type_offset, type_len, challenge_offset, challenge_len, 
-        origin_offset, origin_len, client_data_json, origin, challenge ,authenticator_data);
-    // TODO: translation of this part 
-    // currently without it as it may be different in new version
-    
-    // After https://github.com/cartridge-gg/cairo-webauthn/blob/main/src/webauthn.cairo
-    // let msg_hash = sha256(msg);
-    // let (h02) = bitwise_and(msg_hash[5], 4194303);
-    // let h0 = msg_hash[7] + 2 ** 32 * msg_hash[6] + 2 ** 64 * h02;
+    let msg = get_msg_and_validate(
+        type_offset,
+        challenge_offset,
+        origin_offset,
+        client_data_json,
+        origin,
+        challenge,
+        authenticator_data
+    );
+// TODO: translation of this part 
+// currently without it as it may be different in new version
 
-    // let (h10, r10) = unsigned_div_rem(msg_hash[5], 4194304);
-    // let (h13) = bitwise_and(msg_hash[2], 4095);
-    // let h1 = h10 + msg_hash[4] * 2 ** 10 + msg_hash[3] * 2 ** 42 + h13 * 2 ** 74;
+// After https://github.com/cartridge-gg/cairo-webauthn/blob/main/src/webauthn.cairo
+// let msg_hash = sha256(msg);
+// let (h02) = bitwise_and(msg_hash[5], 4194303);
+// let h0 = msg_hash[7] + 2 ** 32 * msg_hash[6] + 2 ** 64 * h02;
 
-    // let (h20, r20) = unsigned_div_rem(msg_hash[2], 4096);
-    // let h2 = h20 + msg_hash[1] * 2 ** 20 + msg_hash[0] * 2 ** 52;
+// let (h10, r10) = unsigned_div_rem(msg_hash[5], 4194304);
+// let (h13) = bitwise_and(msg_hash[2], 4095);
+// let h1 = h10 + msg_hash[4] * 2 ** 10 + msg_hash[3] * 2 ** 42 + h13 * 2 ** 74;
 
-    // let hash_bigint3 = BigInt3(h0, h1, h2);
-    // verify_ecdsa(pub, hash_bigint3, r=r, s=s);
+// let (h20, r20) = unsigned_div_rem(msg_hash[2], 4096);
+// let h2 = h20 + msg_hash[1] * 2 ** 20 + msg_hash[0] * 2 ** 52;
+
+// let hash_bigint3 = BigInt3(h0, h1, h2);
+// verify_ecdsa(pub, hash_bigint3, r=r, s=s);
 }
 
 
@@ -45,27 +48,19 @@ fn verify(
 // Generates binary concatenation of authenticator_data and hash of client_data for signature validation
 // Implementation and comments based on https://github.com/cartridge-gg/cairo-webauthn/blob/main/src/webauthn.cairo
 fn get_msg_and_validate(
-    type_offset: usize,
-    type_len: usize,
-    challenge_offset: usize,
-    challenge_len: usize,
-    origin_offset: usize,
-    origin_len: usize,
-    client_data_json: Array<u8>,
-    origin: Array<u8>,
-    challenge: Array<u8>,
-    authenticator_data: Array<u8>
+    type_offset: usize, // offset to 'type' field in json
+    challenge_offset: usize, // offset to 'challenge' field in json
+    origin_offset: usize, // offset to 'origin' field in json
+    client_data_json: Array<u8>, // json with client_data as 1-byte array 
+    challenge: Array<u8>, // challenge as 1-byte array
+    origin: Array<u8>, // origin as 1-byte array
+    authenticator_data: Array<u8> // authenticator data as 1-byte array
 ) -> Array<u8> {
     // 11. Verify that the value of C.type is the string webauthn.get
     // Skipping for now
 
     // 12. Verify that the value of C.challenge equals the base64url encoding of options.challenge.
-    verify_challenge(
-        @client_data_json,
-        challenge_offset,
-        challenge_len,
-        challenge
-    );
+    verify_challenge(@client_data_json, challenge_offset, challenge);
 
     // 13. Verify that the value of C.origin matches the Relying Party's origin.
     // Skipping for now.
@@ -76,10 +71,8 @@ fn get_msg_and_validate(
     // Authenticator Data layout looks like: [ RP ID hash - 32 bytes ] [ Flags - 1 byte ] [ Counter - 4 byte ] [ ... ]
     // See: https://w3c.github.io/webauthn/#sctn-authenticator-data
 
-
     // 16. Verify that the User Present (0) and User Verified (2) bits of the flags in authData is set.
     verify_auth_flags(@authenticator_data);
-
 
     // 17. Skipping extensions
 
@@ -92,19 +85,16 @@ fn get_msg_and_validate(
     msg
 }
 
-
-fn verify_challenge(
-client_data_json: @Array<u8>,
-challenge_offset: usize,
-challenge_len: usize,
-challenge: Array<u8>
-) {
+fn verify_challenge(client_data_json: @Array<u8>, challenge_offset: usize, challenge: Array<u8>) {
     let mut i: usize = 0;
+    let challenge_len: usize = challenge.len();
     loop {
         if i == challenge_len {
             break ();
         }
-        assert(*client_data_json.at(challenge_offset + i) == *challenge.at(i), 'invalid verification');
+        assert(
+            *client_data_json.at(challenge_offset + i) == *challenge.at(i), 'invalid verification'
+        );
         i += 1_usize;
     }
 }
@@ -115,9 +105,9 @@ fn verify_auth_flags(authenticator_data: @Array<u8>) {
     assert((flags & mask) == mask, 'invalid flags');
 }
 
-fn extend(ref arr : Array<u8>, src : @Array<u8>) {
-    let mut i : usize = 0;
-    let end : usize = src.len();
+fn extend(ref arr: Array<u8>, src: @Array<u8>) {
+    let mut i: usize = 0;
+    let end: usize = src.len();
     loop {
         if i == end {
             break ();

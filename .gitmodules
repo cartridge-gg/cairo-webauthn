@@ -1,3 +1,0 @@
-[submodule "lib/alexandria"]
-	path = lib/alexandria
-	url = https://github.com/keep-starknet-strange/alexandria
