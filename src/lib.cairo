@@ -1,4 +1,3 @@
-mod fib;
 mod mock;
 mod webauthn;
 
