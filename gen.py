@@ -67,7 +67,6 @@ fn test_{title}() {{
     let type_offset = 9_usize;
 
     let challenge_offset = {challenge_offset};
-    let challenge_len = 32;
     let mut challenge = ArrayTrait::<u8>::new();
 {challenge}
 
@@ -152,7 +151,7 @@ data = [{
     'signature': "3046022100a6fc623a319a674ed15f72b544b9ddb277ccfa90e1b49269fdb3e4c6c41771ef022100b728edcbd35b9995e0e82b15456960d89b99884dd9aabf36295fd99ad23a9f3c"
 }]
 
-output = open("tests/test_webauthn_gen.cairo", "w")
+output = open("src/tests/webauthn_gen_test.cairo", "w")
 
 test = HEAD
 
@@ -163,6 +162,7 @@ for i, item in enumerate(data):
     authenticator_data_bytes = bytes.fromhex(item["authenticator_data"])
     client_data_bytes = bytes.fromhex(item["client_data"])
     challenge_bytes = base64url_to_bytes(item["challenge"])
+    print(challenge_bytes.hex(), challenge_bytes)
 
     x0, x1, x2 = split(int.from_bytes(pubkey.x, "big"))
     y0, y1, y2 = split(int.from_bytes(pubkey.y, "big"))
@@ -366,63 +366,69 @@ for i, item in enumerate(invokes):
     client_data_json_parts = []
     for j in range(11, 11 + client_data_json_len):
         client_data_json_parts.append(int(sig[j]))
-    client_data_json = ""
+
     client_data_bytes = b""
-    for j, c in enumerate(client_data_json_parts):
-        client_data_json += "    assert client_data_json[{}] = {};\n".format(
-            j, c)
+    for c in client_data_json_parts:
         client_data_bytes += c.to_bytes(4, "big")
-    client_data_bytes = client_data_bytes[:-1 * client_data_json_rem]
+
+    if client_data_json_rem != 0:
+        client_data_bytes = client_data_bytes[:-1 * client_data_json_rem]
+    
+    client_data_json = ""
+    for c in client_data_bytes:
+        client_data_json += "    client_data_json.append({});\n".format(c)
+
 
     authenticator_data_len = int(sig[11 + client_data_json_len])
     authenticator_data_rem = int(sig[12 + client_data_json_len])
-    authenticator_data_parts = []
+
     authenticator_data_bytes = b""
     for j in range(13 + client_data_json_len, 13 + client_data_json_len + authenticator_data_len):
-        authenticator_data_parts.append(int(sig[j]))
-        authenticator_data_bytes += c.to_bytes(4, "big")
-    authenticator_data_bytes = authenticator_data_bytes[:-
-                                                        1 * authenticator_data_rem]
+        authenticator_data_bytes += sig[j].to_bytes(4, "big")
+
+    if authenticator_data_rem != 0:
+        authenticator_data_bytes = authenticator_data_bytes[:-1 * authenticator_data_rem]
+    # print(authenticator_data_bytes.hex(), len(authenticator_data_bytes))
+    
     authenticator_data = ""
-    for j, c in enumerate(authenticator_data_parts):
-        authenticator_data += "    assert authenticator_data[{}] = {};\n".format(
-            j, c)
+    for c in authenticator_data_bytes:
+        authenticator_data += "    authenticator_data.append({});\n".format(c)
 
     challenge_bytes = int(item["transaction_hash"], 16).to_bytes(
         32, byteorder="big")
     challenge = bytes_to_base64url(challenge_bytes)
 
-    challenge_parts = [int.from_bytes(
-        challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
+    # challenge_parts = [int.from_bytes(
+    #     challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
     challenge = ""
-    for j, c in enumerate(challenge_parts):
-        challenge += "    assert challenge[{}] = {};\n".format(j, c)
+    for c in challenge_bytes:
+        challenge += "    challenge.append({});\n".format(c)
 
     challenge_offset_bytes = 36
 
     x0, x1, x2 = split(int.from_bytes(decoded_public_key.x, "big"))
     y0, y1, y2 = split(int.from_bytes(decoded_public_key.y, "big"))
 
-    # test += TEST_CASE.format(
-    #     title="invoke_{}".format(i),
-    #     # expect_revert=expect_revert,
-    #     x0=x0,
-    #     x1=x1,
-    #     x2=x2,
-    #     y0=y0,
-    #     y1=y1,
-    #     y2=y2,
-    #     r0=r0,
-    #     r1=r1,
-    #     r2=r2,
-    #     s0=s0,
-    #     s1=s1,
-    #     s2=s2,
-    #     challenge_offset=challenge_offset_bytes,
-    #     challenge=challenge,
-    #     client_data_json=client_data_json,
-    #     authenticator_data=authenticator_data
-    # )
+    test += TEST_CASE.format(
+        title="invoke_{}".format(i),
+        # expect_revert=expect_revert,
+        x0=x0,
+        x1=x1,
+        x2=x2,
+        y0=y0,
+        y1=y1,
+        y2=y2,
+        r0=r0,
+        r1=r1,
+        r2=r2,
+        s0=s0,
+        s1=s1,
+        s2=s2,
+        challenge_offset=challenge_offset_bytes,
+        challenge=challenge,
+        client_data_json=client_data_json,
+        authenticator_data=authenticator_data
+    )
 
 
 output.write(test)

@@ -20,7 +20,6 @@ fn test_0() {
     let type_offset = 9_usize;
 
     let challenge_offset = 36;
-    let challenge_len = 32;
     let mut challenge = ArrayTrait::<u8>::new();
     challenge.append(0);
     challenge.append(177);
@@ -372,11 +371,11 @@ fn test_0() {
 #[available_gas(20000000000)]
 fn test_signer_0() {
     //let public_key_pt = EcPoint(
-    //    BigInt3(30879528571162292515091066,32742621916044776596247701,15820140445436835533909761),
-    //    BigInt3(43006713087310997495985254,59880206448136113541222960,18678432965522890352161536),
+    //    BigInt3(50320808002923069934540860,29659439622320331347848978,17644238560105090338103230),
+    //    BigInt3(40140827987005996427549844,32811899671089872982866905,11892262351579399297836188),
     //);
-    //let r = BigInt3(3434182170643970232990470,55236265664740637613085785,6281490439164400768570384);
-    //let s = BigInt3(36239287329124583395812243,72224521895622264177415489,5734497064695921677788155);
+    //let r = BigInt3(7478335912069748360464095,39292053890001018675136935,16628414991429512078278629);
+    //let s = BigInt3(25531251130641439411391856,29191446154598781835866287,135106954415623211502200);
     let public_key_pt = EcPoint{};
     let r : u256 = 0;
     let s : u256 = 0;
@@ -384,7 +383,6 @@ fn test_signer_0() {
     let type_offset = 9_usize;
 
     let challenge_offset = 36;
-    let challenge_len = 32;
     let mut challenge = ArrayTrait::<u8>::new();
     challenge.append(6);
     challenge.append(58);
@@ -681,11 +679,11 @@ fn test_signer_0() {
 #[available_gas(20000000000)]
 fn test_signer_1() {
     //let public_key_pt = EcPoint(
-    //    BigInt3(66952796998608655276800795,33801650909108459279747297,18997340001879529996941983),
-    //    BigInt3(3660977152340584578720636,6993889026258201282593343,11788892359607737235553384),
+    //    BigInt3(5104243259913874716858778,42416632783810824089307815,6912820919060764331029508),
+    //    BigInt3(15450218404992360180362651,53084352605611353939513836,5932354288177748410294762),
     //);
-    //let r = BigInt3(65456880661978397803470944,54193417756347342998403238,6542719489107655300613271);
-    //let s = BigInt3(40648274522560240978352343,11823955086417701395348860,7523896012228709323897629);
+    //let r = BigInt3(11771810990787043504068909,34520736123055134955669775,4485082858757248436281101);
+    //let s = BigInt3(51217825694524434895813069,61153771071546727828729994,4102990090447565707482224);
     let public_key_pt = EcPoint{};
     let r : u256 = 0;
     let s : u256 = 0;
@@ -693,7 +691,6 @@ fn test_signer_1() {
     let type_offset = 9_usize;
 
     let challenge_offset = 36;
-    let challenge_len = 32;
     let mut challenge = ArrayTrait::<u8>::new();
     challenge.append(6);
     challenge.append(58);
@@ -960,11 +957,11 @@ fn test_signer_1() {
 #[available_gas(20000000000)]
 fn test_signer_2() {
     //let public_key_pt = EcPoint(
-    //    BigInt3(13441382180247874445627722,10338930648658258460534906,11989096389990148966841257),
-    //    BigInt3(42650503397784454949677430,13031585827437561813369729,8124169348775722116045621),
+    //    BigInt3(61856165040679633567670117,34293114855984362756131298,610754963264076567798777),
+    //    BigInt3(28856502319421845433908468,8541852502845001963563039,17032671588525046410922596),
     //);
-    //let r = BigInt3(34672781430854843373432134,60083816316393907365934147,9507206856083783802761641);
-    //let s = BigInt3(46591869547438152561408891,62760262358081926892232169,8128954986502325864715103);
+    //let r = BigInt3(4550943382076441343614509,51286446341942350464957042,15478477863732805295042309);
+    //let s = BigInt3(66256346061766364636335215,46390091931074893505268085,10794377463819409245432550);
     let public_key_pt = EcPoint{};
     let r : u256 = 0;
     let s : u256 = 0;
@@ -972,7 +969,6 @@ fn test_signer_2() {
     let type_offset = 9_usize;
 
     let challenge_offset = 36;
-    let challenge_len = 32;
     let mut challenge = ArrayTrait::<u8>::new();
     challenge.append(6);
     challenge.append(58);
@@ -1240,11 +1236,11 @@ fn test_signer_2() {
 #[available_gas(20000000000)]
 fn test_signer_3() {
     //let public_key_pt = EcPoint(
-    //    BigInt3(69481909641788340163448659,41988060130013134249720285,14715829631866222195496602),
-    //    BigInt3(25757959781774125580576167,5061202952573242548987664,7181836802560694016345649),
+    //    BigInt3(2132973846031768695845590,50116335022708820169942351,318133034561468173140968),
+    //    BigInt3(24801541549228857039769103,42850149772466722905765333,17359718037424479966383959),
     //);
-    //let r = BigInt3(3516478339794194267272308,10431643622570923805388360,7600550144831867377780004);
-    //let s = BigInt3(4640778635954493698895069,12442445195428350696129244,619445342999152385904873);
+    //let r = BigInt3(18721151589422991784325871,55269428872651560434846428,17835250315379827657350391);
+    //let s = BigInt3(4279132007626048680756633,2505107254931636908421562,14530598355358408862409495);
     let public_key_pt = EcPoint{};
     let r : u256 = 0;
     let s : u256 = 0;
@@ -1252,7 +1248,6 @@ fn test_signer_3() {
     let type_offset = 9_usize;
 
     let challenge_offset = 36;
-    let challenge_len = 32;
     let mut challenge = ArrayTrait::<u8>::new();
     challenge.append(6);
     challenge.append(58);
@@ -1521,11 +1516,11 @@ fn test_signer_3() {
 #[available_gas(20000000000)]
 fn test_signer_4() {
     //let public_key_pt = EcPoint(
-    //    BigInt3(55835471821173826844878531,28328497791325933027740660,18531026613740411286453393),
-    //    BigInt3(71363684815389892249437744,45997882094364518771471533,14878889177550485691330835),
+    //    BigInt3(13125599707739848809820321,28673555566462732755800859,17171212549309760316827958),
+    //    BigInt3(64787526451717702798852047,34275755017599200538244162,13813452560672864099130108),
     //);
-    //let r = BigInt3(3063314028065509969131101,29390360945271143736274060,16924531329145494725815049);
-    //let s = BigInt3(62115257164355298408353827,62160193245403235284057674,15694353896060427808476778);
+    //let r = BigInt3(48823297652128689821965721,44835966378957376010969909,6576542835328765776725927);
+    //let s = BigInt3(6531180937680073753540556,33167702778476567400261524,5352270573425995353397084);
     let public_key_pt = EcPoint{};
     let r : u256 = 0;
     let s : u256 = 0;
@@ -1533,7 +1528,6 @@ fn test_signer_4() {
     let type_offset = 9_usize;
 
     let challenge_offset = 36;
-    let challenge_len = 32;
     let mut challenge = ArrayTrait::<u8>::new();
     challenge.append(6);
     challenge.append(58);
@@ -1803,11 +1797,11 @@ fn test_signer_4() {
 #[available_gas(20000000000)]
 fn test_signer_5() {
     //let public_key_pt = EcPoint(
-    //    BigInt3(15026178950720557423341836,39320317544600754633019392,3213580879392128420108161),
-    //    BigInt3(13611652868108206576990241,7511166632076431754568297,10848948715585603467902612),
+    //    BigInt3(67685712642485813952587070,76109541544211841284660900,19123476364919354429091718),
+    //    BigInt3(11137681959351471170861807,52543034502306135399861302,14639243615286655598596263),
     //);
-    //let r = BigInt3(70048119822178836038756729,34440088047272498430456297,962386154595020737142487);
-    //let s = BigInt3(31629281227787666557332064,67326321884491914627088656,4091355342928881553750954);
+    //let r = BigInt3(39026130052389274493416449,51931821466734087810128060,1340813939601337597736590);
+    //let s = BigInt3(50489211176222726125167576,32451565498269729305600302,12382780967782833712378997);
     let public_key_pt = EcPoint{};
     let r : u256 = 0;
     let s : u256 = 0;
@@ -1815,7 +1809,6 @@ fn test_signer_5() {
     let type_offset = 9_usize;
 
     let challenge_offset = 36;
-    let challenge_len = 32;
     let mut challenge = ArrayTrait::<u8>::new();
     challenge.append(6);
     challenge.append(58);
@@ -2063,6 +2056,309 @@ fn test_signer_5() {
     authenticator_data.append(254);
     authenticator_data.append(211);
     authenticator_data.append(5);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+
+
+    verify(public_key_pt, r, s,
+        type_offset,
+        challenge_offset,
+        origin_offset,
+        client_data_json,
+        challenge,
+        origin,
+        authenticator_data
+    );
+
+    return ();
+}
+
+#[test]
+#[available_gas(20000000000)]
+fn test_invoke_0() {
+    //let public_key_pt = EcPoint(
+    //    BigInt3(18429879044278490260098551,56029233481007147284932680,2037976146929856349747775),
+    //    BigInt3(70840069926882074167622098,21864696605377867683594565,6822006481759038492420837),
+    //);
+    //let r = BigInt3(2223599465377360746283669,25752496995673689528630163,705762337381700509015780);
+    //let s = BigInt3(58393142204606773616845190,12894059864184526358390250,19065811591212739232406187);
+    let public_key_pt = EcPoint{};
+    let r : u256 = 0;
+    let s : u256 = 0;
+
+    let type_offset = 9_usize;
+
+    let challenge_offset = 36;
+    let mut challenge = ArrayTrait::<u8>::new();
+    challenge.append(3);
+    challenge.append(25);
+    challenge.append(108);
+    challenge.append(60);
+    challenge.append(160);
+    challenge.append(117);
+    challenge.append(115);
+    challenge.append(155);
+    challenge.append(120);
+    challenge.append(71);
+    challenge.append(153);
+    challenge.append(82);
+    challenge.append(171);
+    challenge.append(151);
+    challenge.append(13);
+    challenge.append(61);
+    challenge.append(102);
+    challenge.append(34);
+    challenge.append(120);
+    challenge.append(7);
+    challenge.append(145);
+    challenge.append(84);
+    challenge.append(57);
+    challenge.append(247);
+    challenge.append(167);
+    challenge.append(0);
+    challenge.append(85);
+    challenge.append(96);
+    challenge.append(13);
+    challenge.append(69);
+    challenge.append(184);
+    challenge.append(241);
+
+
+    let origin_offset = 91;
+    let mut origin = ArrayTrait::<u8>::new();
+    origin.append(0x68);
+    origin.append(0x74);
+    origin.append(0x74);
+    origin.append(0x70);
+    origin.append(0x73);
+    origin.append(0x3A);
+    origin.append(0x2F);
+    origin.append(0x2F);
+    origin.append(0x63);
+    origin.append(0x6F);
+    origin.append(0x6E);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x6F);
+    origin.append(0x6C);
+    origin.append(0x6C);
+    origin.append(0x65);
+    origin.append(0x72);
+    origin.append(0x2D);
+    origin.append(0x65);
+    origin.append(0x31);
+    origin.append(0x33);
+    origin.append(0x70);
+    origin.append(0x74);
+    origin.append(0x39);
+    origin.append(0x77);
+    origin.append(0x77);
+    origin.append(0x76);
+    origin.append(0x2E);
+    origin.append(0x70);
+    origin.append(0x72);
+    origin.append(0x65);
+    origin.append(0x76);
+    origin.append(0x69);
+    origin.append(0x65);
+    origin.append(0x77);
+    origin.append(0x2E);
+    origin.append(0x63);
+    origin.append(0x61);
+    origin.append(0x72);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x69);
+    origin.append(0x64);
+    origin.append(0x67);
+    origin.append(0x65);
+    origin.append(0x2E);
+    origin.append(0x67);
+    origin.append(0x67);
+
+    let mut client_data_json = ArrayTrait::<u8>::new();
+    client_data_json.append(123);
+    client_data_json.append(34);
+    client_data_json.append(116);
+    client_data_json.append(121);
+    client_data_json.append(112);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(119);
+    client_data_json.append(101);
+    client_data_json.append(98);
+    client_data_json.append(97);
+    client_data_json.append(117);
+    client_data_json.append(116);
+    client_data_json.append(104);
+    client_data_json.append(110);
+    client_data_json.append(46);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(116);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(108);
+    client_data_json.append(101);
+    client_data_json.append(110);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(65);
+    client_data_json.append(120);
+    client_data_json.append(108);
+    client_data_json.append(115);
+    client_data_json.append(80);
+    client_data_json.append(75);
+    client_data_json.append(66);
+    client_data_json.append(49);
+    client_data_json.append(99);
+    client_data_json.append(53);
+    client_data_json.append(116);
+    client_data_json.append(52);
+    client_data_json.append(82);
+    client_data_json.append(53);
+    client_data_json.append(108);
+    client_data_json.append(83);
+    client_data_json.append(113);
+    client_data_json.append(53);
+    client_data_json.append(99);
+    client_data_json.append(78);
+    client_data_json.append(80);
+    client_data_json.append(87);
+    client_data_json.append(89);
+    client_data_json.append(105);
+    client_data_json.append(101);
+    client_data_json.append(65);
+    client_data_json.append(101);
+    client_data_json.append(82);
+    client_data_json.append(86);
+    client_data_json.append(68);
+    client_data_json.append(110);
+    client_data_json.append(51);
+    client_data_json.append(112);
+    client_data_json.append(119);
+    client_data_json.append(66);
+    client_data_json.append(86);
+    client_data_json.append(89);
+    client_data_json.append(65);
+    client_data_json.append(49);
+    client_data_json.append(70);
+    client_data_json.append(117);
+    client_data_json.append(80);
+    client_data_json.append(69);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(111);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(104);
+    client_data_json.append(116);
+    client_data_json.append(116);
+    client_data_json.append(112);
+    client_data_json.append(115);
+    client_data_json.append(58);
+    client_data_json.append(47);
+    client_data_json.append(47);
+    client_data_json.append(99);
+    client_data_json.append(111);
+    client_data_json.append(110);
+    client_data_json.append(116);
+    client_data_json.append(114);
+    client_data_json.append(111);
+    client_data_json.append(108);
+    client_data_json.append(108);
+    client_data_json.append(101);
+    client_data_json.append(114);
+    client_data_json.append(46);
+    client_data_json.append(99);
+    client_data_json.append(97);
+    client_data_json.append(114);
+    client_data_json.append(116);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(100);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(46);
+    client_data_json.append(103);
+    client_data_json.append(103);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(114);
+    client_data_json.append(111);
+    client_data_json.append(115);
+    client_data_json.append(115);
+    client_data_json.append(79);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(102);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(115);
+    client_data_json.append(101);
+    client_data_json.append(125);
+
+
+    let mut authenticator_data = ArrayTrait::<u8>::new();
+    authenticator_data.append(32);
+    authenticator_data.append(169);
+    authenticator_data.append(126);
+    authenticator_data.append(195);
+    authenticator_data.append(248);
+    authenticator_data.append(239);
+    authenticator_data.append(188);
+    authenticator_data.append(42);
+    authenticator_data.append(202);
+    authenticator_data.append(12);
+    authenticator_data.append(247);
+    authenticator_data.append(202);
+    authenticator_data.append(187);
+    authenticator_data.append(66);
+    authenticator_data.append(11);
+    authenticator_data.append(74);
+    authenticator_data.append(9);
+    authenticator_data.append(208);
+    authenticator_data.append(174);
+    authenticator_data.append(201);
+    authenticator_data.append(144);
+    authenticator_data.append(84);
+    authenticator_data.append(102);
+    authenticator_data.append(201);
+    authenticator_data.append(173);
+    authenticator_data.append(247);
+    authenticator_data.append(149);
+    authenticator_data.append(132);
+    authenticator_data.append(250);
+    authenticator_data.append(117);
+    authenticator_data.append(254);
+    authenticator_data.append(211);
+    authenticator_data.append(29);
     authenticator_data.append(0);
     authenticator_data.append(0);
     authenticator_data.append(0);

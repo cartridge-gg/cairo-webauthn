@@ -1,0 +1,4 @@
+cairo-lang==0.11.2
+cairo-nile==0.14.0
+pyasn1==0.5.0
+webauthn==1.8.1

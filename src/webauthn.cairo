@@ -1,4 +1,6 @@
 use alexandria_math::sha256::sha256;
+use alexandria_encoding::base64::Base64UrlEncoder;
+use alexandria_math::karatsuba;
 use array::ArrayTrait;
 use integer::upcast;
 use debug::PrintTrait;
@@ -21,8 +23,8 @@ fn verify(
         challenge_offset,
         origin_offset,
         client_data_json,
-        origin,
         challenge,
+        origin,
         authenticator_data
     );
 // TODO: translation of this part 
@@ -87,10 +89,13 @@ fn get_msg_and_validate(
 }
 
 fn verify_challenge(client_data_json: @Array<u8>, challenge_offset: usize, challenge: Array<u8>) {
+    let challenge : Array<u8> = Base64UrlEncoder::encode(challenge);
     let mut i: usize = 0;
     let challenge_len: usize = challenge.len();
     loop {
-        if i == challenge_len {
+        // Base64UrlEncoder at the moment pads with '=' => remove -1 later {assumes len == 43} or 
+        // additionally break on '=' sign
+        if i == challenge_len - 1 {
             break ();
         }
         assert(

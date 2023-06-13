@@ -4,7 +4,6 @@ from starkware.starknet.core.os.transaction_hash.transaction_hash import (
 )
 from starkware.starknet.definitions.general_config import StarknetChainId
 from starkware.starknet.public.abi import get_selector_from_name
-from nile.signer import from_call_to_call_array
 from ecdsa import SigningKey, NIST256p
 from base64 import urlsafe_b64encode
 import hashlib
