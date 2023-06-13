@@ -2,6 +2,7 @@ use alexandria_math::sha256::sha256;
 use array::ArrayTrait;
 use integer::upcast;
 use debug::PrintTrait;
+use webauthn::mock::EcPoint;
 
 fn verify(
     pub: EcPoint, // public key as point on elliptic curve
@@ -93,7 +94,7 @@ fn verify_challenge(client_data_json: @Array<u8>, challenge_offset: usize, chall
             break ();
         }
         assert(
-            *client_data_json.at(challenge_offset + i) == *challenge.at(i), 'invalid verification'
+            *client_data_json.at(challenge_offset + i) == *challenge.at(i), 'invalid challenge'
         );
         i += 1_usize;
     }

@@ -1,6 +1,7 @@
 mod webauthn_sample_test;
 mod webauthn_big_test;
 mod webauthn_error_test;
+mod webauthn_gen_test;
 
 use array::ArrayTrait;
 
