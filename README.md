@@ -16,6 +16,13 @@ Webauthn.verify(public_key, r, s,
 
 ## Development
 
+Use pyenv to have specific version of python easily.
+We use python3.9
+
 ```sh
-pip install webauthn pyasn1
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python gen.py
+scarb test
 ```

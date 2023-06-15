@@ -4,7 +4,6 @@ from starkware.starknet.core.os.transaction_hash.transaction_hash import (
 )
 from starkware.starknet.definitions.general_config import StarknetChainId
 from starkware.starknet.public.abi import get_selector_from_name
-from nile.signer import from_call_to_call_array
 from ecdsa import SigningKey, NIST256p
 from base64 import urlsafe_b64encode
 import hashlib
@@ -74,7 +73,7 @@ class WebauthnSigner():
         challenge_bytes = challenge_bytes + b"\x00" + b"\x00" + b"\x00" + b"\x00"
 
         challenge = bytes_to_base64url(challenge_bytes)
-        challenge_parts = [int.from_bytes(challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
+        # challenge_parts = [int.from_bytes(challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
         client_data_json = f"""{{"type":"webauthn.get","challenge":"{challenge}","origin":"{origin}","crossOrigin":false}}"""
         client_data_bytes = client_data_json.encode("ASCII")
 
@@ -82,37 +81,37 @@ class WebauthnSigner():
         client_data_hash.update(client_data_bytes)
         client_data_hash_bytes = client_data_hash.digest()
 
-        client_data_rem = 4 - (len(client_data_bytes) % 4)
-        if client_data_rem == 4:
-            client_data_rem = 0
-        if client_data_rem != 0:
-            for _ in range(client_data_rem):
-                client_data_bytes = client_data_bytes + b'\x00'
+        # client_data_rem = 4 - (len(client_data_bytes) % 4)
+        # if client_data_rem == 4:
+            # client_data_rem = 0
+        # if client_data_rem != 0:
+            # for _ in range(client_data_rem):
+                # client_data_bytes = client_data_bytes + b'\x00'
 
         authenticator_data_bytes = bytes.fromhex("20a97ec3f8efbc2aca0cf7cabb420b4a09d0aec9905466c9adf79584fa75fed30500000000")
-        authenticator_data_rem = 4 - len(authenticator_data_bytes) % 4
-        if authenticator_data_rem == 4:
-            authenticator_data_rem = 0
+        # authenticator_data_rem = 4 - len(authenticator_data_bytes) % 4
+        # if authenticator_data_rem == 4:
+            # authenticator_data_rem = 0
 
         (r, s) = self.signing_key.sign(authenticator_data_bytes + client_data_hash_bytes, hashfunc=hashlib.sha256, sigencode=sigencode)
         r0, r1, r2 = split(r)
         s0, s1, s2 = split(s)
 
-        authenticator_data = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
-        client_data_json = [int.from_bytes(client_data_bytes[i:i+4], 'big') for i in range(0, len(client_data_bytes), 4)]
+        # authenticator_data = [int.from_bytes(authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
+        # client_data_json = [int.from_bytes(client_data_bytes[i:i+4], 'big') for i in range(0, len(client_data_bytes), 4)]
 
-        challenge_offset_len = 9
-        challenge_offset_rem = 0
-        challenge_len = len(challenge_parts)
-        challenge_rem = len(challenge_parts) % 3
+        challenge_offset = 36
+        # challenge_offset_rem = 0
+        # challenge_len = len(challenge_parts)
+        # challenge_rem = len(challenge_parts) % 3
 
         # the hash and signature are returned for other tests to use
         return [
             r0, r1, r2,
             s0, s1, s2,
-            challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem,
-            len(client_data_json), client_data_rem, client_data_json,
-            len(authenticator_data), authenticator_data_rem, authenticator_data,
+            challenge_offset,
+            client_data_bytes,
+            authenticator_data_bytes
         ]
 
     async def send_transactions(self, account, calls, nonce=None, max_fee=0):

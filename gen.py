@@ -44,70 +44,98 @@ def combine(G0, G1, G2):
 
 
 HEAD = """
-%lang starknet
-from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
-from starkware.cairo.common.alloc import alloc
+use webauthn::webauthn::verify;
+use array::ArrayTrait;
+use webauthn::mock::EcPoint;
 
-from src.ec import EcPoint
-from src.bigint import BigInt3
-
-from src.webauthn import Webauthn
 """
 
 TEST_CASE = """
-@external
-func test_{title}{{syscall_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}}() {{
-    let public_key_pt = EcPoint(
-        BigInt3({x0},{x1},{x2}),
-        BigInt3({y0},{y1},{y2}),
-    );
-    let r = BigInt3({r0},{r1},{r2});
-    let s = BigInt3({s0},{s1},{s2});
+#[test]
+#[available_gas(20000000000)]
+fn test_{title}() {{
+    //let public_key_pt = EcPoint(
+    //    BigInt3({x0},{x1},{x2}),
+    //    BigInt3({y0},{y1},{y2}),
+    //);
+    //let r = BigInt3({r0},{r1},{r2});
+    //let s = BigInt3({s0},{s1},{s2});
+    let public_key_pt = EcPoint{{}};
+    let r : u256 = 0;
+    let s : u256 = 0;
 
-    let type_offset_len = 2;
-    let type_offset_rem = 1;
+    let type_offset = 9_usize;
 
-    let challenge_offset_len = {challenge_offset_len};
-    let challenge_offset_rem = {challenge_offset_rem};
-    let challenge_len = 11;
-    let challenge_rem = 1;
-    let (challenge) = alloc();
+    let challenge_offset = {challenge_offset};
+    let mut challenge = ArrayTrait::<u8>::new();
 {challenge}
 
-    let origin_offset_len = 28;
-    let origin_offset_rem = 2;
-    let origin_len = 13;
-    let (origin) = alloc();
-    assert origin[0] = 1752462448;
-    assert origin[1] = 1933193007;
-    assert origin[2] = 1668247156;
-    assert origin[3] = 1919904876;
-    assert origin[4] = 1701981541;
-    assert origin[5] = 825454708;
-    assert origin[6] = 964130678;
-    assert origin[7] = 779121253;
-    assert origin[8] = 1986618743;
-    assert origin[9] = 778264946;
-    assert origin[10] = 1953655140;
-    assert origin[11] = 1734684263;
-    assert origin[12] = 103;
+    let origin_offset = 91;
+    let mut origin = ArrayTrait::<u8>::new();
+    origin.append(0x68);
+    origin.append(0x74);
+    origin.append(0x74);
+    origin.append(0x70);
+    origin.append(0x73);
+    origin.append(0x3A);
+    origin.append(0x2F);
+    origin.append(0x2F);
+    origin.append(0x63);
+    origin.append(0x6F);
+    origin.append(0x6E);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x6F);
+    origin.append(0x6C);
+    origin.append(0x6C);
+    origin.append(0x65);
+    origin.append(0x72);
+    origin.append(0x2D);
+    origin.append(0x65);
+    origin.append(0x31);
+    origin.append(0x33);
+    origin.append(0x70);
+    origin.append(0x74);
+    origin.append(0x39);
+    origin.append(0x77);
+    origin.append(0x77);
+    origin.append(0x76);
+    origin.append(0x2E);
+    origin.append(0x70);
+    origin.append(0x72);
+    origin.append(0x65);
+    origin.append(0x76);
+    origin.append(0x69);
+    origin.append(0x65);
+    origin.append(0x77);
+    origin.append(0x2E);
+    origin.append(0x63);
+    origin.append(0x61);
+    origin.append(0x72);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x69);
+    origin.append(0x64);
+    origin.append(0x67);
+    origin.append(0x65);
+    origin.append(0x2E);
+    origin.append(0x67);
+    origin.append(0x67);
 
-    let client_data_json_len = {client_data_json_len};
-    let client_data_json_rem = {client_data_json_rem};
-    let (client_data_json) = alloc();
+    let mut client_data_json = ArrayTrait::<u8>::new();
 {client_data_json}
 
-    let authenticator_data_len = {authenticator_data_len};
-    let authenticator_data_rem = {authenticator_data_rem};
-    let (authenticator_data) = alloc();
+    let mut authenticator_data = ArrayTrait::<u8>::new();
 {authenticator_data}
 
-    Webauthn.verify(public_key_pt, r, s,
-        type_offset_len, type_offset_rem,
-        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem, challenge,
-        origin_offset_len, origin_offset_rem, origin_len, origin,
-        client_data_json_len, client_data_json_rem, client_data_json,
-        authenticator_data_len, authenticator_data_rem, authenticator_data
+    verify(public_key_pt, r, s,
+        type_offset,
+        challenge_offset,
+        origin_offset,
+        client_data_json,
+        challenge,
+        origin,
+        authenticator_data
     );
 
     return ();
@@ -123,15 +151,18 @@ data = [{
     'signature': "3046022100a6fc623a319a674ed15f72b544b9ddb277ccfa90e1b49269fdb3e4c6c41771ef022100b728edcbd35b9995e0e82b15456960d89b99884dd9aabf36295fd99ad23a9f3c"
 }]
 
-output = open("tests/test_webauthn_gen.cairo", "w")
+output = open("src/tests/webauthn_gen_test.cairo", "w")
 
 test = HEAD
+
+'{"type":"webauthn.get","challenge":"ALFEyQPE2bC7XWUmuMoDOAuCooKDVi-Y9vFKIpgFJGM","origin":"https://controller-git-tarrence-eng-195-credential-registration-976697.preview.cartridge.gg","crossOrigin":false}'
 
 for i, item in enumerate(data):
     pubkey = decode_credential_public_key(base64url_to_bytes(item["pubkey"]))
     authenticator_data_bytes = bytes.fromhex(item["authenticator_data"])
     client_data_bytes = bytes.fromhex(item["client_data"])
-    challenge = base64url_to_bytes(item["challenge"])
+    challenge_bytes = base64url_to_bytes(item["challenge"])
+    print(challenge_bytes.hex(), challenge_bytes)
 
     x0, x1, x2 = split(int.from_bytes(pubkey.x, "big"))
     y0, y1, y2 = split(int.from_bytes(pubkey.y, "big"))
@@ -140,22 +171,22 @@ for i, item in enumerate(data):
     client_data_hash.update(client_data_bytes)
     client_data_hash_bytes = client_data_hash.digest()
 
-    client_data_rem = 4 - (len(client_data_bytes) % 4)
-    if client_data_rem == 4:
-        client_data_rem = 0
+    # client_data_rem = 4 - (len(client_data_bytes) % 4)
+    # if client_data_rem == 4:
+    #     client_data_rem = 0
 
-    if client_data_rem != 0:
-        for _ in range(4 - client_data_rem):
-            client_data_bytes = client_data_bytes + b'\x00'
+    # if client_data_rem != 0:
+    #     for _ in range(4 - client_data_rem):
+    #         client_data_bytes = client_data_bytes + b'\x00'
 
-    authenticator_data_rem = 4 - len(authenticator_data_bytes) % 4
-    if authenticator_data_rem == 4:
-        authenticator_data_rem = 0
+    # authenticator_data_rem = 4 - len(authenticator_data_bytes) % 4
+    # if authenticator_data_rem == 4:
+    #     authenticator_data_rem = 0
 
-    authenticator_data = [int.from_bytes(
-        authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
-    client_data_json_parts = [int.from_bytes(
-        client_data_bytes[i:i+4], 'big') for i in range(0, len(client_data_bytes), 4)]
+    # authenticator_data = [int.from_bytes(
+    #     authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
+    # client_data_json_parts = [int.from_bytes(
+    #     client_data_bytes[i:i+4], 'big') for i in range(0, len(client_data_bytes), 4)]
 
     sig, rest = der_decoder(binascii.unhexlify(
         item["signature"]), asn1Spec=DERSig())
@@ -165,49 +196,48 @@ for i, item in enumerate(data):
     r0, r1, r2 = split(int(sig['r']))
     s0, s1, s2 = split(int(sig['s']))
 
-    authenticator_data_parts = [int.from_bytes(
-        authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
+    # authenticator_data_parts = [int.from_bytes(
+    #     authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
 
-    for _ in range(32 - len(challenge)):
-        challenge = challenge + b'\x00'
-    challenge_parts = [int.from_bytes(challenge[i:i+3], 'big')
-                       for i in range(0, len(challenge), 3)]
+    for _ in range(32 - len(challenge_bytes)):
+        challenge_bytes = challenge_bytes + b'\x00'
+    # challenge_parts = [int.from_bytes(challenge[i:i+3], 'big')
+    #                    for i in range(0, len(challenge), 3)]
 
-    origin = b'https://controller-e13pt9wwv.preview.cartridge.gg'
-    origin_parts = [int.from_bytes(origin[i:i+4], 'big')
-                    for i in range(0, len(origin), 4)]
+    # origin = b'https://controller-e13pt9wwv.preview.cartridge.gg'
+    # origin_parts = [int.from_bytes(origin[i:i+4], 'big')
+    #                 for i in range(0, len(origin), 4)]
     origin_offset_bytes = client_data_bytes.find(
         b'"origin":"') + len(b'"origin":"')
 
     type = b'webauthn.get'
-    type_parts = [int.from_bytes(type[i:i+4], 'big')
-                  for i in range(0, len(type), 4)]
+    # type_parts = [int.from_bytes(type[i:i+4], 'big')
+    #               for i in range(0, len(type), 4)]
     type_offset_bytes = client_data_bytes.find(b'"type":"') + len(b'"type":"')
 
     challenge_offset_bytes = client_data_bytes.find(
         b'"challenge":"') + len(b'"challenge":"')
 
-    challenge_offset_len = challenge_offset_bytes // 4
-    challenge_offset_rem = challenge_offset_bytes % 4
-    challenge_len = len(challenge_parts)
-    challenge_rem = len(challenge) % 3
+    # challenge_offset_len = challenge_offset_bytes // 4
+    # challenge_offset_rem = challenge_offset_bytes % 4
+    # challenge_len = len(challenge_parts)
+    # challenge_rem = len(challenge) % 3
+
     challenge = ""
-    for j, c in enumerate(challenge_parts):
-        challenge += "    assert challenge[{}] = {};\n".format(j, c)
+    for c in challenge_bytes:
+        challenge += "    challenge.append({});\n".format(c)
 
-    client_data_json_len = len(client_data_json_parts)
-    client_data_json_rem = client_data_rem
+    # client_data_json_len = len(client_data_json_parts)
+    # client_data_json_rem = client_data_rem
     client_data_json = ""
-    for j, c in enumerate(client_data_json_parts):
-        client_data_json += "    assert client_data_json[{}] = {};\n".format(
-            j, c)
+    for c in client_data_bytes:
+        client_data_json += "    client_data_json.append({});\n".format(c)
 
-    authenticator_data_len = len(authenticator_data_parts)
-    authenticator_data_rem = authenticator_data_rem
+    # authenticator_data_len = len(authenticator_data_parts)
+    # authenticator_data_rem = authenticator_data_rem
     authenticator_data = ""
-    for j, c in enumerate(authenticator_data_parts):
-        authenticator_data += "    assert authenticator_data[{}] = {};\n".format(
-            j, c)
+    for c in authenticator_data_bytes:
+        authenticator_data += "    authenticator_data.append({});\n".format(c)
 
     test += TEST_CASE.format(
         title=i,
@@ -224,14 +254,9 @@ for i, item in enumerate(data):
         s0=s0,
         s1=s1,
         s2=s2,
-        challenge_offset_len=challenge_offset_len,
-        challenge_offset_rem=challenge_offset_rem,
+        challenge_offset=challenge_offset_bytes,
         challenge=challenge,
-        client_data_json_len=client_data_json_len,
-        client_data_json_rem=client_data_json_rem,
         client_data_json=client_data_json,
-        authenticator_data_len=authenticator_data_len,
-        authenticator_data_rem=authenticator_data_rem,
         authenticator_data=authenticator_data
     )
 
@@ -273,29 +298,29 @@ for i, case in enumerate(cases):
 
     (x0, x1, x2, y0, y1, y2) = signer.public_key
     (r0, r1, r2,
-        s0, s1, s2,
-        challenge_offset_len, challenge_offset_rem, challenge_len, challenge_rem,
-        client_data_json_len, client_data_json_rem, client_data_json_parts,
-        authenticator_data_len, authenticator_data_rem, authenticator_data_parts
+            s0, s1, s2,
+            challenge_offset,
+            client_data_bytes,
+            authenticator_data_bytes
      ) = signer.sign_transaction(case["origin"], contract_address, call_array, calldata, nonce, max_fee)
 
     challenge_bytes = message_hash.to_bytes(
         32, byteorder="big")
-    challenge_parts = [int.from_bytes(
-        challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
+    # challenge_parts = [int.from_bytes(
+    #     challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
     challenge = ""
-    for j, c in enumerate(challenge_parts):
-        challenge += "    assert challenge[{}] = {};\n".format(j, c)
+    for c in challenge_bytes:
+        challenge += "    challenge.append({});\n".format(c)
 
     client_data_json = ""
-    for j, c in enumerate(client_data_json_parts):
-        client_data_json += "    assert client_data_json[{}] = {};\n".format(
-            j, c)
+    for c in client_data_bytes:
+        client_data_json += "    client_data_json.append({});\n".format(c)
 
     authenticator_data = ""
-    for j, c in enumerate(authenticator_data_parts):
-        authenticator_data += "    assert authenticator_data[{}] = {};\n".format(
-            j, c)
+    for c in authenticator_data_bytes:
+        authenticator_data += "    authenticator_data.append({});\n".format(c)
+
+    challenge_offset_bytes = 36
 
     test += TEST_CASE.format(
         title="signer_{}".format(i),
@@ -312,14 +337,9 @@ for i, case in enumerate(cases):
         s0=s0,
         s1=s1,
         s2=s2,
-        challenge_offset_len=challenge_offset_len,
-        challenge_offset_rem=challenge_offset_rem,
+        challenge_offset=challenge_offset_bytes,
         challenge=challenge,
-        client_data_json_len=client_data_json_len,
-        client_data_json_rem=client_data_json_rem,
         client_data_json=client_data_json,
-        authenticator_data_len=authenticator_data_len,
-        authenticator_data_rem=authenticator_data_rem,
         authenticator_data=authenticator_data
     )
 
@@ -346,40 +366,45 @@ for i, item in enumerate(invokes):
     client_data_json_parts = []
     for j in range(11, 11 + client_data_json_len):
         client_data_json_parts.append(int(sig[j]))
-    client_data_json = ""
+
     client_data_bytes = b""
-    for j, c in enumerate(client_data_json_parts):
-        client_data_json += "    assert client_data_json[{}] = {};\n".format(
-            j, c)
+    for c in client_data_json_parts:
         client_data_bytes += c.to_bytes(4, "big")
-    client_data_bytes = client_data_bytes[:-1 * client_data_json_rem]
+
+    if client_data_json_rem != 0:
+        client_data_bytes = client_data_bytes[:-1 * client_data_json_rem]
+    
+    client_data_json = ""
+    for c in client_data_bytes:
+        client_data_json += "    client_data_json.append({});\n".format(c)
+
 
     authenticator_data_len = int(sig[11 + client_data_json_len])
     authenticator_data_rem = int(sig[12 + client_data_json_len])
-    authenticator_data_parts = []
+
     authenticator_data_bytes = b""
     for j in range(13 + client_data_json_len, 13 + client_data_json_len + authenticator_data_len):
-        authenticator_data_parts.append(int(sig[j]))
-        authenticator_data_bytes += c.to_bytes(4, "big")
-    authenticator_data_bytes = authenticator_data_bytes[:-
-                                                        1 * authenticator_data_rem]
+        authenticator_data_bytes += sig[j].to_bytes(4, "big")
+
+    if authenticator_data_rem != 0:
+        authenticator_data_bytes = authenticator_data_bytes[:-1 * authenticator_data_rem]
+    # print(authenticator_data_bytes.hex(), len(authenticator_data_bytes))
+    
     authenticator_data = ""
-    for j, c in enumerate(authenticator_data_parts):
-        authenticator_data += "    assert authenticator_data[{}] = {};\n".format(
-            j, c)
+    for c in authenticator_data_bytes:
+        authenticator_data += "    authenticator_data.append({});\n".format(c)
 
     challenge_bytes = int(item["transaction_hash"], 16).to_bytes(
         32, byteorder="big")
     challenge = bytes_to_base64url(challenge_bytes)
 
-    challenge_parts = [int.from_bytes(
-        challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
+    # challenge_parts = [int.from_bytes(
+    #     challenge_bytes[i:i+3], 'big') for i in range(0, len(challenge_bytes), 3)]
     challenge = ""
-    for j, c in enumerate(challenge_parts):
-        challenge += "    assert challenge[{}] = {};\n".format(j, c)
+    for c in challenge_bytes:
+        challenge += "    challenge.append({});\n".format(c)
 
-    challenge_offset_len = 9
-    challenge_offset_rem = 0
+    challenge_offset_bytes = 36
 
     x0, x1, x2 = split(int.from_bytes(decoded_public_key.x, "big"))
     y0, y1, y2 = split(int.from_bytes(decoded_public_key.y, "big"))
@@ -399,14 +424,9 @@ for i, item in enumerate(invokes):
         s0=s0,
         s1=s1,
         s2=s2,
-        challenge_offset_len=challenge_offset_len,
-        challenge_offset_rem=challenge_offset_rem,
+        challenge_offset=challenge_offset_bytes,
         challenge=challenge,
-        client_data_json_len=client_data_json_len,
-        client_data_json_rem=client_data_json_rem,
         client_data_json=client_data_json,
-        authenticator_data_len=authenticator_data_len,
-        authenticator_data_rem=authenticator_data_rem,
         authenticator_data=authenticator_data
     )
 

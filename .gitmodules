@@ -1,9 +1,0 @@
-[submodule "cairo_secp256r1"]
-	url = https://github.com/cartridge-gg/cairo-secp256r1
-	path = lib/cairo_secp256r1
-[submodule "cairo_base64"]
-	url = https://github.com/cartridge-gg/cairo-base64
-	path = lib/cairo_base64
-[submodule "cairo_sha256"]
-	path = lib/cairo_sha256
-	url = https://github.com/cartridge-gg/cairo-sha256
