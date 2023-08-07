@@ -1,6 +1,6 @@
-use alexandria_math::sha256::sha256;
-use alexandria_encoding::base64::Base64UrlEncoder;
-use alexandria_math::karatsuba;
+use alexandria::math::sha256::sha256;
+use alexandria::encoding::base64::Base64UrlEncoder;
+use alexandria::math::karatsuba;
 use array::ArrayTrait;
 use integer::upcast;
 use debug::PrintTrait;
