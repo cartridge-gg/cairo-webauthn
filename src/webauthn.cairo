@@ -1,13 +1,37 @@
-use alexandria::math::sha256::sha256;
-use alexandria::encoding::base64::Base64UrlEncoder;
-use alexandria::math::karatsuba;
+use core::serde::Serde;
+use core::starknet::secp256_trait::Secp256PointTrait;
+use core::traits::Destruct;
+use core::traits::Into;
 use array::ArrayTrait;
 use integer::upcast;
 use debug::PrintTrait;
-use webauthn::mock::EcPoint;
+use option::OptionTrait;
+use result::ResultTrait;
+use starknet::secp256k1;
+use starknet::secp256k1::Secp256k1Point;
+use starknet::secp256_trait::recover_public_key;
+
+use alexandria::math::sha256::sha256;
+use alexandria::encoding::base64::Base64UrlEncoder;
+use alexandria::math::karatsuba;
+use alexandria::math::math::BitShift;
+
+fn sha256_u256(mut data: Array<u8>) -> u256 {
+    let mut msg_hash_u256 = 0_u256;
+    let msg_hash = sha256(data);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[0]).into(), 0 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[1]).into(), 1 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[2]).into(), 2 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[3]).into(), 3 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[4]).into(), 4 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[5]).into(), 5 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[6]).into(), 6 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[7]).into(), 7 * 8);
+    msg_hash_u256
+}
 
 fn verify(
-    pub: EcPoint, // public key as point on elliptic curve
+    pub: Secp256k1Point, // public key as point on elliptic curve
     r: u256, // 'r' part from ecdsa
     s: u256, // 's' part from ecdsa
     type_offset: usize, // offset to 'type' field in json
@@ -17,7 +41,7 @@ fn verify(
     challenge: Array<u8>, // origin as 1-byte array
     origin: Array<u8>, // challenge as 1-byte array
     authenticator_data: Array<u8> // authenticator data as 1-byte array
-) {
+) -> Result<(), felt252> {
     let msg = get_msg_and_validate(
         type_offset,
         challenge_offset,
@@ -44,6 +68,35 @@ fn verify(
 
 // let hash_bigint3 = BigInt3(h0, h1, h2);
 // verify_ecdsa(pub, hash_bigint3, r=r, s=s);
+    let msg_hash = sha256_u256(msg);
+    let result: Option<Secp256k1Point> = recover_public_key(msg_hash, r, s, false);
+    match result {
+        Option::Some(res) => {
+            let (x0, x1) = match res.get_coordinates() {
+                Result::Ok(x) => x,
+                Result::Err(_) => {
+                    return Result::Err('bad signature');
+                },
+            };
+            let (y0, y1) = match pub.get_coordinates() {
+                Result::Ok(x) => x,
+                Result::Err(_) => {
+                    return Result::Err('bad signature');
+                },
+            };
+            if x0 != y0 {
+                return Result::Err('bad signature');
+            }
+            if x1 != y1 {
+                return Result::Err('bad signature');
+            }
+        },
+        Option::None(()) => {
+            return Result::Err('bad signature');
+        },
+    }
+
+    Result::Ok(())
 }
 
 
