@@ -49,8 +49,8 @@ use core::result::ResultTrait;
 
 use webauthn::webauthn::verify;
 use array::ArrayTrait;
-use starknet::secp256k1::Secp256Trait;
-use starknet::secp256k1::Secp256k1Point;
+use starknet::secp256r1::Secp256Trait;
+use starknet::secp256r1::Secp256r1Point;
 
 """
 
@@ -64,8 +64,8 @@ fn test_{title}() {{
     //);
     //let r = BigInt3({r0},{r1},{r2});
     //let s = BigInt3({s0},{s1},{s2});
-    let public_key_pt: Result<Option<Secp256k1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
-    let public_key_pt: Secp256k1Point = public_key_pt.unwrap().unwrap();
+    let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
+    let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
     let r : u256 = 0;
     let s : u256 = 0;
 

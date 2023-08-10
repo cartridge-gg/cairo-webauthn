@@ -3,6 +3,6 @@ name = "webauthn"
 version = "0.1.0"
 
 [dependencies]
-alexandria = { git = "https://github.com/keep-starknet-strange/alexandria" }
+alexandria_encoding = { git = "https://github.com/keep-starknet-strange/alexandria" }
 
 # See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest

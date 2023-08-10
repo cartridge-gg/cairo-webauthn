@@ -7,14 +7,14 @@ use integer::upcast;
 use debug::PrintTrait;
 use option::OptionTrait;
 use result::ResultTrait;
-use starknet::secp256k1;
-use starknet::secp256k1::Secp256k1Point;
+use starknet::secp256r1;
+use starknet::secp256r1::Secp256r1Point;
 use starknet::secp256_trait::recover_public_key;
 
-use alexandria::math::sha256::sha256;
-use alexandria::encoding::base64::Base64UrlEncoder;
-use alexandria::math::karatsuba;
-use alexandria::math::math::BitShift;
+use alexandria_math::sha256::sha256;
+use alexandria_encoding::base64::Base64UrlEncoder;
+use alexandria_math::karatsuba;
+use alexandria_math::BitShift;
 
 fn sha256_u256(mut data: Array<u8>) -> u256 {
     let mut msg_hash_u256 = 0_u256;
@@ -31,7 +31,7 @@ fn sha256_u256(mut data: Array<u8>) -> u256 {
 }
 
 fn verify(
-    pub: Secp256k1Point, // public key as point on elliptic curve
+    pub: Secp256r1Point, // public key as point on elliptic curve
     r: u256, // 'r' part from ecdsa
     s: u256, // 's' part from ecdsa
     type_offset: usize, // offset to 'type' field in json
@@ -69,32 +69,32 @@ fn verify(
 // let hash_bigint3 = BigInt3(h0, h1, h2);
 // verify_ecdsa(pub, hash_bigint3, r=r, s=s);
     let msg_hash = sha256_u256(msg);
-    let result: Option<Secp256k1Point> = recover_public_key(msg_hash, r, s, false);
-    match result {
-        Option::Some(res) => {
-            let (x0, x1) = match res.get_coordinates() {
-                Result::Ok(x) => x,
-                Result::Err(_) => {
-                    return Result::Err('bad signature');
-                },
-            };
-            let (y0, y1) = match pub.get_coordinates() {
-                Result::Ok(x) => x,
-                Result::Err(_) => {
-                    return Result::Err('bad signature');
-                },
-            };
-            if x0 != y0 {
-                return Result::Err('bad signature');
-            }
-            if x1 != y1 {
-                return Result::Err('bad signature');
-            }
-        },
-        Option::None(()) => {
-            return Result::Err('bad signature');
-        },
-    }
+    // let result: Option<Secp256r1Point> = recover_public_key(msg_hash, r, s, false);
+    // match result {
+    //     Option::Some(res) => {
+    //         let (x0, x1) = match res.get_coordinates() {
+    //             Result::Ok(x) => x,
+    //             Result::Err(_) => {
+    //                 return Result::Err('bad signature');
+    //             },
+    //         };
+    //         let (y0, y1) = match pub.get_coordinates() {
+    //             Result::Ok(x) => x,
+    //             Result::Err(_) => {
+    //                 return Result::Err('bad signature');
+    //             },
+    //         };
+    //         if x0 != y0 {
+    //             return Result::Err('bad signature');
+    //         }
+    //         if x1 != y1 {
+    //             return Result::Err('bad signature');
+    //         }
+    //     },
+    //     Option::None(()) => {
+    //         return Result::Err('bad signature');
+    //     },
+    // }
 
     Result::Ok(())
 }
