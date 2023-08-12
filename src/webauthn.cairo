@@ -1,3 +1,4 @@
+use core::clone::Clone;
 use core::serde::Serde;
 use core::starknet::secp256_trait::Secp256PointTrait;
 use core::traits::Destruct;
@@ -9,12 +10,16 @@ use option::OptionTrait;
 use result::ResultTrait;
 use starknet::secp256r1;
 use starknet::secp256r1::Secp256r1Point;
+use starknet::secp256r1::Secp256r1Impl;
+use starknet::secp256r1::Secp256r1PointImpl;
 use starknet::secp256_trait::recover_public_key;
+use starknet::secp256_trait::Signature;
 
 use alexandria_math::sha256::sha256;
 use alexandria_encoding::base64::Base64UrlEncoder;
 use alexandria_math::karatsuba;
 use alexandria_math::BitShift;
+use webauthn::mock::verify_ecdsa;
 
 fn sha256_u256(mut data: Array<u8>) -> u256 {
     let mut msg_hash_u256 = 0_u256;
@@ -29,6 +34,28 @@ fn sha256_u256(mut data: Array<u8>) -> u256 {
     msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[7]).into(), 7 * 8);
     msg_hash_u256
 }
+
+// let msgh_0: u128 = (*(msg_hash[0])).into();
+//     let msgh_1: u128 = (*(msg_hash[1])).into();
+//     let msgh_2: u128 = (*(msg_hash[2])).into();
+//     let msgh_3: u128 = (*(msg_hash[3])).into();
+//     let msgh_4: u128 = (*(msg_hash[4])).into();
+//     let msgh_5: u128 = (*(msg_hash[5])).into();
+//     let msgh_6: u128 = (*(msg_hash[6])).into();
+//     let msgh_7: u128 = (*(msg_hash[7])).into();
+
+
+//     let h02 = msgh_5 & 4194303;
+//     let d0 = msgh_7 + fpow(2_u128, 32) * msgh_6 + fpow(2_u128, 64) * h02.into();
+
+//     let h10 = msgh_5 / 4194304;
+//     let r10 = msgh_5 % 4194304;
+//     let h13 = msgh_2 & 4095;
+//     let d1 = h10 + msgh_4 * fpow(2_u128, 10) + msgh_3 * fpow(2_u128, 42) + h13 * fpow(2_u128, 74);
+
+//     let h20 = msgh_2 / 4096;
+//     let r20 = msgh_2 % 4096;
+//     let d2 = h20 + msgh_1 * fpow(2_u128, 20) + msgh_0 * fpow(2_u128, 52);
 
 fn verify(
     pub: Secp256r1Point, // public key as point on elliptic curve
@@ -51,25 +78,21 @@ fn verify(
         origin,
         authenticator_data
     );
-// TODO: translation of this part 
-// currently without it as it may be different in new version
 
-// After https://github.com/cartridge-gg/cairo-webauthn/blob/main/src/webauthn.cairo
-// let msg_hash = sha256(msg);
-// let (h02) = bitwise_and(msg_hash[5], 4194303);
-// let h0 = msg_hash[7] + 2 ** 32 * msg_hash[6] + 2 ** 64 * h02;
+    let msg_hash = sha256(msg.clone());
 
-// let (h10, r10) = unsigned_div_rem(msg_hash[5], 4194304);
-// let (h13) = bitwise_and(msg_hash[2], 4095);
-// let h1 = h10 + msg_hash[4] * 2 ** 10 + msg_hash[3] * 2 ** 42 + h13 * 2 ** 74;
-
-// let (h20, r20) = unsigned_div_rem(msg_hash[2], 4096);
-// let h2 = h20 + msg_hash[1] * 2 ** 20 + msg_hash[0] * 2 ** 52;
-
-// let hash_bigint3 = BigInt3(h0, h1, h2);
-// verify_ecdsa(pub, hash_bigint3, r=r, s=s);
-    let msg_hash = sha256_u256(msg);
-    // let result: Option<Secp256r1Point> = recover_public_key(msg_hash, r, s, false);
+    let msg_hash_u256 = sha256_u256(msg);
+    
+    let verify_result = verify_ecdsa(pub, msg_hash_u256, r, s);
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(m) => {
+            return Result::Err(m);
+        }
+    }
+    
+    // let signature = Signature { r, s, y_parity: false };
+    // let result: Option<Secp256r1Point> = recover_public_key(msg_hash_u256, signature);
     // match result {
     //     Option::Some(res) => {
     //         let (x0, x1) = match res.get_coordinates() {
@@ -173,5 +196,17 @@ fn extend(ref arr: Array<u8>, src: @Array<u8>) {
         }
         arr.append(*src.at(i));
         i += 1_usize;
+    }
+}
+
+fn fpow(x: u128, n: u128) -> u128 {
+    if n == 0 {
+        1
+    } else if n == 1{
+        x
+    } else if (n & 1) == 1 {
+        x * fpow(x * x, n / 2)
+    } else {
+        fpow(x * x, n / 2)
     }
 }

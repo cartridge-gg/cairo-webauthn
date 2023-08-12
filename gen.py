@@ -58,16 +58,10 @@ TEST_CASE = """
 #[test]
 #[available_gas(20000000000)]
 fn test_{title}() {{
-    //let public_key_pt = EcPoint(
-    //    BigInt3({x0},{x1},{x2}),
-    //    BigInt3({y0},{y1},{y2}),
-    //);
-    //let r = BigInt3({r0},{r1},{r2});
-    //let s = BigInt3({s0},{s1},{s2});
     let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
     let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
-    let r : u256 = 0;
-    let s : u256 = 0;
+    let r : u256 = {param_r};
+    let s : u256 = {param_s};
 
     let type_offset = 9_usize;
 
@@ -133,7 +127,7 @@ fn test_{title}() {{
     let mut authenticator_data = ArrayTrait::<u8>::new();
 {authenticator_data}
 
-    verify(public_key_pt, r, s,
+    let verify_result = verify(public_key_pt, r, s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -142,6 +136,10 @@ fn test_{title}() {{
         origin,
         authenticator_data
     );
+    match verify_result {{
+        Result::Ok => (),
+        Result::Err(m) => assert(false, m)
+    }}
 
     return ();
 }}
@@ -198,8 +196,8 @@ for i, item in enumerate(data):
     if len(rest) != 0:
         raise Exception('Bad encoding')
 
-    r0, r1, r2 = split(int(sig['r']))
-    s0, s1, s2 = split(int(sig['s']))
+    param_r = int(sig['r'])
+    param_s = int(sig['s'])
 
     # authenticator_data_parts = [int.from_bytes(
     #     authenticator_data_bytes[i:i+4], 'big') for i in range(0, len(authenticator_data_bytes), 4)]
@@ -253,12 +251,8 @@ for i, item in enumerate(data):
         y0=y0,
         y1=y1,
         y2=y2,
-        r0=r0,
-        r1=r1,
-        r2=r2,
-        s0=s0,
-        s1=s1,
-        s2=s2,
+        param_r=param_r,
+        param_s=param_s,
         challenge_offset=challenge_offset_bytes,
         challenge=challenge,
         client_data_json=client_data_json,
@@ -308,6 +302,9 @@ for i, case in enumerate(cases):
             client_data_bytes,
             authenticator_data_bytes
      ) = signer.sign_transaction(case["origin"], contract_address, call_array, calldata, nonce, max_fee)
+    
+    param_r = combine(r0, r1, r2)
+    param_s = combine(s0, s1, s2)
 
     challenge_bytes = message_hash.to_bytes(
         32, byteorder="big")
@@ -336,12 +333,8 @@ for i, case in enumerate(cases):
         y0=y0,
         y1=y1,
         y2=y2,
-        r0=r0,
-        r1=r1,
-        r2=r2,
-        s0=s0,
-        s1=s1,
-        s2=s2,
+        param_r=param_r,
+        param_s=param_s,
         challenge_offset=challenge_offset_bytes,
         challenge=challenge,
         client_data_json=client_data_json,
@@ -362,8 +355,8 @@ for i, item in enumerate(invokes):
 
     sig = [int(part, 16) for part in item["signature"]]
 
-    r0, r1, r2 = sig[1], sig[2], sig[3]
-    s0, s1, s2 = sig[4], sig[5], sig[6]
+    param_r = combine(sig[1], sig[2], sig[3])
+    param_s = combine(sig[4], sig[5], sig[6])
 
     client_data_json_len = int(sig[9])
     client_data_json_rem = int(sig[10])
@@ -424,11 +417,8 @@ for i, item in enumerate(invokes):
         y1=y1,
         y2=y2,
         r0=r0,
-        r1=r1,
-        r2=r2,
-        s0=s0,
-        s1=s1,
-        s2=s2,
+        param_r=param_r,
+        param_s=param_s,
         challenge_offset=challenge_offset_bytes,
         challenge=challenge,
         client_data_json=client_data_json,
