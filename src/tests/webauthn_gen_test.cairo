@@ -11,16 +11,10 @@ use starknet::secp256r1::Secp256r1Point;
 #[test]
 #[available_gas(20000000000)]
 fn test_0() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(68771434430694404260836634,66633780841359531151283366,14259391536917482115299254),
-    //    BigInt3(15143078500912722485799317,6719228382483657703164717,5845062894556851529125),
-    //);
-    //let r = BigInt3(63555563315794279560344047,13095470977131083448599430,12617095898995832105276919);
-    //let s = BigInt3(51677855527563245207068476,53594536522197615937402726,13839169138395057433218690);
     let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
     let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
-    let r : u256 = 0;
-    let s : u256 = 0;
+    let r : u256 = 75529856265189085717597548073817449083775048352765043385708233156408636830191;
+    let s : u256 = 82845566382340822813767408921328436369277471334456847186275564885436721176380;
 
     let type_offset = 9_usize;
 
@@ -359,7 +353,7 @@ fn test_0() {
     authenticator_data.append(0);
 
 
-    verify(public_key_pt, r, s,
+    let verify_result = verify(public_key_pt, r, s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -368,6 +362,10 @@ fn test_0() {
         origin,
         authenticator_data
     );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(m) => assert(false, m)
+    }
 
     return ();
 }
@@ -375,16 +373,10 @@ fn test_0() {
 #[test]
 #[available_gas(20000000000)]
 fn test_signer_0() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(15280692306468033468970273,4864954472315286581165053,1007957587489589509111974),
-    //    BigInt3(50197855739088755245071674,56799762766833305760146560,10182836188451975549800931),
-    //);
-    //let r = BigInt3(60535316771070514850159921,64795359901317678215824891,959694102876691698876848);
-    //let s = BigInt3(33870937037260235365131507,14823094320896264417106562,14388773191086130823028751);
     let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
     let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
-    let r : u256 = 0;
-    let s : u256 = 0;
+    let r : u256 = 29480885296231089278651959273010132165747766664861554061584021796486733174156;
+    let s : u256 = 10666305419663387287982542934661073352792557509106021905077820628810733284468;
 
     let type_offset = 9_usize;
 
@@ -668,7 +660,7 @@ fn test_signer_0() {
     authenticator_data.append(0);
 
 
-    verify(public_key_pt, r, s,
+    let verify_result = verify(public_key_pt, r, s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -677,6 +669,10 @@ fn test_signer_0() {
         origin,
         authenticator_data
     );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(m) => assert(false, m)
+    }
 
     return ();
 }
@@ -684,16 +680,10 @@ fn test_signer_0() {
 #[test]
 #[available_gas(20000000000)]
 fn test_signer_1() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(27144622667395420428522105,69825762046080177267068563,994803487885533478971021),
-    //    BigInt3(67853768100309485136694085,2763575860357026025003784,6213226036929464801322327),
-    //);
-    //let r = BigInt3(15330763507032454340970325,40237867687780302620825119,18637911926377330960671218);
-    //let s = BigInt3(2047336955230473198492860,47576169329504183514486014,18067790066893727299614159);
     let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
     let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
-    let r : u256 = 0;
-    let s : u256 = 0;
+    let r : u256 = 8130992805765008887333649779625062229503348394734022444939553625261427843050;
+    let s : u256 = 41524611836301284041863244994454081996374089763095680133213215518654203479128;
 
     let type_offset = 9_usize;
 
@@ -947,7 +937,7 @@ fn test_signer_1() {
     authenticator_data.append(0);
 
 
-    verify(public_key_pt, r, s,
+    let verify_result = verify(public_key_pt, r, s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -956,6 +946,10 @@ fn test_signer_1() {
         origin,
         authenticator_data
     );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(m) => assert(false, m)
+    }
 
     return ();
 }
@@ -963,16 +957,10 @@ fn test_signer_1() {
 #[test]
 #[available_gas(20000000000)]
 fn test_signer_2() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(10116334099797846484954108,34118000749958803928934058,18263411717967391788113978),
-    //    BigInt3(528673018764063090792931,56736946447010734720103973,2986280627904741116277253),
-    //);
-    //let r = BigInt3(51341749143550836382161901,39162098666898077512896396,5211894912234418193106255);
-    //let s = BigInt3(50443836428313111663575434,47215654008461113787461706,15686173821545044488623916);
     let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
     let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
-    let r : u256 = 0;
-    let s : u256 = 0;
+    let r : u256 = 19650231429663172171662143679801873181947756112882355392221647529352009589660;
+    let s : u256 = 96824081060549445753579008360810528637613096211136087594731660307803814898117;
 
     let type_offset = 9_usize;
 
@@ -1227,7 +1215,7 @@ fn test_signer_2() {
     authenticator_data.append(0);
 
 
-    verify(public_key_pt, r, s,
+    let verify_result = verify(public_key_pt, r, s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -1236,6 +1224,10 @@ fn test_signer_2() {
         origin,
         authenticator_data
     );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(m) => assert(false, m)
+    }
 
     return ();
 }
@@ -1243,16 +1235,10 @@ fn test_signer_2() {
 #[test]
 #[available_gas(20000000000)]
 fn test_signer_3() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(73625083173144468930209686,70898309865060225992951230,8170697374112574267013863),
-    //    BigInt3(2635551041594509710544636,42876029347242695662388114,11972321077823395537774179),
-    //);
-    //let r = BigInt3(37717785116974515526552607,53175337016161914752220198,14650027283958206351174334);
-    //let s = BigInt3(53541316781460999831241840,29625720735853136251853071,11302164679673799353034200);
     let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
     let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
-    let r : u256 = 0;
-    let s : u256 = 0;
+    let r : u256 = 24727252476671107244859191046770957890067779637156303291098320784858675558663;
+    let s : u256 = 104106841531826249016867445882693035885353242704109538708395326401029735071191;
 
     let type_offset = 9_usize;
 
@@ -1508,7 +1494,7 @@ fn test_signer_3() {
     authenticator_data.append(0);
 
 
-    verify(public_key_pt, r, s,
+    let verify_result = verify(public_key_pt, r, s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -1517,6 +1503,10 @@ fn test_signer_3() {
         origin,
         authenticator_data
     );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(m) => assert(false, m)
+    }
 
     return ();
 }
@@ -1524,16 +1514,10 @@ fn test_signer_3() {
 #[test]
 #[available_gas(20000000000)]
 fn test_signer_4() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(67575219187319938079982093,59557265350294665924313983,4037815845774121346048335),
-    //    BigInt3(36169722821905656132543146,40099810010448433598340850,18139617151125474529639294),
-    //);
-    //let r = BigInt3(24873781945143515032408948,38261537697147430617910462,17295599773563572563333846);
-    //let s = BigInt3(58033113953527692406929974,42243693488971594444002104,10527590225955229649606877);
     let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
     let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
-    let r : u256 = 0;
-    let s : u256 = 0;
+    let r : u256 = 37755096836311190599756824685016589071211768128016280376852769298405776523450;
+    let s : u256 = 95079643734726526337586005080164344338178768098426467329322928620665537003909;
 
     let type_offset = 9_usize;
 
@@ -1790,7 +1774,7 @@ fn test_signer_4() {
     authenticator_data.append(0);
 
 
-    verify(public_key_pt, r, s,
+    let verify_result = verify(public_key_pt, r, s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -1799,6 +1783,10 @@ fn test_signer_4() {
         origin,
         authenticator_data
     );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(m) => assert(false, m)
+    }
 
     return ();
 }
@@ -1806,16 +1794,10 @@ fn test_signer_4() {
 #[test]
 #[available_gas(20000000000)]
 fn test_signer_5() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(3401992732947574573930837,37308812339174612426126711,3240842453540116499734220),
-    //    BigInt3(56446524537049913433538535,1282300129046537884677725,12844073005872672337809319),
-    //);
-    //let r = BigInt3(39056657918821572903194920,57157337232598153439878671,14247542392900983264095604);
-    //let s = BigInt3(20401243669413786180959626,7252799524217848581047367,6603969432393453459816945);
     let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
     let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
-    let r : u256 = 0;
-    let s : u256 = 0;
+    let r : u256 = 70355780810671785383676240440398435700988868137955157251471184210517540051547;
+    let s : u256 = 57146774835924973426449880024681020670848572865900577600128276736762491641225;
 
     let type_offset = 9_usize;
 
@@ -2073,7 +2055,7 @@ fn test_signer_5() {
     authenticator_data.append(0);
 
 
-    verify(public_key_pt, r, s,
+    let verify_result = verify(public_key_pt, r, s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -2082,6 +2064,10 @@ fn test_signer_5() {
         origin,
         authenticator_data
     );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(m) => assert(false, m)
+    }
 
     return ();
 }
@@ -2089,16 +2075,10 @@ fn test_signer_5() {
 #[test]
 #[available_gas(20000000000)]
 fn test_invoke_0() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(18429879044278490260098551,56029233481007147284932680,2037976146929856349747775),
-    //    BigInt3(70840069926882074167622098,21864696605377867683594565,6822006481759038492420837),
-    //);
-    //let r = BigInt3(2223599465377360746283669,25752496995673689528630163,705762337381700509015780);
-    //let s = BigInt3(58393142204606773616845190,12894059864184526358390250,19065811591212739232406187);
     let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
     let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
-    let r : u256 = 0;
-    let s : u256 = 0;
+    let r : u256 = 4224912636517746297930360738386846214394232358661750834726272476578302034581;
+    let s : u256 = 114133872056729296473578296149289564274974794137806170048811309580668266750342;
 
     let type_offset = 9_usize;
 
@@ -2377,7 +2357,7 @@ fn test_invoke_0() {
     authenticator_data.append(0);
 
 
-    verify(public_key_pt, r, s,
+    let verify_result = verify(public_key_pt, r, s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -2386,6 +2366,10 @@ fn test_invoke_0() {
         origin,
         authenticator_data
     );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(m) => assert(false, m)
+    }
 
     return ();
 }

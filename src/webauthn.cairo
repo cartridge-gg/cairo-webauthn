@@ -19,7 +19,7 @@ use alexandria_math::sha256::sha256;
 use alexandria_encoding::base64::Base64UrlEncoder;
 use alexandria_math::karatsuba;
 use alexandria_math::BitShift;
-use webauthn::mock::verify_ecdsa;
+use webauthn::verify::verify_ecdsa;
 
 fn sha256_u256(mut data: Array<u8>) -> u256 {
     let mut msg_hash_u256 = 0_u256;

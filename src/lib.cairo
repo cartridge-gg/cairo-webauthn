@@ -1,4 +1,4 @@
-mod mock;
+mod verify;
 mod webauthn;
 
 #[cfg(test)]

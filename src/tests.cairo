@@ -1,4 +1,5 @@
 mod webauthn_gen_test;
+mod gcd_test;
 
 use array::ArrayTrait;
 
