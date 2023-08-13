@@ -38,7 +38,6 @@ fn verify_ecdsa(public_key_pt : Secp256r1Point, msg_hash : u256, r : u256, s : u
 
     let n = Secp256r1Impl::get_curve_size();
     let n_no_zero: NonZero<u256> = n.try_into().unwrap();
-    let L_n = 256;
     let z = msg_hash;
     let G = Secp256r1Impl::get_generator_point();
 

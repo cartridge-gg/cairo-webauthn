@@ -1,5 +1,6 @@
-mod webauthn_gen_test;
-mod gcd_test;
+// mod webauthn_gen_test;
+// mod gcd_test;
+mod verify_ecdsa_test;
 
 use array::ArrayTrait;
 

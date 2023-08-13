@@ -1,3 +1,4 @@
+use core::debug::PrintTrait;
 use core::option::OptionTrait;
 use webauthn::verify::extended_gcd;
 use webauthn::verify::find_mod_inv;
