@@ -58,7 +58,10 @@ TEST_CASE = """
 #[test]
 #[available_gas(20000000000)]
 fn test_{title}() {{
-    let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(0, 0);
+    let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(
+        {x}, 
+        {y}
+    );
     let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
     let r : u256 = {param_r};
     let s : u256 = {param_s};
@@ -245,12 +248,8 @@ for i, item in enumerate(data):
     test += TEST_CASE.format(
         title=i,
         # expect_revert=expect_revert,
-        x0=x0,
-        x1=x1,
-        x2=x2,
-        y0=y0,
-        y1=y1,
-        y2=y2,
+        x=int.from_bytes(pubkey.x, "big"),
+        y=int.from_bytes(pubkey.y, "big"),
         param_r=param_r,
         param_s=param_s,
         challenge_offset=challenge_offset_bytes,
@@ -327,12 +326,8 @@ for i, case in enumerate(cases):
     test += TEST_CASE.format(
         title="signer_{}".format(i),
         # expect_revert=expect_revert,
-        x0=x0,
-        x1=x1,
-        x2=x2,
-        y0=y0,
-        y1=y1,
-        y2=y2,
+        x=int.from_bytes(pubkey.x, "big"),
+        y=int.from_bytes(pubkey.y, "big"),
         param_r=param_r,
         param_s=param_s,
         challenge_offset=challenge_offset_bytes,
@@ -410,13 +405,8 @@ for i, item in enumerate(invokes):
     test += TEST_CASE.format(
         title="invoke_{}".format(i),
         # expect_revert=expect_revert,
-        x0=x0,
-        x1=x1,
-        x2=x2,
-        y0=y0,
-        y1=y1,
-        y2=y2,
-        r0=r0,
+        x=int.from_bytes(pubkey.x, "big"),
+        y=int.from_bytes(pubkey.y, "big"),
         param_r=param_r,
         param_s=param_s,
         challenge_offset=challenge_offset_bytes,
