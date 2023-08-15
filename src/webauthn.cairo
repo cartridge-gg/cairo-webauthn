@@ -19,7 +19,7 @@ use alexandria_math::sha256::sha256;
 use alexandria_encoding::base64::Base64UrlEncoder;
 use alexandria_math::karatsuba;
 use alexandria_math::BitShift;
-use webauthn::verify::verify_ecdsa;
+use webauthn::ecdsa::verify_ecdsa;
 
 fn sha256_u256(mut data: Array<u8>) -> u256 {
     let mut msg_hash_u256 = 0_u256;
@@ -87,9 +87,9 @@ fn verify(
     match verify_result {
         Result::Ok => (),
         Result::Err(m) => {
-            return Result::Err(m);
+            return Result::Err(m.into());
         }
-    }
+    };
     
     // let signature = Signature { r, s, y_parity: false };
     // let result: Option<Secp256r1Point> = recover_public_key(msg_hash_u256, signature);
@@ -199,6 +199,7 @@ fn extend(ref arr: Array<u8>, src: @Array<u8>) {
     }
 }
 
+//Fixed - doesn't cause overflow, for there is a bug in alexandria
 fn fpow(x: u128, n: u128) -> u128 {
     if n == 0 {
         1

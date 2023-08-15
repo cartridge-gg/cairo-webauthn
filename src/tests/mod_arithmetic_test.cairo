@@ -1,7 +1,7 @@
 use core::debug::PrintTrait;
 use core::option::OptionTrait;
-use webauthn::verify::extended_gcd;
-use webauthn::verify::find_mod_inv;
+use webauthn::mod_arithmetic::extended_gcd;
+use webauthn::mod_arithmetic::{mod_inv, mod_mul};
 
 #[test]
 #[available_gas(20000000000)]
@@ -35,11 +35,11 @@ fn test_gcd_coeffs() {
 #[test]
 #[available_gas(20000000000)]
 fn test_mod_inverse() {
-    assert(9 == find_mod_inv(3, 26).unwrap(), 'Expected equal!');
-    assert(994152 == find_mod_inv(19, 1111111).unwrap(), 'Expected equal!');
+    assert(9 == mod_inv(3, 26).unwrap(), 'Expected equal!');
+    assert(994152 == mod_inv(19, 1111111).unwrap(), 'Expected equal!');
     assert(
         66839336048254420017492022222828761956339705861086495807414474742568002887400 
-        == find_mod_inv(
+        == mod_inv(
             123, 
             115792089210356248762697446949407573529996955224135760342422259061068512044369
         ).unwrap(), 
@@ -47,10 +47,31 @@ fn test_mod_inverse() {
     );
     assert(
         73585580342603937845643283645812111855493524956010467759706487646892464511934
-        == find_mod_inv(
+        == mod_inv(
             82845566382340822813767408921328436369277471334456847186275564885436721190900,
             115792089210356248762697446949407573529996955224135760342422259061068512044369
         ).unwrap(), 
         'Expected equal!'
     );
+}
+
+#[test]
+#[available_gas(20000000000)]
+fn test_mod_mul() {
+    assert(mod_mul((5, 5), 4) == 1, 'Expected equal!'); 
+    assert(
+        mod_mul(
+            (1111111111111111111, 7777777777777777777777777777777777), 
+            111111111111111111111111111
+        ) == 8641974444444444443580247, 
+        'Expected equal!'
+    ); 
+    assert(
+        mod_mul(
+            (115792089237316195423570985008687907853269984665640564039457584007913129639935, 
+                115792089237316195423570985008687907853269984665640564039457584007913129639935), 
+             115792089237316195423570985008687907852837564279074904382605163141518161494337 
+        ) == 71195301480278335217902614543643724932565773582318417775517168631604765283267, 
+        'Expected equal!'
+    ); 
 }
