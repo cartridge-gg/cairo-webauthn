@@ -49,8 +49,6 @@ impl RTSEIntoRTAE<T>
     }
 }
 
-
-
 trait WebauthnStoreTrait<T>{
     fn verify_allow_credentials(
         self: @T, 
