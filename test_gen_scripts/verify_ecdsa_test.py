@@ -1,15 +1,15 @@
 from structure import Test, TestFile, TestFileCreatorInterface, SimpleBlock
 from utils import get_good_signature
 
-class VerifyECDSATest(TestFileCreatorInterface):
 
+class VerifyECDSATest(TestFileCreatorInterface):
     # This is the template of the body of the test.
     # When creating the tests that should 'pass' correct values (python generated) for
     # px, py, r and s will be provided.
     # When creating tests that should 'fail' some parameter would be screwed
     # and ok_code and err_code would be adjusted accordingly
     # The verify ecdsa function takes an already hashed message.
-    # This is why we provide an identity function as a hashing function 
+    # This is why we provide an identity function as a hashing function
     # for the python library.
     TEMPLATE = """let pub_key = Secp256r1Impl::secp256_ec_new_syscall(
     {px},
@@ -20,7 +20,8 @@ class VerifyECDSATest(TestFileCreatorInterface):
 let r = {r};
 let s = {s};
 let msg_hash = {msg_hash};
-match verify_ecdsa(pub_key, msg_hash, r, s) {{
+
+match verify_hashed_ecdsa(pub_key, msg_hash, r, s) {{
     Result::Ok => {ok_code},
     Result::Err(m) => {err_code}
 }}"""
@@ -29,7 +30,7 @@ match verify_ecdsa(pub_key, msg_hash, r, s) {{
         super().__init__()
 
     def test_file(self) -> TestFile:
-        tf = TestFile('verify_ecdsa', 'verify_ecdsa_test')
+        tf = TestFile("verify_ecdsa", "verify_ecdsa_test")
         tf.add_imports(self.get_imports())
         tf.add_blocks(self.get_good_tests())
         tf.add_block(self.create_wrong_arguments_test())
@@ -38,63 +39,77 @@ match verify_ecdsa(pub_key, msg_hash, r, s) {{
 
     def create_good_test(self, name: str, message: str):
         (px, py, r, s) = get_good_signature(message)
-        return Test(name, VerifyECDSATest.TEMPLATE.format(
-            px = px, py = py, 
-            r = r, s = s, 
-            msg_hash = int.from_bytes(message, 'big'),
-            ok_code = '()', err_code = 'assert(false, m.into())'
-        ))
+        return Test(
+            name,
+            VerifyECDSATest.TEMPLATE.format(
+                px=px,
+                py=py,
+                r=r,
+                s=s,
+                msg_hash=int.from_bytes(message, "big"),
+                ok_code="()",
+                err_code="assert(false, m.into())",
+            ),
+        )
 
     def create_wrong_arguments_test(self):
-        message = b'Not important'
+        message = b"Not important"
         (px, py, _r, _s) = get_good_signature(message)
-        return Test('ecdsa_wrong_arguments', VerifyECDSATest.TEMPLATE.format(
-            px = px, py = py, 
-            #this values are wrong
-            r = 0, s = 0, 
-            msg_hash = int.from_bytes(message, 'big'),
-            ok_code = "assert(false, 'Should Error!')", 
-            err_code = """match m {
+        return Test(
+            "ecdsa_wrong_arguments",
+            VerifyECDSATest.TEMPLATE.format(
+                px=px,
+                py=py,
+                # this values are wrong
+                r=0,
+                s=0,
+                msg_hash=int.from_bytes(message, "big"),
+                ok_code="assert(false, 'Should Error!')",
+                err_code="""match m {
         VerifyEcdsaError::WrongArgument => (),
         VerifyEcdsaError::InvalidSignature =>assert(false, 'Wrong Error!'),
         VerifyEcdsaError::SyscallError => assert(false, 'Wrong Error!'),
-    }"""
-        ))
+    }""",
+            ),
+        )
 
     def create_invalid_signature_test(self):
-        message = b'Not important'
+        message = b"Not important"
         (px, py, r, s) = get_good_signature(message)
-        return Test('ecdsa_invalid_signature', VerifyECDSATest.TEMPLATE.format(
-            px = px, py = py, 
-            r = r, s = s, 
-            #this hash is wrong
-            msg_hash = 111110000011111,
-            ok_code = "assert(false, 'Should Error!')", 
-            err_code = """match m {
+        return Test(
+            "ecdsa_invalid_signature",
+            VerifyECDSATest.TEMPLATE.format(
+                px=px,
+                py=py,
+                r=r,
+                s=s,
+                # this hash is wrong
+                msg_hash=111110000011111,
+                ok_code="assert(false, 'Should Error!')",
+                err_code="""match m {
         VerifyEcdsaError::WrongArgument => assert(false, 'Wrong Error!'),
         VerifyEcdsaError::InvalidSignature => (),
         VerifyEcdsaError::SyscallError => assert(false, 'Wrong Error!'),
-    }"""
-        ))
-
+    }""",
+            ),
+        )
 
     def get_imports(self):
         return [
-            'core::traits::Into',
-            'core::option::OptionTrait',
-            'webauthn::ecdsa::{verify_ecdsa, VerifyEcdsaError}',
-            'starknet::secp256r1::Secp256r1Impl',
-            'starknet::secp256r1::Secp256r1Point',
-            'starknet::SyscallResultTrait'
+            "core::traits::Into",
+            "core::option::OptionTrait",
+            "webauthn::ecdsa::{verify_ecdsa, verify_hashed_ecdsa, VerifyEcdsaError}",
+            "starknet::secp256r1::Secp256r1Impl",
+            "starknet::secp256r1::Secp256r1Point",
+            "starknet::SyscallResultTrait",
         ]
 
     def get_good_tests(self):
         return [
-            self.create_good_test(name, message) 
-            for name, message 
-            in [
-                ('verify_ecdsa_short', b'1'),
-                ('verify_ecdsa', b'Hello World!'),
-                ('verify_ecdsa_long', b'This is a longer message!!!!!!!')
+            self.create_good_test(name, message)
+            for name, message in [
+                ("verify_ecdsa_short", b"1"),
+                ("verify_ecdsa", b"Hello World!"),
+                ("verify_ecdsa_long", b"This is a longer message!!!!!!!"),
             ]
         ]

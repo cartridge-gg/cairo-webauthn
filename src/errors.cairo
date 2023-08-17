@@ -1,5 +1,6 @@
 use core::traits::Into;
 
+#[derive(Drop)]
 enum AuthnError{
     TransportNotAllowed,
     GetCredentialRejected,
@@ -11,7 +12,9 @@ enum AuthnError{
     OriginMismatch,
     InvalidAuthData,
     RelyingPartyIdHashMismatch,
-    UserFlagsMismatch
+    UserFlagsMismatch,
+    InvalidPublicKey,
+    InvalidSignature
 }
 
 // Probably this should not exist

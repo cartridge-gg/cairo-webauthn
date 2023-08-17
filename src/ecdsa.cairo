@@ -7,13 +7,19 @@ use result::ResultTrait;
 
 use webauthn::mod_arithmetic::{mod_inv, mod_mul};
 
+fn verify_ecdsa(
+    public_key_pt: Secp256r1Point, msg_hash: Array<u8>, r: u256, s: u256
+) -> Result<(), VerifyEcdsaError> {
+    Result::Ok(())
+}
+
 // Verifies the signature of the hash given the other parameters (public key, r, s)
 // Return value: 
 // - Result::Ok if the signature is correct, 
 // - Result::Err(VerifyEcdsaError) otherwise
 //
 // According to: https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm
-fn verify_ecdsa(
+fn verify_hashed_ecdsa(
     public_key_pt: Secp256r1Point, msg_hash: u256, r: u256, s: u256
 ) -> Result<(), VerifyEcdsaError> {
     if check_bounds(r, s) == false {
@@ -67,6 +73,7 @@ fn verify_ecdsa(
 }
 
 //Possible verify_ecdsa(...) errors
+#[derive(Drop)]
 enum VerifyEcdsaError {
     WrongArgument, // At least one argument is not correct (eg. outside of the domain)
     InvalidSignature, // The hash and other parameters don't match

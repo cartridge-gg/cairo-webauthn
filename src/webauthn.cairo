@@ -12,6 +12,7 @@ use core::traits::Into;
 use core::traits::Drop;
 use core::clone::Clone;
 use starknet::secp256r1;
+use starknet::secp256r1::Secp256r1Point;
 use starknet::secp256_trait::{
     recover_public_key,
     Signature
@@ -31,7 +32,9 @@ use webauthn::helpers::{
     PartialEqArray,
     UTF8Decoder,
     JSONClientDataParser,
-    OriginChecker
+    OriginChecker,
+    concatenate,
+    extract_r_and_s_from_array
 };
 
 use webauthn::types::{
@@ -75,6 +78,14 @@ trait WebauthnAuthenticatorTrait<T>{
 // Couldn't find a way to create a struct with all the necessary generic implementations
 // There was either some name resolution problem or a recursive (cyclic) compiler bug
 // Or I'm stupid
+// There is a 'parallel' implementation solution that would split this method into separate chunks,
+// and in the particular points (now dealt with by the generic traits) outsource the control flow 
+// to the user, trough for example some state-transition abstraction.
+// This is would ?probably? be better suited for Cairo use cases.
+// Another considerations: 
+//  Current approach - visually closer to the specification
+//  Parallel approach - easier testing
+// Either way the inner workings of the method stay the same.
 fn verify_authentication_assertion
 <
 // Store:
@@ -100,7 +111,7 @@ fn verify_authentication_assertion
     // Some(...) if the user was identified before the ceremony, 
     // eg. via a username or cookie, None otherwise
     preidentified_user_handle: Option<Array<u8>>,
-    // Config options specific to the needs of this assertions
+    // Config options specific to the needs of this assertion
     assertion_options: AssertionOptions    
 ) -> Result<(), AuthnError> {
     // 1. 
@@ -173,10 +184,8 @@ fn verify_authentication_assertion
     // 18. pass (extensions) 
     // 19.
     let hash = sha256(c_data);
-    // 20.
-    verify_signature(hash, auth_data, credential_public_key, sig)?;
-
-    Result::Ok(())
+    // 20. 
+    verify_signature(hash, auth_data, credential_public_key, sig)
 }
 
 // Steps 6. and 7. of the verify_authentication_assertion(..) method
@@ -242,11 +251,13 @@ fn verify_user_flags(
     auth_data: @AuthenticatorData, force_user_verified: bool
 ) -> Result<(), AuthnError> {
     let flags: u128 = upcast(*auth_data.flags);
-    let mask: u128 = if force_user_verified {
-        upcast(1_u8 + 4_u8)
-    } else {
-        upcast(1_u8)
-    };
+    let mask: u128 = upcast(
+        if force_user_verified {
+            1_u8 + 4_u8 // 10100000
+        } else {
+            1_u8 // 10000000
+        }
+    );
     if (flags & mask) == mask {
         Result::Ok(())
     } else {
@@ -281,15 +292,16 @@ impl ImplArrayu8TryIntoAuthData of TryInto<Array<u8>, AuthenticatorData> {
         };
         // There is some problem regarding the moving of self
         // For now this problem exceeds my mental capacity
-        // TODO: Make it proper
+        // TODO: Remove clone()
         let cloned = self.clone();
         let mut rp_id_hash: Array<u8> = ArrayTrait::new();
-        let counter = 0_usize;
+        let mut counter = 0_usize;
         loop {
             if counter == 32 {
                 break;
             };
             rp_id_hash.append(*cloned[counter]);
+            counter +=1;
         };
         
         let flags = *self[32];
@@ -306,9 +318,21 @@ impl ImplArrayu8TryIntoAuthData of TryInto<Array<u8>, AuthenticatorData> {
 fn verify_signature(
     hash: Array<u8>, auth_data: Array<u8>, credential_public_key: PublicKey, sig: Array<u8>
 ) -> Result<(), AuthnError> {
-    // TODO:
-    // 1. Concatenate hash and auth_data
-    // 2. Extract r and s from sig
-    // 3. Validate using verify_ecdsa
-    Result::Ok(())
+    let concatenation = concatenate(@auth_data, @hash);
+    let (r, s) = match extract_r_and_s_from_array(@sig){
+        Option::Some(p) => p,
+        Option::None => {
+            return AuthnError::InvalidSignature.into();
+        }
+    };
+    let pub_key_point: Secp256r1Point = match credential_public_key.try_into() {
+        Option::Some(p) => p,
+        Option::None => {
+            return AuthnError::InvalidPublicKey.into();
+        }
+    };
+    match verify_ecdsa(pub_key_point, concatenation, r, s) {
+        Result::Ok => Result::Ok(()),
+        Result::Err(e) => AuthnError::InvalidSignature.into()
+    }
 }

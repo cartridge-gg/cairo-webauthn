@@ -1,3 +1,4 @@
+use core::starknet::SyscallResultTrait;
 use option::OptionTrait;
 use core::clone::Clone;
 use core::clone::TCopyClone;
@@ -20,7 +21,6 @@ use alexandria_math::sha256::sha256;
 use alexandria_encoding::base64::Base64UrlEncoder;
 use alexandria_math::karatsuba;
 use alexandria_math::BitShift;
-use webauthn::ecdsa::verify_ecdsa;
 
 // https://webidl.spec.whatwg.org/#idl-DOMString
 type DomString = Array<u8>;
@@ -123,9 +123,21 @@ struct TokenBinding {
 // This is not strictly according to the specification
 // TODO: Make it proper
 #[derive(Drop, Clone, PartialEq)]
-struct PublicKey{
+struct PublicKey {
     x: u256,
     y: u256
+}
+
+impl ImplPublicKeyTryIntoSecp256r1Point of TryInto<PublicKey, Secp256r1Point> {
+    fn try_into(self: PublicKey) -> Option<Secp256r1Point> {
+        match Secp256r1Impl::secp256_ec_new_syscall(
+            self.x,
+            self.y
+        ) {
+            Result::Ok(op) => op,
+            Result::Err => Option::None
+        }
+    }
 }
 
 // https://www.w3.org/TR/webauthn/#sctn-authenticator-data
