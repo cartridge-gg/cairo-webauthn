@@ -1,11 +1,19 @@
+
 import os
 from typing import List
+from abc import ABC, abstractmethod
 
-class Test:
+class CodeBlock(ABC):
+    @abstractmethod
+    def to_text(self) -> str:
+        pass
+
+class Test(CodeBlock):
     name: str
     body: str
     gas: int
     def __init__(self, name: str, body: str, gas: int = 200000000000) -> None:
+        super().__init__()
         self.name = name
         self.body = body
         self.gas = gas
@@ -23,11 +31,20 @@ class Test:
 
         return text
 
+class SimpleBlock(CodeBlock):
+    body: str
+    def __init__(self, body) -> None:
+        super().__init__()
+        self.body = body
+    def to_text(self) -> str:
+        return self.body
+
+
 class TestFile:
     name: str
     path: str
     imports: List[str]
-    tests: List[Test]
+    tests: List[CodeBlock]
     python_source: str
 
     def __init__(self, name: str, python_source: str) -> None:
@@ -36,11 +53,11 @@ class TestFile:
         self.name = name
         self.python_source = python_source
 
-    def add_test(self, test: Test):
-        self.tests.append(test)
+    def add_block(self, block: CodeBlock):
+        self.tests.append(block)
 
-    def add_tests(self, tests: List[Test]):
-        self.tests += tests
+    def add_blocks(self, blocks: List[CodeBlock]):
+        self.tests += blocks
 
     def add_imports(self, imports: List[str]):
         self.imports += imports

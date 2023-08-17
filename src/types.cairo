@@ -3,7 +3,6 @@ use core::clone::Clone;
 use core::clone::TCopyClone;
 use core::serde::Serde;
 use core::starknet::secp256_trait::Secp256PointTrait;
-use core::traits::Destruct;
 use core::traits::Into;
 use array::ArrayTrait;
 use integer::upcast;
@@ -46,7 +45,7 @@ struct PublicKeyCredentialDescriptor{
 // https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions
 #[derive(Drop)]
 struct PublicKeyCredentialRequestOptions {
-    challenge: Array<u8>,
+    challenge: DomString,
     allow_credentials: Option<Array<PublicKeyCredentialDescriptor>>
     // TODO: Add other fields
 }
@@ -121,11 +120,29 @@ struct TokenBinding {
     id: Option<DomString>
 }
 
-
+// This is not strictly according to the specification
+// TODO: Make it proper
 #[derive(Drop, Clone, PartialEq)]
 struct PublicKey{
     x: u256,
     y: u256
+}
+
+// https://www.w3.org/TR/webauthn/#sctn-authenticator-data
+#[derive(Drop, Clone)]
+struct AuthenticatorData {
+    rp_id_hash: Array<u8>,
+    flags: u8,
+    sign_count: u32
+}
+
+#[derive(Drop, Clone)]
+struct AssertionOptions {
+    // Byte encoded relying party id, eg. b"your-domain.com"
+    expected_rp_id: Array<u8>,
+    // See step 17 of https://www.w3.org/TR/webauthn/#sctn-verifying-assertion
+    // and https://www.w3.org/TR/webauthn/#user-verification
+    force_user_verified: bool
 }
 
 impl OptionTCloneImpl<T, impl TClone: Clone<T>> of Clone<Option<T>>{

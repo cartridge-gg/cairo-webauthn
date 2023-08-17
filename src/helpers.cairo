@@ -38,12 +38,12 @@ impl PartialEqArray<T, impl TEq: PartialEq<T>, impl TDrop: Drop<T>> of PartialEq
 
 
 trait ContainsTrait<A, T> {
-    fn contain(self: @A, item: @T) -> bool;
+    fn contains(self: @A, item: @T) -> bool;
 }
 
 
 impl ArrayTContainsImpl<T, impl Teq: PartialEq<T>> of ContainsTrait<Array<T>, T>{
-    fn contain(self: @Array<T>, item: @T) -> bool{
+    fn contains(self: @Array<T>, item: @T) -> bool{
         let la: usize = self.len();
         let mut i: usize = 0;
         loop {
@@ -95,7 +95,7 @@ fn allow_credentials_contain_credential(
     credential: @PublicKeyCredential,
 ) -> bool {
     let ids: Array<Array<u16>> = options.clone().map();
-    ids.contain(credential.id)
+    ids.contains(credential.id)
 }
 
 

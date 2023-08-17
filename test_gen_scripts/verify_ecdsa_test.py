@@ -1,6 +1,5 @@
-from ecdsa import SigningKey, NIST256p, util
-
-from structure import Test, TestFile, TestFileCreatorInterface
+from structure import Test, TestFile, TestFileCreatorInterface, SimpleBlock
+from utils import get_good_signature
 
 class VerifyECDSATest(TestFileCreatorInterface):
 
@@ -32,31 +31,13 @@ match verify_ecdsa(pub_key, msg_hash, r, s) {{
     def test_file(self) -> TestFile:
         tf = TestFile('verify_ecdsa', 'verify_ecdsa_test')
         tf.add_imports(self.get_imports())
-        tf.add_tests(self.get_good_tests())
-        tf.add_test(self.create_wrong_arguments_test())
-        tf.add_test(self.create_invalid_signature_test())
+        tf.add_blocks(self.get_good_tests())
+        tf.add_block(self.create_wrong_arguments_test())
+        tf.add_block(self.create_invalid_signature_test())
         return tf
 
-    def get_good_signature(self, message: str):
-        # 1. Generate keys and sign the message
-        sk = SigningKey.generate(curve=NIST256p)
-        vk = sk.get_verifying_key()
-
-        signature = sk.sign(
-            message, 
-            hashfunc=my_hash, 
-            allow_truncate=False
-        )
-
-        # 2. Extract the public key point
-        (px, py) = (vk.pubkey.point.x(), vk.pubkey.point.y())
-
-        # 3. Extract r and s values
-        r, s = util.sigdecode_string(signature, sk.curve.order)
-        return (px, py, r, s)
-
     def create_good_test(self, name: str, message: str):
-        (px, py, r, s) = self.get_good_signature(message)
+        (px, py, r, s) = get_good_signature(message)
         return Test(name, VerifyECDSATest.TEMPLATE.format(
             px = px, py = py, 
             r = r, s = s, 
@@ -66,7 +47,7 @@ match verify_ecdsa(pub_key, msg_hash, r, s) {{
 
     def create_wrong_arguments_test(self):
         message = b'Not important'
-        (px, py, _r, _s) = self.get_good_signature(message)
+        (px, py, _r, _s) = get_good_signature(message)
         return Test('ecdsa_wrong_arguments', VerifyECDSATest.TEMPLATE.format(
             px = px, py = py, 
             #this values are wrong
@@ -82,7 +63,7 @@ match verify_ecdsa(pub_key, msg_hash, r, s) {{
 
     def create_invalid_signature_test(self):
         message = b'Not important'
-        (px, py, r, s) = self.get_good_signature(message)
+        (px, py, r, s) = get_good_signature(message)
         return Test('ecdsa_invalid_signature', VerifyECDSATest.TEMPLATE.format(
             px = px, py = py, 
             r = r, s = s, 
@@ -117,13 +98,3 @@ match verify_ecdsa(pub_key, msg_hash, r, s) {{
                 ('verify_ecdsa_long', b'This is a longer message!!!!!!!')
             ]
         ]
-
-# Dummy hash function returning a mock of a digestable object
-def my_hash(message):
-    return Digestable(message)    
-
-class Digestable:
-    def __init__(self, val) -> None:
-        self.val = val
-    def digest(self):
-        return self.val

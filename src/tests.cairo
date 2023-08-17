@@ -5,11 +5,11 @@ mod mod_arithmetic_test;
 
 use array::ArrayTrait;
 
-fn assert_equal_arrays(a : Array<u8>, b : Array<u8>) {
-    let la : usize = a.len();
-    let lb : usize = b.len();
+fn assert_equal_arrays(a: Array<u8>, b: Array<u8>) {
+    let la: usize = a.len();
+    let lb: usize = b.len();
     assert(la == lb, 'different len');
-    let mut i : usize = 0;
+    let mut i: usize = 0;
     loop {
         if i == la {
             break ();
