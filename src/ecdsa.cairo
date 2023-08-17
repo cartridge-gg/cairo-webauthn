@@ -4,13 +4,17 @@ use starknet::secp256r1::Secp256r1Impl;
 use starknet::secp256r1::Secp256r1PointImpl;
 use option::OptionTrait;
 use result::ResultTrait;
+use alexandria_math::BitShift;
+use alexandria_math::sha256::sha256;
+use core::traits::Into;
 
 use webauthn::mod_arithmetic::{mod_inv, mod_mul};
 
 fn verify_ecdsa(
-    public_key_pt: Secp256r1Point, msg_hash: Array<u8>, r: u256, s: u256
+    public_key_pt: Secp256r1Point, msg: Array<u8>, r: u256, s: u256
 ) -> Result<(), VerifyEcdsaError> {
-    Result::Ok(())
+    let hash = sha256_u256(msg);
+    verify_hashed_ecdsa(public_key_pt, hash, r, s)
 }
 
 // Verifies the signature of the hash given the other parameters (public key, r, s)
@@ -81,7 +85,7 @@ enum VerifyEcdsaError {
 }
 
 impl ImplVerifyEcdsaErrorIntoFelt252 of Into<VerifyEcdsaError, felt252> {
-    fn into(self: VerifyEcdsaError) -> felt252{
+    fn into(self: VerifyEcdsaError) -> felt252 {
         match self {
             VerifyEcdsaError::WrongArgument => 'Wrong Argument!',
             VerifyEcdsaError::InvalidSignature => 'Invalid Signature!',
@@ -90,11 +94,25 @@ impl ImplVerifyEcdsaErrorIntoFelt252 of Into<VerifyEcdsaError, felt252> {
     }
 }
 
+fn sha256_u256(mut data: Array<u8>) -> u256 {
+    let mut msg_hash_u256 = 0_u256;
+    let msg_hash = sha256(data);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[0]).into(), 0 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[1]).into(), 1 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[2]).into(), 2 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[3]).into(), 3 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[4]).into(), 4 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[5]).into(), 5 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[6]).into(), 6 * 8);
+    msg_hash_u256 = msg_hash_u256 | BitShift::shl((*msg_hash[7]).into(), 7 * 8);
+    msg_hash_u256
+}
+
 
 #[derive(Drop)]
 fn check_bounds(r: u256, s: u256) -> bool {
     let n = Secp256r1Impl::get_curve_size();
-    if r >  n{
+    if r > n {
         false
     } else if s > n {
         false
