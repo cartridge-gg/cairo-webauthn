@@ -1,7 +1,7 @@
 use core::traits::Into;
 
 #[derive(Drop)]
-enum AuthnError{
+enum AuthnError {
     TransportNotAllowed,
     GetCredentialRejected,
     ResponseIsNotAttestation,
@@ -42,16 +42,14 @@ enum StoreError {
     KeyRetirevalFailed
 }
 
-impl AuthnErrorIntoResultT<T>
-    of Into<AuthnError, Result<T, AuthnError>> {
-    fn into(self: AuthnError) -> Result<T, AuthnError>{
+impl AuthnErrorIntoResultT<T> of Into<AuthnError, Result<T, AuthnError>> {
+    fn into(self: AuthnError) -> Result<T, AuthnError> {
         Result::Err(self)
     }
 }
 
-impl RTSEIntoRTAE<T>
-    of Into<Result<T, StoreError>, Result<T, AuthnError>> {
-    fn into(self: Result<T, StoreError>) -> Result<T, AuthnError>{
+impl RTSEIntoRTAE<T> of Into<Result<T, StoreError>, Result<T, AuthnError>> {
+    fn into(self: Result<T, StoreError>) -> Result<T, AuthnError> {
         match self {
             Result::Ok(t) => Result::Ok(t),
             Result::Err(e) => match e {

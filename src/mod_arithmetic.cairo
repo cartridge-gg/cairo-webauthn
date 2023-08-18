@@ -22,7 +22,6 @@ fn mod_mul(factors: (u256, u256), modulo: u256) -> u256 {
         },
         Option::None => 0,
     }
-
 }
 
 //Unconventional implementation due to u256 constraint of size and unsignedness

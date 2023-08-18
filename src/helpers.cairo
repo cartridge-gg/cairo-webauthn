@@ -11,9 +11,9 @@ use integer::upcast;
 
 
 // TODO: test
-fn arrays_equal
-<T, impl TPartialEqImpl: PartialEq<T>, impl TDrop: Drop<T>>
-(a: @Array<T>, b: @Array<T>) -> bool{
+fn arrays_equal<T, impl TPartialEqImpl: PartialEq<T>, impl TDrop: Drop<T>>(
+    a: @Array<T>, b: @Array<T>
+) -> bool {
     let la: usize = a.len();
     let lb: usize = b.len();
     if la != lb {
@@ -46,8 +46,8 @@ trait ContainsTrait<A, T> {
 }
 
 
-impl ArrayTContainsImpl<T, impl Teq: PartialEq<T>> of ContainsTrait<Array<T>, T>{
-    fn contains(self: @Array<T>, item: @T) -> bool{
+impl ArrayTContainsImpl<T, impl Teq: PartialEq<T>> of ContainsTrait<Array<T>, T> {
+    fn contains(self: @Array<T>, item: @T) -> bool {
         let la: usize = self.len();
         let mut i: usize = 0;
         loop {
@@ -67,13 +67,9 @@ trait MapTrait<S, T> {
 }
 
 impl ImplIntoMap<
-    S, 
-    T, 
-    impl IntoTS: Into<S, T>, 
-    impl TDrop: Drop<T>, 
-    impl SDrop: Drop<S>
+    S, T, impl IntoTS: Into<S, T>, impl TDrop: Drop<T>, impl SDrop: Drop<S>
 > of MapTrait<S, T> {
-    fn map(mut self: Array<S>) -> Array<T>{
+    fn map(mut self: Array<S>) -> Array<T> {
         let mut target: Array<T> = ArrayTrait::new();
         loop {
             match self.pop_front() {
@@ -87,16 +83,15 @@ impl ImplIntoMap<
     }
 }
 
-impl ImplPublicKeyCredentialDescriptorIntoArrayu8 
-of Into<PublicKeyCredentialDescriptor, Array<u16>> {
-    fn into(self: PublicKeyCredentialDescriptor) -> Array<u16>{
+impl ImplPublicKeyCredentialDescriptorIntoArrayu8 of Into<PublicKeyCredentialDescriptor,
+Array<u16>> {
+    fn into(self: PublicKeyCredentialDescriptor) -> Array<u16> {
         self.id
     }
 }
 
 fn allow_credentials_contain_credential(
-    options: @Array<PublicKeyCredentialDescriptor>,
-    credential: @PublicKeyCredential,
+    options: @Array<PublicKeyCredentialDescriptor>, credential: @PublicKeyCredential, 
 ) -> bool {
     let ids: Array<Array<u16>> = options.clone().map();
     ids.contains(credential.id)
@@ -104,7 +99,7 @@ fn allow_credentials_contain_credential(
 
 fn concatenate(a: @Array<u8>, b: @Array<u8>) -> Array<u8> {
     let mut i: usize = 0;
-    let mut result: Array<u8> = ArrayTrait::new(); 
+    let mut result: Array<u8> = ArrayTrait::new();
     let a_len = a.len();
     loop {
         if i == a_len {
@@ -161,15 +156,13 @@ fn extract_u256_from_u8_array(arr: @Array<u8>, offset: usize) -> Option<u256> {
 
 // A dummy string representation, waiting for Cairo support of strings
 #[derive(Drop, Clone)]
-struct MyString{
+struct MyString {}
 
-}
-
-trait UTF8Decoder{
+trait UTF8Decoder {
     fn decode(data: Array<u8>) -> MyString;
 }
 
-trait JSONClientDataParser{
+trait JSONClientDataParser {
     fn parse(string: MyString) -> CollectedClientData;
 }
 

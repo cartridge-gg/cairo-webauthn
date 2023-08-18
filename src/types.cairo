@@ -27,16 +27,16 @@ type USVString = Array<u16>;
 
 // https://www.w3.org/TR/webauthn/#dictionary-credential-descriptor
 #[derive(Drop, Clone)]
-struct PublicKeyCredentialDescriptor{
+struct PublicKeyCredentialDescriptor {
     // Puprosely not enumerated, see https://www.w3.org/TR/webauthn/#sct-domstring-backwards-compatibility
-    type_: DomString, 
+    type_: DomString,
     // Probabilistically unique identifier
     // There is some ambiguity whether it's u8 or u16, see:
     // u16: (USVString) https://w3c.github.io/webappsec-credential-management/#dom-credential-id 
     // u8/u16: (BufferSource) https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor
     // u16 seems resoanable and it probably doesn't matter 
     id: Array<u16>,
-    transports:  Option<DomString>
+    transports: Option<DomString>
 }
 
 // https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions
@@ -44,7 +44,7 @@ struct PublicKeyCredentialDescriptor{
 struct PublicKeyCredentialRequestOptions {
     challenge: DomString,
     allow_credentials: Option<Array<PublicKeyCredentialDescriptor>>
-    // TODO: Add other fields
+// TODO: Add other fields
 }
 
 
@@ -53,7 +53,7 @@ struct PublicKeyCredentialRequestOptions {
 struct Credential {
     id: USVString,
     type_: DomString,
-    // static Promise<boolean> isConditionalMediationAvailable();
+// static Promise<boolean> isConditionalMediationAvailable();
 }
 
 
@@ -127,10 +127,7 @@ struct PublicKey {
 
 impl ImplPublicKeyTryIntoSecp256r1Point of TryInto<PublicKey, Secp256r1Point> {
     fn try_into(self: PublicKey) -> Option<Secp256r1Point> {
-        match Secp256r1Impl::secp256_ec_new_syscall(
-            self.x,
-            self.y
-        ) {
+        match Secp256r1Impl::secp256_ec_new_syscall(self.x, self.y) {
             Result::Ok(op) => op,
             Result::Err => Option::None
         }
@@ -154,7 +151,7 @@ struct AssertionOptions {
     force_user_verified: bool
 }
 
-impl OptionTCloneImpl<T, impl TClone: Clone<T>> of Clone<Option<T>>{
+impl OptionTCloneImpl<T, impl TClone: Clone<T>> of Clone<Option<T>> {
     fn clone(self: @Option<T>) -> Option<T> {
         match self {
             Option::Some(s) => Option::Some(s.clone()),

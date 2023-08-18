@@ -13,64 +13,42 @@ use core::traits::Drop;
 use core::clone::Clone;
 use starknet::secp256r1;
 use starknet::secp256r1::Secp256r1Point;
-use starknet::secp256_trait::{
-    recover_public_key,
-    Signature
-};
+use starknet::secp256_trait::{recover_public_key, Signature};
 use alexandria_math::{sha256::sha256, BitShift};
 
 use alexandria_encoding::base64::Base64UrlEncoder;
 
 use webauthn::ecdsa::verify_ecdsa;
-use webauthn::errors::{
-    AuthnError,
-    StoreError,
-    RTSEIntoRTAE
-};
+use webauthn::errors::{AuthnError, StoreError, RTSEIntoRTAE};
 use webauthn::helpers::{
-    allow_credentials_contain_credential,
-    PartialEqArray,
-    UTF8Decoder,
-    JSONClientDataParser,
-    OriginChecker,
-    concatenate,
-    extract_r_and_s_from_array
+    allow_credentials_contain_credential, PartialEqArray, UTF8Decoder, JSONClientDataParser,
+    OriginChecker, concatenate, extract_r_and_s_from_array
 };
 
 use webauthn::types::{
-    PublicKeyCredentialRequestOptions,
-    PublicKeyCredential,
-    PublicKey,
-    PublicKeyCredentialDescriptor,
-    AuthenticatorResponse,
-    AuthenticatorAssertionResponse,
-    OptionTCloneImpl,
-    AuthenticatorData,
-    AssertionOptions
+    PublicKeyCredentialRequestOptions, PublicKeyCredential, PublicKey,
+    PublicKeyCredentialDescriptor, AuthenticatorResponse, AuthenticatorAssertionResponse,
+    OptionTCloneImpl, AuthenticatorData, AssertionOptions
 };
 
 
-trait WebauthnStoreTrait<T>{
+trait WebauthnStoreTrait<T> {
     // This method should probably only return the saved credentials for them to be verified here 
     // reather than doing the chcecking itself
     // Leaving for now. TODO: revise this.
     fn verify_allow_credentials(
-        self: @T, 
-        allow_credentials: @Array<PublicKeyCredentialDescriptor>
+        self: @T, allow_credentials: @Array<PublicKeyCredentialDescriptor>
     ) -> Result<(), ()>;
     fn retrieve_public_key(
-        self: @T, 
-        credential_raw_id: @Array<u8>
+        self: @T, credential_raw_id: @Array<u8>
     ) -> Result<PublicKey, StoreError>;
 }
 
-trait WebauthnAuthenticatorTrait<T>{
+trait WebauthnAuthenticatorTrait<T> {
     fn navigator_credentials_get(
-        self: @T,
-        options: @PublicKeyCredentialRequestOptions
+        self: @T, options: @PublicKeyCredentialRequestOptions
     ) -> Result<PublicKeyCredential, ()>;
 }
-
 
 
 // According to https://www.w3.org/TR/webauthn/#sctn-verifying-assertion
@@ -85,24 +63,22 @@ trait WebauthnAuthenticatorTrait<T>{
 //  Current approach - visually closer to the specification
 //  Parallel approach - easier testing
 // Either way the inner workings of the method stay the same.
-fn verify_authentication_assertion
-<
-// Store:
-    StoreT, 
-    impl WebauthnStoreTImpl: WebauthnStoreTrait<StoreT>, 
+fn verify_authentication_assertion<
+    // Store:
+    StoreT,
+    impl WebauthnStoreTImpl: WebauthnStoreTrait<StoreT>,
     impl SDrop: Drop<StoreT>,
-// Authenticator:
-    AuthenticatorT, 
-    impl WebauthnAuthenticatorTImpl: WebauthnAuthenticatorTrait<AuthenticatorT>, 
+    // Authenticator:
+    AuthenticatorT,
+    impl WebauthnAuthenticatorTImpl: WebauthnAuthenticatorTrait<AuthenticatorT>,
     impl ADrop: Drop<AuthenticatorT>,
-// Utils
+    // Utils
     impl UTF8DecoderImpl: UTF8Decoder,
     impl JSONClientDataParserImpl: JSONClientDataParser,
     impl OriginCheckerImpl: OriginChecker
->
-(
+>(
     // Can answer queries about prior registrations eg. a database driver
-    store: StoreT, 
+    store: StoreT,
     // An authenticator abstraction 
     authenticator: AuthenticatorT,
     // Options configured by the relying party needs for the ceremony
@@ -111,7 +87,7 @@ fn verify_authentication_assertion
     // eg. via a username or cookie, None otherwise
     preidentified_user_handle: Option<Array<u8>>,
     // Config options specific to the needs of this assertion
-    assertion_options: AssertionOptions    
+    assertion_options: AssertionOptions
 ) -> Result<(), AuthnError> {
     // 1. 
     match @options.allow_credentials {
@@ -143,17 +119,16 @@ fn verify_authentication_assertion
     // 5. 
     match @options.allow_credentials {
         Option::Some(c) => {
-            if !allow_credentials_contain_credential(c, credential){
+            if !allow_credentials_contain_credential(c, credential) {
                 return AuthnError::CredentialNotAllowed.into();
             };
         },
         Option::None => (),
     };
     // 6. AND 7. 
-    let credential_public_key = find_and_verify_credential_source
-        ::<StoreT, WebauthnStoreTImpl, SDrop>(
-            @store, @preidentified_user_handle, credential, response
-        )?;
+    let credential_public_key = find_and_verify_credential_source::<StoreT,
+    WebauthnStoreTImpl,
+    SDrop>(@store, @preidentified_user_handle, credential, response)?;
     // 8.
     let c_data = response.client_data_json.clone();
     let auth_data = response.authenticator_data.clone();
@@ -161,7 +136,7 @@ fn verify_authentication_assertion
     // 9. 
     let json_text = UTF8DecoderImpl::decode(c_data.clone());
     // 10.
-    let c = JSONClientDataParserImpl::parse(json_text); 
+    let c = JSONClientDataParserImpl::parse(json_text);
     // 11. pass (string verification) TODO:
     // 12. 
     if c.challenge != Base64UrlEncoder::encode(options.challenge) {
@@ -173,10 +148,8 @@ fn verify_authentication_assertion
     };
     // 14. pass TODO:
     // 15. 
-    let auth_data_struct = 
-        expand_auth_data_and_verify_rp_id_hash(
-            auth_data.clone(), 
-            assertion_options.expected_rp_id
+    let auth_data_struct = expand_auth_data_and_verify_rp_id_hash(
+        auth_data.clone(), assertion_options.expected_rp_id
     )?;
     // 16. AND 17.
     verify_user_flags(@auth_data_struct, assertion_options.force_user_verified)?;
@@ -192,14 +165,10 @@ fn verify_authentication_assertion
 // There are basically two conditions for this method to succed:
 // 1. There are at least two user identifiers
 // 2. All available user identifiers should yeld the same public key 
-fn find_and_verify_credential_source
-<
-// Store:
-    StoreT, 
-    impl WebauthnStoreTImpl: WebauthnStoreTrait<StoreT>, 
-    impl SDrop: Drop<StoreT>
->
-(
+fn find_and_verify_credential_source<
+    // Store:
+    StoreT, impl WebauthnStoreTImpl: WebauthnStoreTrait<StoreT>, impl SDrop: Drop<StoreT>
+>(
     store: @StoreT,
     preidentified_user_handle: @Option<Array<u8>>,
     credential: @PublicKeyCredential,
@@ -216,9 +185,7 @@ fn find_and_verify_credential_source
             };
             match response.user_handle {
                 Option::Some(handle) => {
-                    let pk_3 = RTSEIntoRTAE::<PublicKey>::into(
-                        store.retrieve_public_key(handle)
-                    )?;
+                    let pk_3 = RTSEIntoRTAE::<PublicKey>::into(store.retrieve_public_key(handle))?;
                     if pk_1 != pk_3 {
                         return AuthnError::IdentifiedUsersMismatch.into();
                     };
@@ -228,10 +195,13 @@ fn find_and_verify_credential_source
             pk_1
         },
         Option::None => {
-            let pk_1 = RTSEIntoRTAE::<PublicKey>::into(store.retrieve_public_key(credential.raw_id))?;
+            let pk_1 = RTSEIntoRTAE::<PublicKey>::into(
+                store.retrieve_public_key(credential.raw_id)
+            )?;
             let pk_2 = match response.user_handle {
-                Option::Some(handle) 
-                    => RTSEIntoRTAE::<PublicKey>::into(store.retrieve_public_key(credential.raw_id))?,
+                Option::Some(handle) => RTSEIntoRTAE::<PublicKey>::into(
+                    store.retrieve_public_key(credential.raw_id)
+                )?,
                 Option::None => {
                     return AuthnError::IdentifiedUsersMismatch.into();
                 },
@@ -287,7 +257,7 @@ impl ImplArrayu8TryIntoAuthData of TryInto<Array<u8>, AuthenticatorData> {
     // Construct the AuthenticatorData object from a ByteArray
     // Authenticator Data layout looks like: 
     // [ RP ID hash - 32 bytes ] [ Flags - 1 byte ] [ Counter - 4 byte ] [ ... ]
-    fn try_into(self: Array<u8>) -> Option<AuthenticatorData>{
+    fn try_into(self: Array<u8>) -> Option<AuthenticatorData> {
         if self.len() < 37 {
             return Option::None;
         };
@@ -302,16 +272,16 @@ impl ImplArrayu8TryIntoAuthData of TryInto<Array<u8>, AuthenticatorData> {
                 break;
             };
             rp_id_hash.append(*cloned[counter]);
-            counter +=1;
+            counter += 1;
         };
-        
+
         let flags = *self[32];
         let mut sc_u256: u256 = BitShift::shl((*self[33]).into(), 3 * 8);
-        sc_u256 = sc_u256 |  BitShift::shl((*self[34]).into(), 2 * 8);
-        sc_u256 = sc_u256 |  BitShift::shl((*self[35]).into(), 0 * 8);
-        sc_u256 = sc_u256 |  BitShift::shl((*self[36]).into(), 1 * 8);
+        sc_u256 = sc_u256 | BitShift::shl((*self[34]).into(), 2 * 8);
+        sc_u256 = sc_u256 | BitShift::shl((*self[35]).into(), 1 * 8);
+        sc_u256 = sc_u256 | BitShift::shl((*self[36]).into(), 0 * 8);
         let sign_count: u32 = sc_u256.try_into().unwrap();
-        Option::Some(AuthenticatorData {rp_id_hash, flags, sign_count})
+        Option::Some(AuthenticatorData { rp_id_hash, flags, sign_count })
     }
 }
 
@@ -320,7 +290,7 @@ fn verify_signature(
     hash: Array<u8>, auth_data: Array<u8>, credential_public_key: PublicKey, sig: Array<u8>
 ) -> Result<(), AuthnError> {
     let concatenation = concatenate(@auth_data, @hash);
-    let (r, s) = match extract_r_and_s_from_array(@sig){
+    let (r, s) = match extract_r_and_s_from_array(@sig) {
         Option::Some(p) => p,
         Option::None => {
             return AuthnError::InvalidSignature.into();

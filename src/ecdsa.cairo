@@ -23,7 +23,7 @@ fn verify_ecdsa(
     public_key_pt: Secp256r1Point, msg: Array<u8>, r: u256, s: u256
 ) -> Result<(), VerifyEcdsaError> {
     let hash = sha256(msg);
-    let hash_u256 = match extract_u256_from_u8_array(@hash, 0){
+    let hash_u256 = match extract_u256_from_u8_array(@hash, 0) {
         Option::Some(h) => h,
         Option::None => {
             return Result::Err(VerifyEcdsaError::WrongArgument);
@@ -100,7 +100,7 @@ enum VerifyEcdsaError {
 }
 
 impl ImplVerifyEcdsaErrorIntoFelt252 of Into<VerifyEcdsaError, felt252> {
-    fn into(self: VerifyEcdsaError) -> felt252{
+    fn into(self: VerifyEcdsaError) -> felt252 {
         match self {
             VerifyEcdsaError::WrongArgument => 'Wrong Argument!',
             VerifyEcdsaError::InvalidSignature => 'Invalid Signature!',
@@ -112,7 +112,7 @@ impl ImplVerifyEcdsaErrorIntoFelt252 of Into<VerifyEcdsaError, felt252> {
 #[derive(Drop)]
 fn check_bounds(r: u256, s: u256) -> bool {
     let n = Secp256r1Impl::get_curve_size();
-    if r >  n{
+    if r > n {
         false
     } else if s > n {
         false
