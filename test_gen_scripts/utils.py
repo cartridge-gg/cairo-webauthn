@@ -18,10 +18,18 @@ def get_good_signature(message: bytes, hash=False):
     return (px, py, r, s)
 
 
-def get_msg_as_cairo_array(msg: bytes) -> str:
-    declare = ["let mut msg: Array<u8> = ArrayTrait::new();"]
-    lines = [f"msg.append({hex(b)});" for b in msg]
-    return "\n".join(declare + lines)
+def get_raw_signature(message: bytes):
+    sk = SigningKey.generate(curve=NIST256p)
+    vk = sk.get_verifying_key()
+    sig = sk.sign(message, hashfunc=sha256)
+    (px, py) = (vk.pubkey.point.x(), vk.pubkey.point.y())
+    return (sig, px, py)
+
+
+def bytes_as_cairo_array(bytes: bytes, name: str = "msg") -> str:
+    declare = [f"let mut {name}: Array<u8> = ArrayTrait::new();"]
+    lines = [f"{name}.append({hex(b)});" for b in bytes]
+    return "\n".join(declare + lines) + "\n"
 
 
 # Dummy hash function returning a mock of a digestable object

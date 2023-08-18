@@ -1,3 +1,4 @@
+use core::array::ArrayTrait;
 use core::debug::PrintTrait;
 use core::starknet::secp256_trait::Secp256PointTrait;
 use starknet::secp256r1::Secp256r1Point;

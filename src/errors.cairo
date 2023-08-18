@@ -17,6 +17,26 @@ enum AuthnError{
     InvalidSignature
 }
 
+impl AuthnErrorIntoFelt252 of Into<AuthnError, felt252> {
+    fn into(self: AuthnError) -> felt252 {
+        match self {
+            AuthnError::TransportNotAllowed => 'TransportNotAllowed',
+            AuthnError::GetCredentialRejected => 'GetCredentialRejected',
+            AuthnError::ResponseIsNotAttestation => 'ResponseIsNotAttestation',
+            AuthnError::CredentialNotAllowed => 'CredentialNotAllowed',
+            AuthnError::KeyRetirevalFailed => 'KeyRetirevalFailed',
+            AuthnError::IdentifiedUsersMismatch => 'IdentifiedUsersMismatch',
+            AuthnError::ChallengeMismatch => 'ChallengeMismatch',
+            AuthnError::OriginMismatch => 'OriginMismatch',
+            AuthnError::InvalidAuthData => 'InvalidAuthData',
+            AuthnError::RelyingPartyIdHashMismatch => 'RelyingPartyIdHashMismatch',
+            AuthnError::UserFlagsMismatch => 'UserFlagsMismatch',
+            AuthnError::InvalidPublicKey => 'InvalidPublicKey',
+            AuthnError::InvalidSignature => 'InvalidSignature',
+        }
+    }
+}
+
 // Probably this should not exist
 enum StoreError {
     KeyRetirevalFailed

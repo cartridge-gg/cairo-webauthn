@@ -1,5 +1,5 @@
 from structure import Test, TestFile, TestFileCreatorInterface, SimpleBlock
-from utils import get_good_signature, get_msg_as_cairo_array
+from utils import get_good_signature, bytes_as_cairo_array
 
 
 class VerifyECDSATest(TestFileCreatorInterface):
@@ -64,7 +64,7 @@ match {func_name}(pub_key, msg, r, s) {{
                 py=py,
                 r=r,
                 s=s,
-                msg=get_msg_as_cairo_array(message),
+                msg=bytes_as_cairo_array(message),
                 ok_code="()",
                 err_code="assert(false, m.into())",
                 func_name="verify_ecdsa",
