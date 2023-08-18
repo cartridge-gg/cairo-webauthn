@@ -14,12 +14,9 @@ use starknet::secp256r1;
 use starknet::secp256r1::Secp256r1Point;
 use starknet::secp256r1::Secp256r1Impl;
 use starknet::secp256r1::Secp256r1PointImpl;
-use starknet::secp256_trait::recover_public_key;
-use starknet::secp256_trait::Signature;
 
 use alexandria_math::sha256::sha256;
 use alexandria_encoding::base64::Base64UrlEncoder;
-use alexandria_math::karatsuba;
 use alexandria_math::BitShift;
 
 // https://webidl.spec.whatwg.org/#idl-DOMString

@@ -64,7 +64,6 @@ trait WebauthnStoreTrait<T>{
     ) -> Result<PublicKey, StoreError>;
 }
 
-
 trait WebauthnAuthenticatorTrait<T>{
     fn navigator_credentials_get(
         self: @T,
@@ -246,6 +245,24 @@ fn find_and_verify_credential_source
     Result::Ok(pk)
 }
 
+// Step 15
+// Expands auth_data crunched into an array to an AuthenticatorData object
+fn expand_auth_data_and_verify_rp_id_hash(
+    auth_data: Array<u8>, expected_rp_id: Array<u8>
+) -> Result<AuthenticatorData, AuthnError> {
+    let auth_data_struct = match auth_data.try_into() {
+        Option::Some(ad) => ad,
+        Option::None => {
+            return AuthnError::InvalidAuthData.into();
+        }
+    };
+    if sha256(expected_rp_id) == auth_data_struct.rp_id_hash {
+        Result::Ok(auth_data_struct)
+    } else {
+        AuthnError::RelyingPartyIdHashMismatch.into()
+    }
+}
+
 // Steps 16 and 17 of https://www.w3.org/TR/webauthn/#sctn-verifying-assertion
 fn verify_user_flags(
     auth_data: @AuthenticatorData, force_user_verified: bool
@@ -262,22 +279,6 @@ fn verify_user_flags(
         Result::Ok(())
     } else {
         AuthnError::UserFlagsMismatch.into()
-    }
-}
-
-fn expand_auth_data_and_verify_rp_id_hash(
-    auth_data: Array<u8>, expected_rp_id: Array<u8>
-) -> Result<AuthenticatorData, AuthnError> {
-    let auth_data_struct = match auth_data.try_into() {
-        Option::Some(ad) => ad,
-        Option::None => {
-            return AuthnError::InvalidAuthData.into();
-        }
-    };
-    if sha256(expected_rp_id) == auth_data_struct.rp_id_hash {
-        Result::Ok(auth_data_struct)
-    } else {
-        AuthnError::RelyingPartyIdHashMismatch.into()
     }
 }
 

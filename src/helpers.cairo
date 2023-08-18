@@ -16,7 +16,9 @@ fn arrays_equal
 (a: @Array<T>, b: @Array<T>) -> bool{
     let la: usize = a.len();
     let lb: usize = b.len();
-    assert(la == lb, 'different len');
+    if la != lb {
+        return false;
+    }
     let mut i: usize = 0;
     loop {
         if i == la {
@@ -146,16 +148,18 @@ fn extract_u256_from_u8_array(arr: @Array<u8>, offset: usize) -> Option<u256> {
     if len - offset < 32 {
         return Option::None;
     }
-    let mut i = 0;
+    let mut i = 0_usize;
     loop {
         if i == 32 {
             break;
         };
-        n = n | BitShift::shl((*arr[i + offset]).into(), upcast((32 - (i + 1)) * 8));
+        n = n | BitShift::shl((*arr[i + offset]).into(), ((32 - (i + 1)) * 8).into());
+        i += 1;
     };
     Option::Some(n)
 }
 
+// A dummy string representation, waiting for Cairo support of strings
 #[derive(Drop, Clone)]
 struct MyString{
 
