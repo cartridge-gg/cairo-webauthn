@@ -1,3 +1,5 @@
+import random
+import string
 from hashlib import sha256
 from ecdsa import SigningKey, NIST256p, util
 
@@ -24,6 +26,11 @@ def get_raw_signature(message: bytes):
     sig = sk.sign(message, hashfunc=sha256)
     (px, py) = (vk.pubkey.point.x(), vk.pubkey.point.y())
     return (sig, px, py)
+
+
+def get_random_string(a: int, b: int):
+    characters = string.ascii_letters + string.digits
+    return "".join(random.choice(characters) for _ in range(random.randint(a, b)))
 
 
 def bytes_as_cairo_array(bytes: bytes, name: str = "msg") -> str:

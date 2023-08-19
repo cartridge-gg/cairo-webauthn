@@ -114,13 +114,16 @@ class TestSuite:
         custom = content.split(TestSuite.splitter)[-1]
         generated = "\n".join([f"mod {t.name}_gen_test;" for t in self.test_files])
 
-        new_content = "\n".join(
-            [
-                "// Place your code below auto generated tests' modules!!!",
-                generated,
-                TestSuite.splitter,
-                custom.strip(),
-            ]
+        new_content = (
+            "\n".join(
+                [
+                    "// Place your code below auto generated tests' modules!!!",
+                    generated,
+                    TestSuite.splitter,
+                    custom.strip(),
+                ]
+            )
+            + "\n"
         )
 
         with open(self.mod_file_path, "w") as file:

@@ -1,5 +1,5 @@
 from hashlib import sha256
-from structure import Test, TestFile, TestFileCreatorInterface, SimpleBlock
+from structure import Test, TestFile, TestFileCreatorInterface
 from utils import get_raw_signature, bytes_as_cairo_array
 
 
