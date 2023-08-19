@@ -3,6 +3,6 @@ name = "webauthn"
 version = "0.1.0"
 
 [dependencies]
-alexandria_encoding = { git = "https://github.com/neotheprogramist/alexandria", branch="feat/bitshift-extension" }
+alexandria_encoding = { git = "https://github.com/neotheprogramist/alexandria" }
 
 # See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest
