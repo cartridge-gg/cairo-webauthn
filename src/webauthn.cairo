@@ -276,11 +276,11 @@ impl ImplArrayu8TryIntoAuthData of TryInto<Array<u8>, AuthenticatorData> {
         };
 
         let flags = *self[32];
-        let mut sc_u256: u256 = BitShift::shl((*self[33]).into(), 3 * 8);
-        sc_u256 = sc_u256 | BitShift::shl((*self[34]).into(), 2 * 8);
-        sc_u256 = sc_u256 | BitShift::shl((*self[35]).into(), 1 * 8);
-        sc_u256 = sc_u256 | BitShift::shl((*self[36]).into(), 0 * 8);
-        let sign_count: u32 = sc_u256.try_into().unwrap();
+        let mut sign_count = 0_u32;
+        sign_count = sign_count | BitShift::shl((*self[33]).into(), 3 * 8);
+        sign_count = sign_count | BitShift::shl((*self[34]).into(), 2 * 8);
+        sign_count = sign_count | BitShift::shl((*self[35]).into(), 1 * 8);
+        sign_count = sign_count | BitShift::shl((*self[36]).into(), 0 * 8);
         Option::Some(AuthenticatorData { rp_id_hash, flags, sign_count })
     }
 }
