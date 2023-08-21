@@ -5,6 +5,7 @@ from verify_signature_test import VerifySignatureTest
 from expand_auth_data_test import ExpandAuthDataTest
 from webauthn_test import WebauthnTest
 
+
 def main():
     suite = TestSuite("src/tests", "src/tests.cairo")
     suite.add_test_file(VerifyECDSATest().test_file())

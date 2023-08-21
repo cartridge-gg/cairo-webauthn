@@ -108,8 +108,10 @@ fn get_msg_and_validate(
     msg
 }
 
-fn verify_challenge(client_data_json: @Array<u8>, challenge_offset: usize, challenge: Array<u8>) -> Result<(), AuthnError> {
-    let challenge : Array<u8> = Base64UrlEncoder::encode(challenge);
+fn verify_challenge(
+    client_data_json: @Array<u8>, challenge_offset: usize, challenge: Array<u8>
+) -> Result<(), AuthnError> {
+    let challenge: Array<u8> = Base64UrlEncoder::encode(challenge);
     let mut i: usize = 0;
     let challenge_len: usize = challenge.len();
     loop {

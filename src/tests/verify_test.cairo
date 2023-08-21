@@ -12,12 +12,12 @@ use starknet::secp256r1::Secp256r1Point;
 #[available_gas(20000000000)]
 fn test_1() {
     let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(
-        85361148225729824017625108732123897247053575672172763810522989717862412662042, 
+        85361148225729824017625108732123897247053575672172763810522989717862412662042,
         34990362585894687818855246831758567645528911684717374214517047635026995605
     );
     let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
-    let r : u256 = 75529856265189085717597548073817449083775048352765043385708233156408636830191;
-    let s : u256 = 82845566382340822813767408921328436369277471334456847186275564885436721176380;
+    let r: u256 = 75529856265189085717597548073817449083775048352765043385708233156408636830191;
+    let s: u256 = 82845566382340822813767408921328436369277471334456847186275564885436721176380;
 
     let type_offset = 9_usize;
 
@@ -55,7 +55,6 @@ fn test_1() {
     challenge.append(5);
     challenge.append(36);
     challenge.append(99);
-
 
     let origin_offset = 91;
     let mut origin = ArrayTrait::<u8>::new();
@@ -315,7 +314,6 @@ fn test_1() {
     client_data_json.append(101);
     client_data_json.append(125);
 
-
     let mut authenticator_data = ArrayTrait::<u8>::new();
     authenticator_data.append(32);
     authenticator_data.append(169);
@@ -355,8 +353,10 @@ fn test_1() {
     authenticator_data.append(0);
     authenticator_data.append(0);
 
-
-    let verify_result = verify(public_key_pt, r, s,
+    let verify_result = verify(
+        public_key_pt,
+        r,
+        s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -367,9 +367,9 @@ fn test_1() {
     );
 
     match verify_result {
-	    Result::Ok => (),
-	    Result::Err(e) => {
-	        assert(false, AuthnErrorIntoFelt252::into(e))
-	    }
-	}
+        Result::Ok => (),
+        Result::Err(e) => {
+            assert(false, AuthnErrorIntoFelt252::into(e))
+        }
+    }
 }

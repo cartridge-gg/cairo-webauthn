@@ -73,13 +73,6 @@ class WebauthnSigner:
 
         self.public_key = (pt.x(), pt.y())
 
-    async def send_transaction(
-        self, account, to, selector_name, calldata, nonce=None, max_fee=0
-    ):
-        return await self.send_transactions(
-            account, [(to, selector_name, calldata)], nonce, max_fee
-        )
-
     def sign_transaction(self, origin, contract_address, calldata, nonce, max_fee):
         message_hash = get_transaction_hash(
             TransactionHashPrefix.INVOKE, contract_address, calldata, nonce, max_fee
@@ -144,8 +137,8 @@ TEST_CASE = """let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait:
     {y}
 );
 let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
-let r : u256 = {param_r};
-let s : u256 = {param_s};
+let r: u256 = {param_r};
+let s: u256 = {param_s};
 let type_offset = 9_usize;
 let challenge_offset = {challenge_offset};
 let mut challenge = ArrayTrait::<u8>::new();
@@ -367,7 +360,7 @@ class WebauthnTest(TestFileCreatorInterface):
             build_call[0] = hex(build_call[0])
             build_calls.append(build_call)
 
-        (call_array, calldata) = from_call_to_call_array(build_calls)
+        (_, calldata) = from_call_to_call_array(build_calls)
         message_hash = get_transaction_hash(
             TransactionHashPrefix.INVOKE, contract_address, calldata, nonce, max_fee
         )
@@ -397,8 +390,6 @@ class WebauthnTest(TestFileCreatorInterface):
         for c in authenticator_data_bytes:
             authenticator_data += "authenticator_data.append({});\n".format(c)
 
-        challenge_offset_bytes = 36
-
         return Test(
             name,
             TEST_CASE.format(
@@ -406,7 +397,7 @@ class WebauthnTest(TestFileCreatorInterface):
                 y=signer.public_key[1],
                 param_r=param_r,
                 param_s=param_s,
-                challenge_offset=challenge_offset_bytes,
+                challenge_offset=challenge_offset,
                 challenge=challenge,
                 client_data_json=client_data_json,
                 authenticator_data=authenticator_data,

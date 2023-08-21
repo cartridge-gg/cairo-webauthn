@@ -22,7 +22,7 @@ class Test(CodeBlock):
 
     def to_text(self) -> str:
         text = "\n".join(
-            ["#[test]", f"#[available_gas({self.gas})]", f"fn test_{self.name}(){{"]
+            ["#[test]", f"#[available_gas({self.gas})]", f"fn test_{self.name}() {{"]
         )
 
         lines = self.body.split("\n")
