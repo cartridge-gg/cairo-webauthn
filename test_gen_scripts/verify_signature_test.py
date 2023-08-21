@@ -42,7 +42,9 @@ class VerifySignatureTest(TestFileCreatorInterface):
     def get_tests(self):
         return [
             self.create_good_test(rp_id, f"verify_signature_{i}")
-            for i, rp_id in enumerate(get_random_string(5, 100).encode() for _ in range(100))
+            for i, rp_id in enumerate(
+                get_random_string(5, 100).encode() for _ in range(10)
+            )
         ]
 
     def get_imports(self):

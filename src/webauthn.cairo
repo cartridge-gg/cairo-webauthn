@@ -1,19 +1,10 @@
-use core::traits::TryInto;
-use traits::PartialEq;
 use array::ArrayTrait;
 use integer::upcast;
-use debug::PrintTrait;
 use option::OptionTrait;
-use option::OptionCopy;
 use result::ResultTrait;
-use core::serde::Serde;
-use core::traits::Destruct;
-use core::traits::Into;
-use core::traits::Drop;
-use core::clone::Clone;
-use starknet::secp256r1;
+use clone::Clone;
+use traits::{Into, TryInto, Drop, PartialEq};
 use starknet::secp256r1::Secp256r1Point;
-use starknet::secp256_trait::{recover_public_key, Signature};
 use alexandria_math::{sha256::sha256, BitShift};
 
 use alexandria_encoding::base64::Base64UrlEncoder;
@@ -28,7 +19,7 @@ use webauthn::helpers::{
 use webauthn::types::{
     PublicKeyCredentialRequestOptions, PublicKeyCredential, PublicKey,
     PublicKeyCredentialDescriptor, AuthenticatorResponse, AuthenticatorAssertionResponse,
-    OptionTCloneImpl, AuthenticatorData, AssertionOptions
+    AuthenticatorData, AssertionOptions
 };
 
 
@@ -50,6 +41,110 @@ trait WebauthnAuthenticatorTrait<T> {
     ) -> Result<PublicKeyCredential, ()>;
 }
 
+
+fn verify(
+    pub: Secp256r1Point, // public key as point on elliptic curve
+    r: u256, // 'r' part from ecdsa
+    s: u256, // 's' part from ecdsa
+    type_offset: usize, // offset to 'type' field in json
+    challenge_offset: usize, // offset to 'challenge' field in json
+    origin_offset: usize, // offset to 'origin' field in json
+    client_data_json: Array<u8>, // json with client_data as 1-byte array 
+    challenge: Array<u8>, // origin as 1-byte array
+    origin: Array<u8>, // challenge as 1-byte array
+    authenticator_data: Array<u8> // authenticator data as 1-byte array
+) -> Result<(), AuthnError> {
+    let msg = get_msg_and_validate(
+        type_offset,
+        challenge_offset,
+        origin_offset,
+        client_data_json,
+        challenge,
+        origin,
+        authenticator_data
+    );
+
+    match verify_ecdsa(pub, msg, r, s) {
+        Result::Ok => Result::Ok(()),
+        Result::Err(e) => AuthnError::InvalidSignature.into()
+    }
+}
+
+fn get_msg_and_validate(
+    type_offset: usize, // offset to 'type' field in json
+    challenge_offset: usize, // offset to 'challenge' field in json
+    origin_offset: usize, // offset to 'origin' field in json
+    client_data_json: Array<u8>, // json with client_data as 1-byte array 
+    challenge: Array<u8>, // challenge as 1-byte array
+    origin: Array<u8>, // origin as 1-byte array
+    authenticator_data: Array<u8> // authenticator data as 1-byte array
+) -> Array<u8> {
+    // 11. Verify that the value of C.type is the string webauthn.get
+    // Skipping for now
+
+    // 12. Verify that the value of C.challenge equals the base64url encoding of options.challenge.
+    verify_challenge(@client_data_json, challenge_offset, challenge);
+
+    // 13. Verify that the value of C.origin matches the Relying Party's origin.
+    // Skipping for now.
+
+    // 15. Verify that the rpIdHash in authData is the SHA-256 hash of the RP ID expected by the Relying Party.
+    // Skipping for now. This protects against authenticator cloning which is generally not
+    // a concern of blockchain wallets today.
+    // Authenticator Data layout looks like: [ RP ID hash - 32 bytes ] [ Flags - 1 byte ] [ Counter - 4 byte ] [ ... ]
+    // See: https://w3c.github.io/webauthn/#sctn-authenticator-data
+
+    // 16. Verify that the User Present (0) and User Verified (2) bits of the flags in authData is set.
+    verify_auth_flags(@authenticator_data);
+
+    // 17. Skipping extensions
+
+    // 18. Compute hash of client_data
+    let client_data_hash = sha256(client_data_json);
+
+    // Compute message ready for verification.
+    let mut msg = authenticator_data;
+    extend(ref msg, @client_data_hash);
+    msg
+}
+
+fn verify_challenge(client_data_json: @Array<u8>, challenge_offset: usize, challenge: Array<u8>) -> Result<(), AuthnError> {
+    let challenge : Array<u8> = Base64UrlEncoder::encode(challenge);
+    let mut i: usize = 0;
+    let challenge_len: usize = challenge.len();
+    loop {
+        // Base64UrlEncoder at the moment pads with '=' => remove -1 later {assumes len == 43} or 
+        // additionally break on '=' sign
+        if i == challenge_len - 1 {
+            break Result::Ok(());
+        }
+        if *client_data_json.at(challenge_offset + i) != *challenge.at(i) {
+            break AuthnError::ChallengeMismatch.into();
+        }
+        i += 1_usize;
+    }
+}
+
+fn verify_auth_flags(authenticator_data: @Array<u8>) -> Result<(), AuthnError> {
+    let flags: u128 = upcast(*authenticator_data.at(32_usize));
+    let mask: u128 = upcast(1_u8 + 4_u8);
+    if (flags & mask) != mask {
+        return AuthnError::UserFlagsMismatch.into();
+    }
+    Result::Ok(())
+}
+
+fn extend(ref arr: Array<u8>, src: @Array<u8>) {
+    let mut i: usize = 0;
+    let end: usize = src.len();
+    loop {
+        if i == end {
+            break ();
+        }
+        arr.append(*src.at(i));
+        i += 1_usize;
+    }
+}
 
 // According to https://www.w3.org/TR/webauthn/#sctn-verifying-assertion
 // Couldn't find a way to create a struct with all the necessary generic implementations
