@@ -54,31 +54,6 @@ fn verify(
     origin: Array<u8>, // challenge as 1-byte array
     authenticator_data: Array<u8> // authenticator data as 1-byte array
 ) -> Result<(), AuthnError> {
-    let msg = get_msg_and_validate(
-        type_offset,
-        challenge_offset,
-        origin_offset,
-        client_data_json,
-        challenge,
-        origin,
-        authenticator_data
-    );
-
-    match verify_ecdsa(pub, msg, r, s) {
-        Result::Ok => Result::Ok(()),
-        Result::Err(e) => AuthnError::InvalidSignature.into()
-    }
-}
-
-fn get_msg_and_validate(
-    type_offset: usize, // offset to 'type' field in json
-    challenge_offset: usize, // offset to 'challenge' field in json
-    origin_offset: usize, // offset to 'origin' field in json
-    client_data_json: Array<u8>, // json with client_data as 1-byte array 
-    challenge: Array<u8>, // challenge as 1-byte array
-    origin: Array<u8>, // origin as 1-byte array
-    authenticator_data: Array<u8> // authenticator data as 1-byte array
-) -> Array<u8> {
     // 11. Verify that the value of C.type is the string webauthn.get
     // Skipping for now
 
@@ -95,7 +70,13 @@ fn get_msg_and_validate(
     // See: https://w3c.github.io/webauthn/#sctn-authenticator-data
 
     // 16. Verify that the User Present (0) and User Verified (2) bits of the flags in authData is set.
-    verify_auth_flags(@authenticator_data);
+    let ad: AuthenticatorData = match authenticator_data.clone().try_into() {
+        Option::Some(x) => x,
+        Option::None => {
+            return AuthnError::UserFlagsMismatch.into();
+        }
+    };
+    verify_user_flags(@ad, true)?;
 
     // 17. Skipping extensions
 
@@ -103,9 +84,12 @@ fn get_msg_and_validate(
     let client_data_hash = sha256(client_data_json);
 
     // Compute message ready for verification.
-    let mut msg = authenticator_data;
-    extend(ref msg, @client_data_hash);
-    msg
+    let result = concatenate(@authenticator_data, @client_data_hash);
+
+    match verify_ecdsa(pub, result, r, s) {
+        Result::Ok => Result::Ok(()),
+        Result::Err(e) => AuthnError::InvalidSignature.into()
+    }
 }
 
 fn verify_challenge(
@@ -123,27 +107,6 @@ fn verify_challenge(
         if *client_data_json.at(challenge_offset + i) != *challenge.at(i) {
             break AuthnError::ChallengeMismatch.into();
         }
-        i += 1_usize;
-    }
-}
-
-fn verify_auth_flags(authenticator_data: @Array<u8>) -> Result<(), AuthnError> {
-    let flags: u128 = upcast(*authenticator_data.at(32_usize));
-    let mask: u128 = upcast(1_u8 + 4_u8);
-    if (flags & mask) != mask {
-        return AuthnError::UserFlagsMismatch.into();
-    }
-    Result::Ok(())
-}
-
-fn extend(ref arr: Array<u8>, src: @Array<u8>) {
-    let mut i: usize = 0;
-    let end: usize = src.len();
-    loop {
-        if i == end {
-            break ();
-        }
-        arr.append(*src.at(i));
         i += 1_usize;
     }
 }
