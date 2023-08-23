@@ -1,24 +1,26 @@
-
+// This file is script-generated.
+// Don't modify it manually!
+// See test_gen_scripts/webauthn_test.py for details
 use webauthn::webauthn::verify;
 use array::ArrayTrait;
-use webauthn::mock::EcPoint;
-
+use webauthn::types::PublicKey;
+use webauthn::errors::AuthnErrorIntoFelt252;
+use core::option::OptionTrait;
+use core::result::ResultTrait;
+use starknet::secp256r1::Secp256Trait;
+use starknet::secp256r1::Secp256r1Point;
 
 #[test]
-#[available_gas(20000000000)]
-fn test_0() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(68771434430694404260836634,66633780841359531151283366,14259391536917482115299254),
-    //    BigInt3(15143078500912722485799317,6719228382483657703164717,5845062894556851529125),
-    //);
-    //let r = BigInt3(63555563315794279560344047,13095470977131083448599430,12617095898995832105276919);
-    //let s = BigInt3(51677855527563245207068476,53594536522197615937402726,13839169138395057433218690);
-    let public_key_pt = EcPoint{};
-    let r : u256 = 0;
-    let s : u256 = 0;
-
+#[available_gas(200000000000)]
+fn test_base_0() {
+    let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(
+        85361148225729824017625108732123897247053575672172763810522989717862412662042,
+        34990362585894687818855246831758567645528911684717374214517047635026995605
+    );
+    let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
+    let r: u256 = 75529856265189085717597548073817449083775048352765043385708233156408636830191;
+    let s: u256 = 82845566382340822813767408921328436369277471334456847186275564885436721176380;
     let type_offset = 9_usize;
-
     let challenge_offset = 36;
     let mut challenge = ArrayTrait::<u8>::new();
     challenge.append(0);
@@ -53,7 +55,6 @@ fn test_0() {
     challenge.append(5);
     challenge.append(36);
     challenge.append(99);
-
 
     let origin_offset = 91;
     let mut origin = ArrayTrait::<u8>::new();
@@ -106,7 +107,6 @@ fn test_0() {
     origin.append(0x2E);
     origin.append(0x67);
     origin.append(0x67);
-
     let mut client_data_json = ArrayTrait::<u8>::new();
     client_data_json.append(123);
     client_data_json.append(34);
@@ -313,7 +313,6 @@ fn test_0() {
     client_data_json.append(101);
     client_data_json.append(125);
 
-
     let mut authenticator_data = ArrayTrait::<u8>::new();
     authenticator_data.append(32);
     authenticator_data.append(169);
@@ -353,8 +352,10 @@ fn test_0() {
     authenticator_data.append(0);
     authenticator_data.append(0);
 
-
-    verify(public_key_pt, r, s,
+    let verify_result = verify(
+        public_key_pt,
+        r,
+        s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -363,1733 +364,23 @@ fn test_0() {
         origin,
         authenticator_data
     );
-
-    return ();
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(e) => assert(false, AuthnErrorIntoFelt252::into(e))
+    }
 }
 
 #[test]
-#[available_gas(20000000000)]
-fn test_signer_0() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(50320808002923069934540860,29659439622320331347848978,17644238560105090338103230),
-    //    BigInt3(40140827987005996427549844,32811899671089872982866905,11892262351579399297836188),
-    //);
-    //let r = BigInt3(7478335912069748360464095,39292053890001018675136935,16628414991429512078278629);
-    //let s = BigInt3(25531251130641439411391856,29191446154598781835866287,135106954415623211502200);
-    let public_key_pt = EcPoint{};
-    let r : u256 = 0;
-    let s : u256 = 0;
-
-    let type_offset = 9_usize;
-
-    let challenge_offset = 36;
-    let mut challenge = ArrayTrait::<u8>::new();
-    challenge.append(6);
-    challenge.append(58);
-    challenge.append(153);
-    challenge.append(157);
-    challenge.append(39);
-    challenge.append(33);
-    challenge.append(87);
-    challenge.append(210);
-    challenge.append(184);
-    challenge.append(177);
-    challenge.append(106);
-    challenge.append(213);
-    challenge.append(136);
-    challenge.append(44);
-    challenge.append(177);
-    challenge.append(9);
-    challenge.append(230);
-    challenge.append(56);
-    challenge.append(158);
-    challenge.append(56);
-    challenge.append(180);
-    challenge.append(165);
-    challenge.append(220);
-    challenge.append(108);
-    challenge.append(105);
-    challenge.append(207);
-    challenge.append(246);
-    challenge.append(245);
-    challenge.append(21);
-    challenge.append(226);
-    challenge.append(30);
-    challenge.append(31);
-
-
-    let origin_offset = 91;
-    let mut origin = ArrayTrait::<u8>::new();
-    origin.append(0x68);
-    origin.append(0x74);
-    origin.append(0x74);
-    origin.append(0x70);
-    origin.append(0x73);
-    origin.append(0x3A);
-    origin.append(0x2F);
-    origin.append(0x2F);
-    origin.append(0x63);
-    origin.append(0x6F);
-    origin.append(0x6E);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x6F);
-    origin.append(0x6C);
-    origin.append(0x6C);
-    origin.append(0x65);
-    origin.append(0x72);
-    origin.append(0x2D);
-    origin.append(0x65);
-    origin.append(0x31);
-    origin.append(0x33);
-    origin.append(0x70);
-    origin.append(0x74);
-    origin.append(0x39);
-    origin.append(0x77);
-    origin.append(0x77);
-    origin.append(0x76);
-    origin.append(0x2E);
-    origin.append(0x70);
-    origin.append(0x72);
-    origin.append(0x65);
-    origin.append(0x76);
-    origin.append(0x69);
-    origin.append(0x65);
-    origin.append(0x77);
-    origin.append(0x2E);
-    origin.append(0x63);
-    origin.append(0x61);
-    origin.append(0x72);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x69);
-    origin.append(0x64);
-    origin.append(0x67);
-    origin.append(0x65);
-    origin.append(0x2E);
-    origin.append(0x67);
-    origin.append(0x67);
-
-    let mut client_data_json = ArrayTrait::<u8>::new();
-    client_data_json.append(123);
-    client_data_json.append(34);
-    client_data_json.append(116);
-    client_data_json.append(121);
-    client_data_json.append(112);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(119);
-    client_data_json.append(101);
-    client_data_json.append(98);
-    client_data_json.append(97);
-    client_data_json.append(117);
-    client_data_json.append(116);
-    client_data_json.append(104);
-    client_data_json.append(110);
-    client_data_json.append(46);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(116);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(108);
-    client_data_json.append(101);
-    client_data_json.append(110);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(66);
-    client_data_json.append(106);
-    client_data_json.append(113);
-    client_data_json.append(90);
-    client_data_json.append(110);
-    client_data_json.append(83);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(86);
-    client_data_json.append(57);
-    client_data_json.append(75);
-    client_data_json.append(52);
-    client_data_json.append(115);
-    client_data_json.append(87);
-    client_data_json.append(114);
-    client_data_json.append(86);
-    client_data_json.append(105);
-    client_data_json.append(67);
-    client_data_json.append(121);
-    client_data_json.append(120);
-    client_data_json.append(67);
-    client_data_json.append(101);
-    client_data_json.append(89);
-    client_data_json.append(52);
-    client_data_json.append(110);
-    client_data_json.append(106);
-    client_data_json.append(105);
-    client_data_json.append(48);
-    client_data_json.append(112);
-    client_data_json.append(100);
-    client_data_json.append(120);
-    client_data_json.append(115);
-    client_data_json.append(97);
-    client_data_json.append(99);
-    client_data_json.append(95);
-    client_data_json.append(50);
-    client_data_json.append(57);
-    client_data_json.append(82);
-    client_data_json.append(88);
-    client_data_json.append(105);
-    client_data_json.append(72);
-    client_data_json.append(104);
-    client_data_json.append(56);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(111);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(104);
-    client_data_json.append(116);
-    client_data_json.append(116);
-    client_data_json.append(112);
-    client_data_json.append(115);
-    client_data_json.append(58);
-    client_data_json.append(47);
-    client_data_json.append(47);
-    client_data_json.append(99);
-    client_data_json.append(111);
-    client_data_json.append(110);
-    client_data_json.append(116);
-    client_data_json.append(114);
-    client_data_json.append(111);
-    client_data_json.append(108);
-    client_data_json.append(108);
-    client_data_json.append(101);
-    client_data_json.append(114);
-    client_data_json.append(46);
-    client_data_json.append(99);
-    client_data_json.append(97);
-    client_data_json.append(114);
-    client_data_json.append(116);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(100);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(46);
-    client_data_json.append(103);
-    client_data_json.append(103);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(114);
-    client_data_json.append(111);
-    client_data_json.append(115);
-    client_data_json.append(115);
-    client_data_json.append(79);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(102);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(115);
-    client_data_json.append(101);
-    client_data_json.append(125);
-
-
-    let mut authenticator_data = ArrayTrait::<u8>::new();
-    authenticator_data.append(32);
-    authenticator_data.append(169);
-    authenticator_data.append(126);
-    authenticator_data.append(195);
-    authenticator_data.append(248);
-    authenticator_data.append(239);
-    authenticator_data.append(188);
-    authenticator_data.append(42);
-    authenticator_data.append(202);
-    authenticator_data.append(12);
-    authenticator_data.append(247);
-    authenticator_data.append(202);
-    authenticator_data.append(187);
-    authenticator_data.append(66);
-    authenticator_data.append(11);
-    authenticator_data.append(74);
-    authenticator_data.append(9);
-    authenticator_data.append(208);
-    authenticator_data.append(174);
-    authenticator_data.append(201);
-    authenticator_data.append(144);
-    authenticator_data.append(84);
-    authenticator_data.append(102);
-    authenticator_data.append(201);
-    authenticator_data.append(173);
-    authenticator_data.append(247);
-    authenticator_data.append(149);
-    authenticator_data.append(132);
-    authenticator_data.append(250);
-    authenticator_data.append(117);
-    authenticator_data.append(254);
-    authenticator_data.append(211);
-    authenticator_data.append(5);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-
-
-    verify(public_key_pt, r, s,
-        type_offset,
-        challenge_offset,
-        origin_offset,
-        client_data_json,
-        challenge,
-        origin,
-        authenticator_data
-    );
-
-    return ();
-}
-
-#[test]
-#[available_gas(20000000000)]
-fn test_signer_1() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(5104243259913874716858778,42416632783810824089307815,6912820919060764331029508),
-    //    BigInt3(15450218404992360180362651,53084352605611353939513836,5932354288177748410294762),
-    //);
-    //let r = BigInt3(11771810990787043504068909,34520736123055134955669775,4485082858757248436281101);
-    //let s = BigInt3(51217825694524434895813069,61153771071546727828729994,4102990090447565707482224);
-    let public_key_pt = EcPoint{};
-    let r : u256 = 0;
-    let s : u256 = 0;
-
-    let type_offset = 9_usize;
-
-    let challenge_offset = 36;
-    let mut challenge = ArrayTrait::<u8>::new();
-    challenge.append(6);
-    challenge.append(58);
-    challenge.append(153);
-    challenge.append(157);
-    challenge.append(39);
-    challenge.append(33);
-    challenge.append(87);
-    challenge.append(210);
-    challenge.append(184);
-    challenge.append(177);
-    challenge.append(106);
-    challenge.append(213);
-    challenge.append(136);
-    challenge.append(44);
-    challenge.append(177);
-    challenge.append(9);
-    challenge.append(230);
-    challenge.append(56);
-    challenge.append(158);
-    challenge.append(56);
-    challenge.append(180);
-    challenge.append(165);
-    challenge.append(220);
-    challenge.append(108);
-    challenge.append(105);
-    challenge.append(207);
-    challenge.append(246);
-    challenge.append(245);
-    challenge.append(21);
-    challenge.append(226);
-    challenge.append(30);
-    challenge.append(31);
-
-
-    let origin_offset = 91;
-    let mut origin = ArrayTrait::<u8>::new();
-    origin.append(0x68);
-    origin.append(0x74);
-    origin.append(0x74);
-    origin.append(0x70);
-    origin.append(0x73);
-    origin.append(0x3A);
-    origin.append(0x2F);
-    origin.append(0x2F);
-    origin.append(0x63);
-    origin.append(0x6F);
-    origin.append(0x6E);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x6F);
-    origin.append(0x6C);
-    origin.append(0x6C);
-    origin.append(0x65);
-    origin.append(0x72);
-    origin.append(0x2D);
-    origin.append(0x65);
-    origin.append(0x31);
-    origin.append(0x33);
-    origin.append(0x70);
-    origin.append(0x74);
-    origin.append(0x39);
-    origin.append(0x77);
-    origin.append(0x77);
-    origin.append(0x76);
-    origin.append(0x2E);
-    origin.append(0x70);
-    origin.append(0x72);
-    origin.append(0x65);
-    origin.append(0x76);
-    origin.append(0x69);
-    origin.append(0x65);
-    origin.append(0x77);
-    origin.append(0x2E);
-    origin.append(0x63);
-    origin.append(0x61);
-    origin.append(0x72);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x69);
-    origin.append(0x64);
-    origin.append(0x67);
-    origin.append(0x65);
-    origin.append(0x2E);
-    origin.append(0x67);
-    origin.append(0x67);
-
-    let mut client_data_json = ArrayTrait::<u8>::new();
-    client_data_json.append(123);
-    client_data_json.append(34);
-    client_data_json.append(116);
-    client_data_json.append(121);
-    client_data_json.append(112);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(119);
-    client_data_json.append(101);
-    client_data_json.append(98);
-    client_data_json.append(97);
-    client_data_json.append(117);
-    client_data_json.append(116);
-    client_data_json.append(104);
-    client_data_json.append(110);
-    client_data_json.append(46);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(116);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(108);
-    client_data_json.append(101);
-    client_data_json.append(110);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(66);
-    client_data_json.append(106);
-    client_data_json.append(113);
-    client_data_json.append(90);
-    client_data_json.append(110);
-    client_data_json.append(83);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(86);
-    client_data_json.append(57);
-    client_data_json.append(75);
-    client_data_json.append(52);
-    client_data_json.append(115);
-    client_data_json.append(87);
-    client_data_json.append(114);
-    client_data_json.append(86);
-    client_data_json.append(105);
-    client_data_json.append(67);
-    client_data_json.append(121);
-    client_data_json.append(120);
-    client_data_json.append(67);
-    client_data_json.append(101);
-    client_data_json.append(89);
-    client_data_json.append(52);
-    client_data_json.append(110);
-    client_data_json.append(106);
-    client_data_json.append(105);
-    client_data_json.append(48);
-    client_data_json.append(112);
-    client_data_json.append(100);
-    client_data_json.append(120);
-    client_data_json.append(115);
-    client_data_json.append(97);
-    client_data_json.append(99);
-    client_data_json.append(95);
-    client_data_json.append(50);
-    client_data_json.append(57);
-    client_data_json.append(82);
-    client_data_json.append(88);
-    client_data_json.append(105);
-    client_data_json.append(72);
-    client_data_json.append(104);
-    client_data_json.append(56);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(111);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(97);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(114);
-    client_data_json.append(111);
-    client_data_json.append(115);
-    client_data_json.append(115);
-    client_data_json.append(79);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(102);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(115);
-    client_data_json.append(101);
-    client_data_json.append(125);
-
-
-    let mut authenticator_data = ArrayTrait::<u8>::new();
-    authenticator_data.append(32);
-    authenticator_data.append(169);
-    authenticator_data.append(126);
-    authenticator_data.append(195);
-    authenticator_data.append(248);
-    authenticator_data.append(239);
-    authenticator_data.append(188);
-    authenticator_data.append(42);
-    authenticator_data.append(202);
-    authenticator_data.append(12);
-    authenticator_data.append(247);
-    authenticator_data.append(202);
-    authenticator_data.append(187);
-    authenticator_data.append(66);
-    authenticator_data.append(11);
-    authenticator_data.append(74);
-    authenticator_data.append(9);
-    authenticator_data.append(208);
-    authenticator_data.append(174);
-    authenticator_data.append(201);
-    authenticator_data.append(144);
-    authenticator_data.append(84);
-    authenticator_data.append(102);
-    authenticator_data.append(201);
-    authenticator_data.append(173);
-    authenticator_data.append(247);
-    authenticator_data.append(149);
-    authenticator_data.append(132);
-    authenticator_data.append(250);
-    authenticator_data.append(117);
-    authenticator_data.append(254);
-    authenticator_data.append(211);
-    authenticator_data.append(5);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-
-
-    verify(public_key_pt, r, s,
-        type_offset,
-        challenge_offset,
-        origin_offset,
-        client_data_json,
-        challenge,
-        origin,
-        authenticator_data
-    );
-
-    return ();
-}
-
-#[test]
-#[available_gas(20000000000)]
-fn test_signer_2() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(61856165040679633567670117,34293114855984362756131298,610754963264076567798777),
-    //    BigInt3(28856502319421845433908468,8541852502845001963563039,17032671588525046410922596),
-    //);
-    //let r = BigInt3(4550943382076441343614509,51286446341942350464957042,15478477863732805295042309);
-    //let s = BigInt3(66256346061766364636335215,46390091931074893505268085,10794377463819409245432550);
-    let public_key_pt = EcPoint{};
-    let r : u256 = 0;
-    let s : u256 = 0;
-
-    let type_offset = 9_usize;
-
-    let challenge_offset = 36;
-    let mut challenge = ArrayTrait::<u8>::new();
-    challenge.append(6);
-    challenge.append(58);
-    challenge.append(153);
-    challenge.append(157);
-    challenge.append(39);
-    challenge.append(33);
-    challenge.append(87);
-    challenge.append(210);
-    challenge.append(184);
-    challenge.append(177);
-    challenge.append(106);
-    challenge.append(213);
-    challenge.append(136);
-    challenge.append(44);
-    challenge.append(177);
-    challenge.append(9);
-    challenge.append(230);
-    challenge.append(56);
-    challenge.append(158);
-    challenge.append(56);
-    challenge.append(180);
-    challenge.append(165);
-    challenge.append(220);
-    challenge.append(108);
-    challenge.append(105);
-    challenge.append(207);
-    challenge.append(246);
-    challenge.append(245);
-    challenge.append(21);
-    challenge.append(226);
-    challenge.append(30);
-    challenge.append(31);
-
-
-    let origin_offset = 91;
-    let mut origin = ArrayTrait::<u8>::new();
-    origin.append(0x68);
-    origin.append(0x74);
-    origin.append(0x74);
-    origin.append(0x70);
-    origin.append(0x73);
-    origin.append(0x3A);
-    origin.append(0x2F);
-    origin.append(0x2F);
-    origin.append(0x63);
-    origin.append(0x6F);
-    origin.append(0x6E);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x6F);
-    origin.append(0x6C);
-    origin.append(0x6C);
-    origin.append(0x65);
-    origin.append(0x72);
-    origin.append(0x2D);
-    origin.append(0x65);
-    origin.append(0x31);
-    origin.append(0x33);
-    origin.append(0x70);
-    origin.append(0x74);
-    origin.append(0x39);
-    origin.append(0x77);
-    origin.append(0x77);
-    origin.append(0x76);
-    origin.append(0x2E);
-    origin.append(0x70);
-    origin.append(0x72);
-    origin.append(0x65);
-    origin.append(0x76);
-    origin.append(0x69);
-    origin.append(0x65);
-    origin.append(0x77);
-    origin.append(0x2E);
-    origin.append(0x63);
-    origin.append(0x61);
-    origin.append(0x72);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x69);
-    origin.append(0x64);
-    origin.append(0x67);
-    origin.append(0x65);
-    origin.append(0x2E);
-    origin.append(0x67);
-    origin.append(0x67);
-
-    let mut client_data_json = ArrayTrait::<u8>::new();
-    client_data_json.append(123);
-    client_data_json.append(34);
-    client_data_json.append(116);
-    client_data_json.append(121);
-    client_data_json.append(112);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(119);
-    client_data_json.append(101);
-    client_data_json.append(98);
-    client_data_json.append(97);
-    client_data_json.append(117);
-    client_data_json.append(116);
-    client_data_json.append(104);
-    client_data_json.append(110);
-    client_data_json.append(46);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(116);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(108);
-    client_data_json.append(101);
-    client_data_json.append(110);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(66);
-    client_data_json.append(106);
-    client_data_json.append(113);
-    client_data_json.append(90);
-    client_data_json.append(110);
-    client_data_json.append(83);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(86);
-    client_data_json.append(57);
-    client_data_json.append(75);
-    client_data_json.append(52);
-    client_data_json.append(115);
-    client_data_json.append(87);
-    client_data_json.append(114);
-    client_data_json.append(86);
-    client_data_json.append(105);
-    client_data_json.append(67);
-    client_data_json.append(121);
-    client_data_json.append(120);
-    client_data_json.append(67);
-    client_data_json.append(101);
-    client_data_json.append(89);
-    client_data_json.append(52);
-    client_data_json.append(110);
-    client_data_json.append(106);
-    client_data_json.append(105);
-    client_data_json.append(48);
-    client_data_json.append(112);
-    client_data_json.append(100);
-    client_data_json.append(120);
-    client_data_json.append(115);
-    client_data_json.append(97);
-    client_data_json.append(99);
-    client_data_json.append(95);
-    client_data_json.append(50);
-    client_data_json.append(57);
-    client_data_json.append(82);
-    client_data_json.append(88);
-    client_data_json.append(105);
-    client_data_json.append(72);
-    client_data_json.append(104);
-    client_data_json.append(56);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(111);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(97);
-    client_data_json.append(97);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(114);
-    client_data_json.append(111);
-    client_data_json.append(115);
-    client_data_json.append(115);
-    client_data_json.append(79);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(102);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(115);
-    client_data_json.append(101);
-    client_data_json.append(125);
-
-
-    let mut authenticator_data = ArrayTrait::<u8>::new();
-    authenticator_data.append(32);
-    authenticator_data.append(169);
-    authenticator_data.append(126);
-    authenticator_data.append(195);
-    authenticator_data.append(248);
-    authenticator_data.append(239);
-    authenticator_data.append(188);
-    authenticator_data.append(42);
-    authenticator_data.append(202);
-    authenticator_data.append(12);
-    authenticator_data.append(247);
-    authenticator_data.append(202);
-    authenticator_data.append(187);
-    authenticator_data.append(66);
-    authenticator_data.append(11);
-    authenticator_data.append(74);
-    authenticator_data.append(9);
-    authenticator_data.append(208);
-    authenticator_data.append(174);
-    authenticator_data.append(201);
-    authenticator_data.append(144);
-    authenticator_data.append(84);
-    authenticator_data.append(102);
-    authenticator_data.append(201);
-    authenticator_data.append(173);
-    authenticator_data.append(247);
-    authenticator_data.append(149);
-    authenticator_data.append(132);
-    authenticator_data.append(250);
-    authenticator_data.append(117);
-    authenticator_data.append(254);
-    authenticator_data.append(211);
-    authenticator_data.append(5);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-
-
-    verify(public_key_pt, r, s,
-        type_offset,
-        challenge_offset,
-        origin_offset,
-        client_data_json,
-        challenge,
-        origin,
-        authenticator_data
-    );
-
-    return ();
-}
-
-#[test]
-#[available_gas(20000000000)]
-fn test_signer_3() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(2132973846031768695845590,50116335022708820169942351,318133034561468173140968),
-    //    BigInt3(24801541549228857039769103,42850149772466722905765333,17359718037424479966383959),
-    //);
-    //let r = BigInt3(18721151589422991784325871,55269428872651560434846428,17835250315379827657350391);
-    //let s = BigInt3(4279132007626048680756633,2505107254931636908421562,14530598355358408862409495);
-    let public_key_pt = EcPoint{};
-    let r : u256 = 0;
-    let s : u256 = 0;
-
-    let type_offset = 9_usize;
-
-    let challenge_offset = 36;
-    let mut challenge = ArrayTrait::<u8>::new();
-    challenge.append(6);
-    challenge.append(58);
-    challenge.append(153);
-    challenge.append(157);
-    challenge.append(39);
-    challenge.append(33);
-    challenge.append(87);
-    challenge.append(210);
-    challenge.append(184);
-    challenge.append(177);
-    challenge.append(106);
-    challenge.append(213);
-    challenge.append(136);
-    challenge.append(44);
-    challenge.append(177);
-    challenge.append(9);
-    challenge.append(230);
-    challenge.append(56);
-    challenge.append(158);
-    challenge.append(56);
-    challenge.append(180);
-    challenge.append(165);
-    challenge.append(220);
-    challenge.append(108);
-    challenge.append(105);
-    challenge.append(207);
-    challenge.append(246);
-    challenge.append(245);
-    challenge.append(21);
-    challenge.append(226);
-    challenge.append(30);
-    challenge.append(31);
-
-
-    let origin_offset = 91;
-    let mut origin = ArrayTrait::<u8>::new();
-    origin.append(0x68);
-    origin.append(0x74);
-    origin.append(0x74);
-    origin.append(0x70);
-    origin.append(0x73);
-    origin.append(0x3A);
-    origin.append(0x2F);
-    origin.append(0x2F);
-    origin.append(0x63);
-    origin.append(0x6F);
-    origin.append(0x6E);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x6F);
-    origin.append(0x6C);
-    origin.append(0x6C);
-    origin.append(0x65);
-    origin.append(0x72);
-    origin.append(0x2D);
-    origin.append(0x65);
-    origin.append(0x31);
-    origin.append(0x33);
-    origin.append(0x70);
-    origin.append(0x74);
-    origin.append(0x39);
-    origin.append(0x77);
-    origin.append(0x77);
-    origin.append(0x76);
-    origin.append(0x2E);
-    origin.append(0x70);
-    origin.append(0x72);
-    origin.append(0x65);
-    origin.append(0x76);
-    origin.append(0x69);
-    origin.append(0x65);
-    origin.append(0x77);
-    origin.append(0x2E);
-    origin.append(0x63);
-    origin.append(0x61);
-    origin.append(0x72);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x69);
-    origin.append(0x64);
-    origin.append(0x67);
-    origin.append(0x65);
-    origin.append(0x2E);
-    origin.append(0x67);
-    origin.append(0x67);
-
-    let mut client_data_json = ArrayTrait::<u8>::new();
-    client_data_json.append(123);
-    client_data_json.append(34);
-    client_data_json.append(116);
-    client_data_json.append(121);
-    client_data_json.append(112);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(119);
-    client_data_json.append(101);
-    client_data_json.append(98);
-    client_data_json.append(97);
-    client_data_json.append(117);
-    client_data_json.append(116);
-    client_data_json.append(104);
-    client_data_json.append(110);
-    client_data_json.append(46);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(116);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(108);
-    client_data_json.append(101);
-    client_data_json.append(110);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(66);
-    client_data_json.append(106);
-    client_data_json.append(113);
-    client_data_json.append(90);
-    client_data_json.append(110);
-    client_data_json.append(83);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(86);
-    client_data_json.append(57);
-    client_data_json.append(75);
-    client_data_json.append(52);
-    client_data_json.append(115);
-    client_data_json.append(87);
-    client_data_json.append(114);
-    client_data_json.append(86);
-    client_data_json.append(105);
-    client_data_json.append(67);
-    client_data_json.append(121);
-    client_data_json.append(120);
-    client_data_json.append(67);
-    client_data_json.append(101);
-    client_data_json.append(89);
-    client_data_json.append(52);
-    client_data_json.append(110);
-    client_data_json.append(106);
-    client_data_json.append(105);
-    client_data_json.append(48);
-    client_data_json.append(112);
-    client_data_json.append(100);
-    client_data_json.append(120);
-    client_data_json.append(115);
-    client_data_json.append(97);
-    client_data_json.append(99);
-    client_data_json.append(95);
-    client_data_json.append(50);
-    client_data_json.append(57);
-    client_data_json.append(82);
-    client_data_json.append(88);
-    client_data_json.append(105);
-    client_data_json.append(72);
-    client_data_json.append(104);
-    client_data_json.append(56);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(111);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(97);
-    client_data_json.append(97);
-    client_data_json.append(97);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(114);
-    client_data_json.append(111);
-    client_data_json.append(115);
-    client_data_json.append(115);
-    client_data_json.append(79);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(102);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(115);
-    client_data_json.append(101);
-    client_data_json.append(125);
-
-
-    let mut authenticator_data = ArrayTrait::<u8>::new();
-    authenticator_data.append(32);
-    authenticator_data.append(169);
-    authenticator_data.append(126);
-    authenticator_data.append(195);
-    authenticator_data.append(248);
-    authenticator_data.append(239);
-    authenticator_data.append(188);
-    authenticator_data.append(42);
-    authenticator_data.append(202);
-    authenticator_data.append(12);
-    authenticator_data.append(247);
-    authenticator_data.append(202);
-    authenticator_data.append(187);
-    authenticator_data.append(66);
-    authenticator_data.append(11);
-    authenticator_data.append(74);
-    authenticator_data.append(9);
-    authenticator_data.append(208);
-    authenticator_data.append(174);
-    authenticator_data.append(201);
-    authenticator_data.append(144);
-    authenticator_data.append(84);
-    authenticator_data.append(102);
-    authenticator_data.append(201);
-    authenticator_data.append(173);
-    authenticator_data.append(247);
-    authenticator_data.append(149);
-    authenticator_data.append(132);
-    authenticator_data.append(250);
-    authenticator_data.append(117);
-    authenticator_data.append(254);
-    authenticator_data.append(211);
-    authenticator_data.append(5);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-
-
-    verify(public_key_pt, r, s,
-        type_offset,
-        challenge_offset,
-        origin_offset,
-        client_data_json,
-        challenge,
-        origin,
-        authenticator_data
-    );
-
-    return ();
-}
-
-#[test]
-#[available_gas(20000000000)]
-fn test_signer_4() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(13125599707739848809820321,28673555566462732755800859,17171212549309760316827958),
-    //    BigInt3(64787526451717702798852047,34275755017599200538244162,13813452560672864099130108),
-    //);
-    //let r = BigInt3(48823297652128689821965721,44835966378957376010969909,6576542835328765776725927);
-    //let s = BigInt3(6531180937680073753540556,33167702778476567400261524,5352270573425995353397084);
-    let public_key_pt = EcPoint{};
-    let r : u256 = 0;
-    let s : u256 = 0;
-
-    let type_offset = 9_usize;
-
-    let challenge_offset = 36;
-    let mut challenge = ArrayTrait::<u8>::new();
-    challenge.append(6);
-    challenge.append(58);
-    challenge.append(153);
-    challenge.append(157);
-    challenge.append(39);
-    challenge.append(33);
-    challenge.append(87);
-    challenge.append(210);
-    challenge.append(184);
-    challenge.append(177);
-    challenge.append(106);
-    challenge.append(213);
-    challenge.append(136);
-    challenge.append(44);
-    challenge.append(177);
-    challenge.append(9);
-    challenge.append(230);
-    challenge.append(56);
-    challenge.append(158);
-    challenge.append(56);
-    challenge.append(180);
-    challenge.append(165);
-    challenge.append(220);
-    challenge.append(108);
-    challenge.append(105);
-    challenge.append(207);
-    challenge.append(246);
-    challenge.append(245);
-    challenge.append(21);
-    challenge.append(226);
-    challenge.append(30);
-    challenge.append(31);
-
-
-    let origin_offset = 91;
-    let mut origin = ArrayTrait::<u8>::new();
-    origin.append(0x68);
-    origin.append(0x74);
-    origin.append(0x74);
-    origin.append(0x70);
-    origin.append(0x73);
-    origin.append(0x3A);
-    origin.append(0x2F);
-    origin.append(0x2F);
-    origin.append(0x63);
-    origin.append(0x6F);
-    origin.append(0x6E);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x6F);
-    origin.append(0x6C);
-    origin.append(0x6C);
-    origin.append(0x65);
-    origin.append(0x72);
-    origin.append(0x2D);
-    origin.append(0x65);
-    origin.append(0x31);
-    origin.append(0x33);
-    origin.append(0x70);
-    origin.append(0x74);
-    origin.append(0x39);
-    origin.append(0x77);
-    origin.append(0x77);
-    origin.append(0x76);
-    origin.append(0x2E);
-    origin.append(0x70);
-    origin.append(0x72);
-    origin.append(0x65);
-    origin.append(0x76);
-    origin.append(0x69);
-    origin.append(0x65);
-    origin.append(0x77);
-    origin.append(0x2E);
-    origin.append(0x63);
-    origin.append(0x61);
-    origin.append(0x72);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x69);
-    origin.append(0x64);
-    origin.append(0x67);
-    origin.append(0x65);
-    origin.append(0x2E);
-    origin.append(0x67);
-    origin.append(0x67);
-
-    let mut client_data_json = ArrayTrait::<u8>::new();
-    client_data_json.append(123);
-    client_data_json.append(34);
-    client_data_json.append(116);
-    client_data_json.append(121);
-    client_data_json.append(112);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(119);
-    client_data_json.append(101);
-    client_data_json.append(98);
-    client_data_json.append(97);
-    client_data_json.append(117);
-    client_data_json.append(116);
-    client_data_json.append(104);
-    client_data_json.append(110);
-    client_data_json.append(46);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(116);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(108);
-    client_data_json.append(101);
-    client_data_json.append(110);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(66);
-    client_data_json.append(106);
-    client_data_json.append(113);
-    client_data_json.append(90);
-    client_data_json.append(110);
-    client_data_json.append(83);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(86);
-    client_data_json.append(57);
-    client_data_json.append(75);
-    client_data_json.append(52);
-    client_data_json.append(115);
-    client_data_json.append(87);
-    client_data_json.append(114);
-    client_data_json.append(86);
-    client_data_json.append(105);
-    client_data_json.append(67);
-    client_data_json.append(121);
-    client_data_json.append(120);
-    client_data_json.append(67);
-    client_data_json.append(101);
-    client_data_json.append(89);
-    client_data_json.append(52);
-    client_data_json.append(110);
-    client_data_json.append(106);
-    client_data_json.append(105);
-    client_data_json.append(48);
-    client_data_json.append(112);
-    client_data_json.append(100);
-    client_data_json.append(120);
-    client_data_json.append(115);
-    client_data_json.append(97);
-    client_data_json.append(99);
-    client_data_json.append(95);
-    client_data_json.append(50);
-    client_data_json.append(57);
-    client_data_json.append(82);
-    client_data_json.append(88);
-    client_data_json.append(105);
-    client_data_json.append(72);
-    client_data_json.append(104);
-    client_data_json.append(56);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(111);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(97);
-    client_data_json.append(97);
-    client_data_json.append(97);
-    client_data_json.append(97);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(114);
-    client_data_json.append(111);
-    client_data_json.append(115);
-    client_data_json.append(115);
-    client_data_json.append(79);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(102);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(115);
-    client_data_json.append(101);
-    client_data_json.append(125);
-
-
-    let mut authenticator_data = ArrayTrait::<u8>::new();
-    authenticator_data.append(32);
-    authenticator_data.append(169);
-    authenticator_data.append(126);
-    authenticator_data.append(195);
-    authenticator_data.append(248);
-    authenticator_data.append(239);
-    authenticator_data.append(188);
-    authenticator_data.append(42);
-    authenticator_data.append(202);
-    authenticator_data.append(12);
-    authenticator_data.append(247);
-    authenticator_data.append(202);
-    authenticator_data.append(187);
-    authenticator_data.append(66);
-    authenticator_data.append(11);
-    authenticator_data.append(74);
-    authenticator_data.append(9);
-    authenticator_data.append(208);
-    authenticator_data.append(174);
-    authenticator_data.append(201);
-    authenticator_data.append(144);
-    authenticator_data.append(84);
-    authenticator_data.append(102);
-    authenticator_data.append(201);
-    authenticator_data.append(173);
-    authenticator_data.append(247);
-    authenticator_data.append(149);
-    authenticator_data.append(132);
-    authenticator_data.append(250);
-    authenticator_data.append(117);
-    authenticator_data.append(254);
-    authenticator_data.append(211);
-    authenticator_data.append(5);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-
-
-    verify(public_key_pt, r, s,
-        type_offset,
-        challenge_offset,
-        origin_offset,
-        client_data_json,
-        challenge,
-        origin,
-        authenticator_data
-    );
-
-    return ();
-}
-
-#[test]
-#[available_gas(20000000000)]
-fn test_signer_5() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(67685712642485813952587070,76109541544211841284660900,19123476364919354429091718),
-    //    BigInt3(11137681959351471170861807,52543034502306135399861302,14639243615286655598596263),
-    //);
-    //let r = BigInt3(39026130052389274493416449,51931821466734087810128060,1340813939601337597736590);
-    //let s = BigInt3(50489211176222726125167576,32451565498269729305600302,12382780967782833712378997);
-    let public_key_pt = EcPoint{};
-    let r : u256 = 0;
-    let s : u256 = 0;
-
-    let type_offset = 9_usize;
-
-    let challenge_offset = 36;
-    let mut challenge = ArrayTrait::<u8>::new();
-    challenge.append(6);
-    challenge.append(58);
-    challenge.append(153);
-    challenge.append(157);
-    challenge.append(39);
-    challenge.append(33);
-    challenge.append(87);
-    challenge.append(210);
-    challenge.append(184);
-    challenge.append(177);
-    challenge.append(106);
-    challenge.append(213);
-    challenge.append(136);
-    challenge.append(44);
-    challenge.append(177);
-    challenge.append(9);
-    challenge.append(230);
-    challenge.append(56);
-    challenge.append(158);
-    challenge.append(56);
-    challenge.append(180);
-    challenge.append(165);
-    challenge.append(220);
-    challenge.append(108);
-    challenge.append(105);
-    challenge.append(207);
-    challenge.append(246);
-    challenge.append(245);
-    challenge.append(21);
-    challenge.append(226);
-    challenge.append(30);
-    challenge.append(31);
-
-
-    let origin_offset = 91;
-    let mut origin = ArrayTrait::<u8>::new();
-    origin.append(0x68);
-    origin.append(0x74);
-    origin.append(0x74);
-    origin.append(0x70);
-    origin.append(0x73);
-    origin.append(0x3A);
-    origin.append(0x2F);
-    origin.append(0x2F);
-    origin.append(0x63);
-    origin.append(0x6F);
-    origin.append(0x6E);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x6F);
-    origin.append(0x6C);
-    origin.append(0x6C);
-    origin.append(0x65);
-    origin.append(0x72);
-    origin.append(0x2D);
-    origin.append(0x65);
-    origin.append(0x31);
-    origin.append(0x33);
-    origin.append(0x70);
-    origin.append(0x74);
-    origin.append(0x39);
-    origin.append(0x77);
-    origin.append(0x77);
-    origin.append(0x76);
-    origin.append(0x2E);
-    origin.append(0x70);
-    origin.append(0x72);
-    origin.append(0x65);
-    origin.append(0x76);
-    origin.append(0x69);
-    origin.append(0x65);
-    origin.append(0x77);
-    origin.append(0x2E);
-    origin.append(0x63);
-    origin.append(0x61);
-    origin.append(0x72);
-    origin.append(0x74);
-    origin.append(0x72);
-    origin.append(0x69);
-    origin.append(0x64);
-    origin.append(0x67);
-    origin.append(0x65);
-    origin.append(0x2E);
-    origin.append(0x67);
-    origin.append(0x67);
-
-    let mut client_data_json = ArrayTrait::<u8>::new();
-    client_data_json.append(123);
-    client_data_json.append(34);
-    client_data_json.append(116);
-    client_data_json.append(121);
-    client_data_json.append(112);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(119);
-    client_data_json.append(101);
-    client_data_json.append(98);
-    client_data_json.append(97);
-    client_data_json.append(117);
-    client_data_json.append(116);
-    client_data_json.append(104);
-    client_data_json.append(110);
-    client_data_json.append(46);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(116);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(108);
-    client_data_json.append(101);
-    client_data_json.append(110);
-    client_data_json.append(103);
-    client_data_json.append(101);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(66);
-    client_data_json.append(106);
-    client_data_json.append(113);
-    client_data_json.append(90);
-    client_data_json.append(110);
-    client_data_json.append(83);
-    client_data_json.append(99);
-    client_data_json.append(104);
-    client_data_json.append(86);
-    client_data_json.append(57);
-    client_data_json.append(75);
-    client_data_json.append(52);
-    client_data_json.append(115);
-    client_data_json.append(87);
-    client_data_json.append(114);
-    client_data_json.append(86);
-    client_data_json.append(105);
-    client_data_json.append(67);
-    client_data_json.append(121);
-    client_data_json.append(120);
-    client_data_json.append(67);
-    client_data_json.append(101);
-    client_data_json.append(89);
-    client_data_json.append(52);
-    client_data_json.append(110);
-    client_data_json.append(106);
-    client_data_json.append(105);
-    client_data_json.append(48);
-    client_data_json.append(112);
-    client_data_json.append(100);
-    client_data_json.append(120);
-    client_data_json.append(115);
-    client_data_json.append(97);
-    client_data_json.append(99);
-    client_data_json.append(95);
-    client_data_json.append(50);
-    client_data_json.append(57);
-    client_data_json.append(82);
-    client_data_json.append(88);
-    client_data_json.append(105);
-    client_data_json.append(72);
-    client_data_json.append(104);
-    client_data_json.append(56);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(65);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(111);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(34);
-    client_data_json.append(97);
-    client_data_json.append(97);
-    client_data_json.append(97);
-    client_data_json.append(97);
-    client_data_json.append(97);
-    client_data_json.append(34);
-    client_data_json.append(44);
-    client_data_json.append(34);
-    client_data_json.append(99);
-    client_data_json.append(114);
-    client_data_json.append(111);
-    client_data_json.append(115);
-    client_data_json.append(115);
-    client_data_json.append(79);
-    client_data_json.append(114);
-    client_data_json.append(105);
-    client_data_json.append(103);
-    client_data_json.append(105);
-    client_data_json.append(110);
-    client_data_json.append(34);
-    client_data_json.append(58);
-    client_data_json.append(102);
-    client_data_json.append(97);
-    client_data_json.append(108);
-    client_data_json.append(115);
-    client_data_json.append(101);
-    client_data_json.append(125);
-
-
-    let mut authenticator_data = ArrayTrait::<u8>::new();
-    authenticator_data.append(32);
-    authenticator_data.append(169);
-    authenticator_data.append(126);
-    authenticator_data.append(195);
-    authenticator_data.append(248);
-    authenticator_data.append(239);
-    authenticator_data.append(188);
-    authenticator_data.append(42);
-    authenticator_data.append(202);
-    authenticator_data.append(12);
-    authenticator_data.append(247);
-    authenticator_data.append(202);
-    authenticator_data.append(187);
-    authenticator_data.append(66);
-    authenticator_data.append(11);
-    authenticator_data.append(74);
-    authenticator_data.append(9);
-    authenticator_data.append(208);
-    authenticator_data.append(174);
-    authenticator_data.append(201);
-    authenticator_data.append(144);
-    authenticator_data.append(84);
-    authenticator_data.append(102);
-    authenticator_data.append(201);
-    authenticator_data.append(173);
-    authenticator_data.append(247);
-    authenticator_data.append(149);
-    authenticator_data.append(132);
-    authenticator_data.append(250);
-    authenticator_data.append(117);
-    authenticator_data.append(254);
-    authenticator_data.append(211);
-    authenticator_data.append(5);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-    authenticator_data.append(0);
-
-
-    verify(public_key_pt, r, s,
-        type_offset,
-        challenge_offset,
-        origin_offset,
-        client_data_json,
-        challenge,
-        origin,
-        authenticator_data
-    );
-
-    return ();
-}
-
-#[test]
-#[available_gas(20000000000)]
+#[available_gas(200000000000)]
 fn test_invoke_0() {
-    //let public_key_pt = EcPoint(
-    //    BigInt3(18429879044278490260098551,56029233481007147284932680,2037976146929856349747775),
-    //    BigInt3(70840069926882074167622098,21864696605377867683594565,6822006481759038492420837),
-    //);
-    //let r = BigInt3(2223599465377360746283669,25752496995673689528630163,705762337381700509015780);
-    //let s = BigInt3(58393142204606773616845190,12894059864184526358390250,19065811591212739232406187);
-    let public_key_pt = EcPoint{};
-    let r : u256 = 0;
-    let s : u256 = 0;
-
+    let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(
+        12199958427972853078342900924373082655716152998831359676272227347648944852471,
+        40838650441616864252057946687346584368660292489182225806979362323951322937810
+    );
+    let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
+    let r: u256 = 4224912636517746297930360738386846214394232358661750834726272476578302034581;
+    let s: u256 = 114133872056729296473578296149289564274974794137806170048811309580668266750342;
     let type_offset = 9_usize;
-
     let challenge_offset = 36;
     let mut challenge = ArrayTrait::<u8>::new();
     challenge.append(3);
@@ -2125,7 +416,6 @@ fn test_invoke_0() {
     challenge.append(184);
     challenge.append(241);
 
-
     let origin_offset = 91;
     let mut origin = ArrayTrait::<u8>::new();
     origin.append(0x68);
@@ -2177,7 +467,6 @@ fn test_invoke_0() {
     origin.append(0x2E);
     origin.append(0x67);
     origin.append(0x67);
-
     let mut client_data_json = ArrayTrait::<u8>::new();
     client_data_json.append(123);
     client_data_json.append(34);
@@ -2324,7 +613,6 @@ fn test_invoke_0() {
     client_data_json.append(101);
     client_data_json.append(125);
 
-
     let mut authenticator_data = ArrayTrait::<u8>::new();
     authenticator_data.append(32);
     authenticator_data.append(169);
@@ -2364,8 +652,10 @@ fn test_invoke_0() {
     authenticator_data.append(0);
     authenticator_data.append(0);
 
-
-    verify(public_key_pt, r, s,
+    let verify_result = verify(
+        public_key_pt,
+        r,
+        s,
         type_offset,
         challenge_offset,
         origin_offset,
@@ -2374,6 +664,1669 @@ fn test_invoke_0() {
         origin,
         authenticator_data
     );
-
-    return ();
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(e) => assert(false, AuthnErrorIntoFelt252::into(e))
+    }
 }
+
+#[test]
+#[available_gas(200000000000)]
+fn test_signer_0() {
+    let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(
+        81479707218131969500430920241234159898138645488882037899670688890786141587044,
+        103513905402475067267628038230146839173576721698070446651345468950226105323556
+    );
+    let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
+    let r: u256 = 84964226787963058676179785648324420254868945161336690474553295207417695273529;
+    let s: u256 = 8215436211369708845162044835492579732697467984723558193336240103891317058370;
+    let type_offset = 9_usize;
+    let challenge_offset = 36;
+    let mut challenge = ArrayTrait::<u8>::new();
+    challenge.append(6);
+    challenge.append(58);
+    challenge.append(153);
+    challenge.append(157);
+    challenge.append(39);
+    challenge.append(33);
+    challenge.append(87);
+    challenge.append(210);
+    challenge.append(184);
+    challenge.append(177);
+    challenge.append(106);
+    challenge.append(213);
+    challenge.append(136);
+    challenge.append(44);
+    challenge.append(177);
+    challenge.append(9);
+    challenge.append(230);
+    challenge.append(56);
+    challenge.append(158);
+    challenge.append(56);
+    challenge.append(180);
+    challenge.append(165);
+    challenge.append(220);
+    challenge.append(108);
+    challenge.append(105);
+    challenge.append(207);
+    challenge.append(246);
+    challenge.append(245);
+    challenge.append(21);
+    challenge.append(226);
+    challenge.append(30);
+    challenge.append(31);
+
+    let origin_offset = 91;
+    let mut origin = ArrayTrait::<u8>::new();
+    origin.append(0x68);
+    origin.append(0x74);
+    origin.append(0x74);
+    origin.append(0x70);
+    origin.append(0x73);
+    origin.append(0x3A);
+    origin.append(0x2F);
+    origin.append(0x2F);
+    origin.append(0x63);
+    origin.append(0x6F);
+    origin.append(0x6E);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x6F);
+    origin.append(0x6C);
+    origin.append(0x6C);
+    origin.append(0x65);
+    origin.append(0x72);
+    origin.append(0x2D);
+    origin.append(0x65);
+    origin.append(0x31);
+    origin.append(0x33);
+    origin.append(0x70);
+    origin.append(0x74);
+    origin.append(0x39);
+    origin.append(0x77);
+    origin.append(0x77);
+    origin.append(0x76);
+    origin.append(0x2E);
+    origin.append(0x70);
+    origin.append(0x72);
+    origin.append(0x65);
+    origin.append(0x76);
+    origin.append(0x69);
+    origin.append(0x65);
+    origin.append(0x77);
+    origin.append(0x2E);
+    origin.append(0x63);
+    origin.append(0x61);
+    origin.append(0x72);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x69);
+    origin.append(0x64);
+    origin.append(0x67);
+    origin.append(0x65);
+    origin.append(0x2E);
+    origin.append(0x67);
+    origin.append(0x67);
+    let mut client_data_json = ArrayTrait::<u8>::new();
+    client_data_json.append(123);
+    client_data_json.append(34);
+    client_data_json.append(116);
+    client_data_json.append(121);
+    client_data_json.append(112);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(119);
+    client_data_json.append(101);
+    client_data_json.append(98);
+    client_data_json.append(97);
+    client_data_json.append(117);
+    client_data_json.append(116);
+    client_data_json.append(104);
+    client_data_json.append(110);
+    client_data_json.append(46);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(116);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(108);
+    client_data_json.append(101);
+    client_data_json.append(110);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(66);
+    client_data_json.append(106);
+    client_data_json.append(113);
+    client_data_json.append(90);
+    client_data_json.append(110);
+    client_data_json.append(83);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(86);
+    client_data_json.append(57);
+    client_data_json.append(75);
+    client_data_json.append(52);
+    client_data_json.append(115);
+    client_data_json.append(87);
+    client_data_json.append(114);
+    client_data_json.append(86);
+    client_data_json.append(105);
+    client_data_json.append(67);
+    client_data_json.append(121);
+    client_data_json.append(120);
+    client_data_json.append(67);
+    client_data_json.append(101);
+    client_data_json.append(89);
+    client_data_json.append(52);
+    client_data_json.append(110);
+    client_data_json.append(106);
+    client_data_json.append(105);
+    client_data_json.append(48);
+    client_data_json.append(112);
+    client_data_json.append(100);
+    client_data_json.append(120);
+    client_data_json.append(115);
+    client_data_json.append(97);
+    client_data_json.append(99);
+    client_data_json.append(95);
+    client_data_json.append(50);
+    client_data_json.append(57);
+    client_data_json.append(82);
+    client_data_json.append(88);
+    client_data_json.append(105);
+    client_data_json.append(72);
+    client_data_json.append(104);
+    client_data_json.append(56);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(111);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(104);
+    client_data_json.append(116);
+    client_data_json.append(116);
+    client_data_json.append(112);
+    client_data_json.append(115);
+    client_data_json.append(58);
+    client_data_json.append(47);
+    client_data_json.append(47);
+    client_data_json.append(99);
+    client_data_json.append(111);
+    client_data_json.append(110);
+    client_data_json.append(116);
+    client_data_json.append(114);
+    client_data_json.append(111);
+    client_data_json.append(108);
+    client_data_json.append(108);
+    client_data_json.append(101);
+    client_data_json.append(114);
+    client_data_json.append(46);
+    client_data_json.append(99);
+    client_data_json.append(97);
+    client_data_json.append(114);
+    client_data_json.append(116);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(100);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(46);
+    client_data_json.append(103);
+    client_data_json.append(103);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(114);
+    client_data_json.append(111);
+    client_data_json.append(115);
+    client_data_json.append(115);
+    client_data_json.append(79);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(102);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(115);
+    client_data_json.append(101);
+    client_data_json.append(125);
+
+    let mut authenticator_data = ArrayTrait::<u8>::new();
+    authenticator_data.append(32);
+    authenticator_data.append(169);
+    authenticator_data.append(126);
+    authenticator_data.append(195);
+    authenticator_data.append(248);
+    authenticator_data.append(239);
+    authenticator_data.append(188);
+    authenticator_data.append(42);
+    authenticator_data.append(202);
+    authenticator_data.append(12);
+    authenticator_data.append(247);
+    authenticator_data.append(202);
+    authenticator_data.append(187);
+    authenticator_data.append(66);
+    authenticator_data.append(11);
+    authenticator_data.append(74);
+    authenticator_data.append(9);
+    authenticator_data.append(208);
+    authenticator_data.append(174);
+    authenticator_data.append(201);
+    authenticator_data.append(144);
+    authenticator_data.append(84);
+    authenticator_data.append(102);
+    authenticator_data.append(201);
+    authenticator_data.append(173);
+    authenticator_data.append(247);
+    authenticator_data.append(149);
+    authenticator_data.append(132);
+    authenticator_data.append(250);
+    authenticator_data.append(117);
+    authenticator_data.append(254);
+    authenticator_data.append(211);
+    authenticator_data.append(5);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+
+    let verify_result = verify(
+        public_key_pt,
+        r,
+        s,
+        type_offset,
+        challenge_offset,
+        origin_offset,
+        client_data_json,
+        challenge,
+        origin,
+        authenticator_data
+    );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(e) => assert(false, AuthnErrorIntoFelt252::into(e))
+    }
+}
+
+#[test]
+#[available_gas(200000000000)]
+fn test_signer_1() {
+    let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(
+        68943572542093015569864243906882973797230991046542927633829171268375270151472,
+        48617218361632368894364971184540170572632440855413639092046545973041244056178
+    );
+    let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
+    let r: u256 = 84288639296497477401889510963529143944588574244376304154254190051904775992292;
+    let s: u256 = 94961062926968267518960714693729849693167679123642905843710774926832985571583;
+    let type_offset = 9_usize;
+    let challenge_offset = 36;
+    let mut challenge = ArrayTrait::<u8>::new();
+    challenge.append(6);
+    challenge.append(58);
+    challenge.append(153);
+    challenge.append(157);
+    challenge.append(39);
+    challenge.append(33);
+    challenge.append(87);
+    challenge.append(210);
+    challenge.append(184);
+    challenge.append(177);
+    challenge.append(106);
+    challenge.append(213);
+    challenge.append(136);
+    challenge.append(44);
+    challenge.append(177);
+    challenge.append(9);
+    challenge.append(230);
+    challenge.append(56);
+    challenge.append(158);
+    challenge.append(56);
+    challenge.append(180);
+    challenge.append(165);
+    challenge.append(220);
+    challenge.append(108);
+    challenge.append(105);
+    challenge.append(207);
+    challenge.append(246);
+    challenge.append(245);
+    challenge.append(21);
+    challenge.append(226);
+    challenge.append(30);
+    challenge.append(31);
+
+    let origin_offset = 91;
+    let mut origin = ArrayTrait::<u8>::new();
+    origin.append(0x68);
+    origin.append(0x74);
+    origin.append(0x74);
+    origin.append(0x70);
+    origin.append(0x73);
+    origin.append(0x3A);
+    origin.append(0x2F);
+    origin.append(0x2F);
+    origin.append(0x63);
+    origin.append(0x6F);
+    origin.append(0x6E);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x6F);
+    origin.append(0x6C);
+    origin.append(0x6C);
+    origin.append(0x65);
+    origin.append(0x72);
+    origin.append(0x2D);
+    origin.append(0x65);
+    origin.append(0x31);
+    origin.append(0x33);
+    origin.append(0x70);
+    origin.append(0x74);
+    origin.append(0x39);
+    origin.append(0x77);
+    origin.append(0x77);
+    origin.append(0x76);
+    origin.append(0x2E);
+    origin.append(0x70);
+    origin.append(0x72);
+    origin.append(0x65);
+    origin.append(0x76);
+    origin.append(0x69);
+    origin.append(0x65);
+    origin.append(0x77);
+    origin.append(0x2E);
+    origin.append(0x63);
+    origin.append(0x61);
+    origin.append(0x72);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x69);
+    origin.append(0x64);
+    origin.append(0x67);
+    origin.append(0x65);
+    origin.append(0x2E);
+    origin.append(0x67);
+    origin.append(0x67);
+    let mut client_data_json = ArrayTrait::<u8>::new();
+    client_data_json.append(123);
+    client_data_json.append(34);
+    client_data_json.append(116);
+    client_data_json.append(121);
+    client_data_json.append(112);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(119);
+    client_data_json.append(101);
+    client_data_json.append(98);
+    client_data_json.append(97);
+    client_data_json.append(117);
+    client_data_json.append(116);
+    client_data_json.append(104);
+    client_data_json.append(110);
+    client_data_json.append(46);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(116);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(108);
+    client_data_json.append(101);
+    client_data_json.append(110);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(66);
+    client_data_json.append(106);
+    client_data_json.append(113);
+    client_data_json.append(90);
+    client_data_json.append(110);
+    client_data_json.append(83);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(86);
+    client_data_json.append(57);
+    client_data_json.append(75);
+    client_data_json.append(52);
+    client_data_json.append(115);
+    client_data_json.append(87);
+    client_data_json.append(114);
+    client_data_json.append(86);
+    client_data_json.append(105);
+    client_data_json.append(67);
+    client_data_json.append(121);
+    client_data_json.append(120);
+    client_data_json.append(67);
+    client_data_json.append(101);
+    client_data_json.append(89);
+    client_data_json.append(52);
+    client_data_json.append(110);
+    client_data_json.append(106);
+    client_data_json.append(105);
+    client_data_json.append(48);
+    client_data_json.append(112);
+    client_data_json.append(100);
+    client_data_json.append(120);
+    client_data_json.append(115);
+    client_data_json.append(97);
+    client_data_json.append(99);
+    client_data_json.append(95);
+    client_data_json.append(50);
+    client_data_json.append(57);
+    client_data_json.append(82);
+    client_data_json.append(88);
+    client_data_json.append(105);
+    client_data_json.append(72);
+    client_data_json.append(104);
+    client_data_json.append(56);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(111);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(97);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(114);
+    client_data_json.append(111);
+    client_data_json.append(115);
+    client_data_json.append(115);
+    client_data_json.append(79);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(102);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(115);
+    client_data_json.append(101);
+    client_data_json.append(125);
+
+    let mut authenticator_data = ArrayTrait::<u8>::new();
+    authenticator_data.append(32);
+    authenticator_data.append(169);
+    authenticator_data.append(126);
+    authenticator_data.append(195);
+    authenticator_data.append(248);
+    authenticator_data.append(239);
+    authenticator_data.append(188);
+    authenticator_data.append(42);
+    authenticator_data.append(202);
+    authenticator_data.append(12);
+    authenticator_data.append(247);
+    authenticator_data.append(202);
+    authenticator_data.append(187);
+    authenticator_data.append(66);
+    authenticator_data.append(11);
+    authenticator_data.append(74);
+    authenticator_data.append(9);
+    authenticator_data.append(208);
+    authenticator_data.append(174);
+    authenticator_data.append(201);
+    authenticator_data.append(144);
+    authenticator_data.append(84);
+    authenticator_data.append(102);
+    authenticator_data.append(201);
+    authenticator_data.append(173);
+    authenticator_data.append(247);
+    authenticator_data.append(149);
+    authenticator_data.append(132);
+    authenticator_data.append(250);
+    authenticator_data.append(117);
+    authenticator_data.append(254);
+    authenticator_data.append(211);
+    authenticator_data.append(5);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+
+    let verify_result = verify(
+        public_key_pt,
+        r,
+        s,
+        type_offset,
+        challenge_offset,
+        origin_offset,
+        client_data_json,
+        challenge,
+        origin,
+        authenticator_data
+    );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(e) => assert(false, AuthnErrorIntoFelt252::into(e))
+    }
+}
+
+#[test]
+#[available_gas(200000000000)]
+fn test_signer_2() {
+    let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(
+        115568560161898273780576766736598483692579630592306003732950624571753798976812,
+        60452471541909100106143469867069138225089470333323216381419981991118489393701
+    );
+    let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
+    let r: u256 = 77724657625672393681329426910012971801566246265235496659934366119889583043039;
+    let s: u256 = 33802585909129221570786582408120491777852672760343686320107145872864533234485;
+    let type_offset = 9_usize;
+    let challenge_offset = 36;
+    let mut challenge = ArrayTrait::<u8>::new();
+    challenge.append(6);
+    challenge.append(58);
+    challenge.append(153);
+    challenge.append(157);
+    challenge.append(39);
+    challenge.append(33);
+    challenge.append(87);
+    challenge.append(210);
+    challenge.append(184);
+    challenge.append(177);
+    challenge.append(106);
+    challenge.append(213);
+    challenge.append(136);
+    challenge.append(44);
+    challenge.append(177);
+    challenge.append(9);
+    challenge.append(230);
+    challenge.append(56);
+    challenge.append(158);
+    challenge.append(56);
+    challenge.append(180);
+    challenge.append(165);
+    challenge.append(220);
+    challenge.append(108);
+    challenge.append(105);
+    challenge.append(207);
+    challenge.append(246);
+    challenge.append(245);
+    challenge.append(21);
+    challenge.append(226);
+    challenge.append(30);
+    challenge.append(31);
+
+    let origin_offset = 91;
+    let mut origin = ArrayTrait::<u8>::new();
+    origin.append(0x68);
+    origin.append(0x74);
+    origin.append(0x74);
+    origin.append(0x70);
+    origin.append(0x73);
+    origin.append(0x3A);
+    origin.append(0x2F);
+    origin.append(0x2F);
+    origin.append(0x63);
+    origin.append(0x6F);
+    origin.append(0x6E);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x6F);
+    origin.append(0x6C);
+    origin.append(0x6C);
+    origin.append(0x65);
+    origin.append(0x72);
+    origin.append(0x2D);
+    origin.append(0x65);
+    origin.append(0x31);
+    origin.append(0x33);
+    origin.append(0x70);
+    origin.append(0x74);
+    origin.append(0x39);
+    origin.append(0x77);
+    origin.append(0x77);
+    origin.append(0x76);
+    origin.append(0x2E);
+    origin.append(0x70);
+    origin.append(0x72);
+    origin.append(0x65);
+    origin.append(0x76);
+    origin.append(0x69);
+    origin.append(0x65);
+    origin.append(0x77);
+    origin.append(0x2E);
+    origin.append(0x63);
+    origin.append(0x61);
+    origin.append(0x72);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x69);
+    origin.append(0x64);
+    origin.append(0x67);
+    origin.append(0x65);
+    origin.append(0x2E);
+    origin.append(0x67);
+    origin.append(0x67);
+    let mut client_data_json = ArrayTrait::<u8>::new();
+    client_data_json.append(123);
+    client_data_json.append(34);
+    client_data_json.append(116);
+    client_data_json.append(121);
+    client_data_json.append(112);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(119);
+    client_data_json.append(101);
+    client_data_json.append(98);
+    client_data_json.append(97);
+    client_data_json.append(117);
+    client_data_json.append(116);
+    client_data_json.append(104);
+    client_data_json.append(110);
+    client_data_json.append(46);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(116);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(108);
+    client_data_json.append(101);
+    client_data_json.append(110);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(66);
+    client_data_json.append(106);
+    client_data_json.append(113);
+    client_data_json.append(90);
+    client_data_json.append(110);
+    client_data_json.append(83);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(86);
+    client_data_json.append(57);
+    client_data_json.append(75);
+    client_data_json.append(52);
+    client_data_json.append(115);
+    client_data_json.append(87);
+    client_data_json.append(114);
+    client_data_json.append(86);
+    client_data_json.append(105);
+    client_data_json.append(67);
+    client_data_json.append(121);
+    client_data_json.append(120);
+    client_data_json.append(67);
+    client_data_json.append(101);
+    client_data_json.append(89);
+    client_data_json.append(52);
+    client_data_json.append(110);
+    client_data_json.append(106);
+    client_data_json.append(105);
+    client_data_json.append(48);
+    client_data_json.append(112);
+    client_data_json.append(100);
+    client_data_json.append(120);
+    client_data_json.append(115);
+    client_data_json.append(97);
+    client_data_json.append(99);
+    client_data_json.append(95);
+    client_data_json.append(50);
+    client_data_json.append(57);
+    client_data_json.append(82);
+    client_data_json.append(88);
+    client_data_json.append(105);
+    client_data_json.append(72);
+    client_data_json.append(104);
+    client_data_json.append(56);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(111);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(97);
+    client_data_json.append(97);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(114);
+    client_data_json.append(111);
+    client_data_json.append(115);
+    client_data_json.append(115);
+    client_data_json.append(79);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(102);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(115);
+    client_data_json.append(101);
+    client_data_json.append(125);
+
+    let mut authenticator_data = ArrayTrait::<u8>::new();
+    authenticator_data.append(32);
+    authenticator_data.append(169);
+    authenticator_data.append(126);
+    authenticator_data.append(195);
+    authenticator_data.append(248);
+    authenticator_data.append(239);
+    authenticator_data.append(188);
+    authenticator_data.append(42);
+    authenticator_data.append(202);
+    authenticator_data.append(12);
+    authenticator_data.append(247);
+    authenticator_data.append(202);
+    authenticator_data.append(187);
+    authenticator_data.append(66);
+    authenticator_data.append(11);
+    authenticator_data.append(74);
+    authenticator_data.append(9);
+    authenticator_data.append(208);
+    authenticator_data.append(174);
+    authenticator_data.append(201);
+    authenticator_data.append(144);
+    authenticator_data.append(84);
+    authenticator_data.append(102);
+    authenticator_data.append(201);
+    authenticator_data.append(173);
+    authenticator_data.append(247);
+    authenticator_data.append(149);
+    authenticator_data.append(132);
+    authenticator_data.append(250);
+    authenticator_data.append(117);
+    authenticator_data.append(254);
+    authenticator_data.append(211);
+    authenticator_data.append(5);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+
+    let verify_result = verify(
+        public_key_pt,
+        r,
+        s,
+        type_offset,
+        challenge_offset,
+        origin_offset,
+        client_data_json,
+        challenge,
+        origin,
+        authenticator_data
+    );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(e) => assert(false, AuthnErrorIntoFelt252::into(e))
+    }
+}
+
+#[test]
+#[available_gas(200000000000)]
+fn test_signer_3() {
+    let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(
+        6972854258589656619579209725127046958824110115159912914040608017904868783527,
+        43071357372117449425164375554329700238962595225945565875108362680108987929554
+    );
+    let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
+    let r: u256 = 84027444720132117131967411393170498203464242808633024200955280984017049162080;
+    let s: u256 = 100829450866752879294819426120271721794954256489543024240983913116395708484981;
+    let type_offset = 9_usize;
+    let challenge_offset = 36;
+    let mut challenge = ArrayTrait::<u8>::new();
+    challenge.append(6);
+    challenge.append(58);
+    challenge.append(153);
+    challenge.append(157);
+    challenge.append(39);
+    challenge.append(33);
+    challenge.append(87);
+    challenge.append(210);
+    challenge.append(184);
+    challenge.append(177);
+    challenge.append(106);
+    challenge.append(213);
+    challenge.append(136);
+    challenge.append(44);
+    challenge.append(177);
+    challenge.append(9);
+    challenge.append(230);
+    challenge.append(56);
+    challenge.append(158);
+    challenge.append(56);
+    challenge.append(180);
+    challenge.append(165);
+    challenge.append(220);
+    challenge.append(108);
+    challenge.append(105);
+    challenge.append(207);
+    challenge.append(246);
+    challenge.append(245);
+    challenge.append(21);
+    challenge.append(226);
+    challenge.append(30);
+    challenge.append(31);
+
+    let origin_offset = 91;
+    let mut origin = ArrayTrait::<u8>::new();
+    origin.append(0x68);
+    origin.append(0x74);
+    origin.append(0x74);
+    origin.append(0x70);
+    origin.append(0x73);
+    origin.append(0x3A);
+    origin.append(0x2F);
+    origin.append(0x2F);
+    origin.append(0x63);
+    origin.append(0x6F);
+    origin.append(0x6E);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x6F);
+    origin.append(0x6C);
+    origin.append(0x6C);
+    origin.append(0x65);
+    origin.append(0x72);
+    origin.append(0x2D);
+    origin.append(0x65);
+    origin.append(0x31);
+    origin.append(0x33);
+    origin.append(0x70);
+    origin.append(0x74);
+    origin.append(0x39);
+    origin.append(0x77);
+    origin.append(0x77);
+    origin.append(0x76);
+    origin.append(0x2E);
+    origin.append(0x70);
+    origin.append(0x72);
+    origin.append(0x65);
+    origin.append(0x76);
+    origin.append(0x69);
+    origin.append(0x65);
+    origin.append(0x77);
+    origin.append(0x2E);
+    origin.append(0x63);
+    origin.append(0x61);
+    origin.append(0x72);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x69);
+    origin.append(0x64);
+    origin.append(0x67);
+    origin.append(0x65);
+    origin.append(0x2E);
+    origin.append(0x67);
+    origin.append(0x67);
+    let mut client_data_json = ArrayTrait::<u8>::new();
+    client_data_json.append(123);
+    client_data_json.append(34);
+    client_data_json.append(116);
+    client_data_json.append(121);
+    client_data_json.append(112);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(119);
+    client_data_json.append(101);
+    client_data_json.append(98);
+    client_data_json.append(97);
+    client_data_json.append(117);
+    client_data_json.append(116);
+    client_data_json.append(104);
+    client_data_json.append(110);
+    client_data_json.append(46);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(116);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(108);
+    client_data_json.append(101);
+    client_data_json.append(110);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(66);
+    client_data_json.append(106);
+    client_data_json.append(113);
+    client_data_json.append(90);
+    client_data_json.append(110);
+    client_data_json.append(83);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(86);
+    client_data_json.append(57);
+    client_data_json.append(75);
+    client_data_json.append(52);
+    client_data_json.append(115);
+    client_data_json.append(87);
+    client_data_json.append(114);
+    client_data_json.append(86);
+    client_data_json.append(105);
+    client_data_json.append(67);
+    client_data_json.append(121);
+    client_data_json.append(120);
+    client_data_json.append(67);
+    client_data_json.append(101);
+    client_data_json.append(89);
+    client_data_json.append(52);
+    client_data_json.append(110);
+    client_data_json.append(106);
+    client_data_json.append(105);
+    client_data_json.append(48);
+    client_data_json.append(112);
+    client_data_json.append(100);
+    client_data_json.append(120);
+    client_data_json.append(115);
+    client_data_json.append(97);
+    client_data_json.append(99);
+    client_data_json.append(95);
+    client_data_json.append(50);
+    client_data_json.append(57);
+    client_data_json.append(82);
+    client_data_json.append(88);
+    client_data_json.append(105);
+    client_data_json.append(72);
+    client_data_json.append(104);
+    client_data_json.append(56);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(111);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(97);
+    client_data_json.append(97);
+    client_data_json.append(97);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(114);
+    client_data_json.append(111);
+    client_data_json.append(115);
+    client_data_json.append(115);
+    client_data_json.append(79);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(102);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(115);
+    client_data_json.append(101);
+    client_data_json.append(125);
+
+    let mut authenticator_data = ArrayTrait::<u8>::new();
+    authenticator_data.append(32);
+    authenticator_data.append(169);
+    authenticator_data.append(126);
+    authenticator_data.append(195);
+    authenticator_data.append(248);
+    authenticator_data.append(239);
+    authenticator_data.append(188);
+    authenticator_data.append(42);
+    authenticator_data.append(202);
+    authenticator_data.append(12);
+    authenticator_data.append(247);
+    authenticator_data.append(202);
+    authenticator_data.append(187);
+    authenticator_data.append(66);
+    authenticator_data.append(11);
+    authenticator_data.append(74);
+    authenticator_data.append(9);
+    authenticator_data.append(208);
+    authenticator_data.append(174);
+    authenticator_data.append(201);
+    authenticator_data.append(144);
+    authenticator_data.append(84);
+    authenticator_data.append(102);
+    authenticator_data.append(201);
+    authenticator_data.append(173);
+    authenticator_data.append(247);
+    authenticator_data.append(149);
+    authenticator_data.append(132);
+    authenticator_data.append(250);
+    authenticator_data.append(117);
+    authenticator_data.append(254);
+    authenticator_data.append(211);
+    authenticator_data.append(5);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+
+    let verify_result = verify(
+        public_key_pt,
+        r,
+        s,
+        type_offset,
+        challenge_offset,
+        origin_offset,
+        client_data_json,
+        challenge,
+        origin,
+        authenticator_data
+    );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(e) => assert(false, AuthnErrorIntoFelt252::into(e))
+    }
+}
+
+#[test]
+#[available_gas(200000000000)]
+fn test_signer_4() {
+    let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(
+        3038985733803749302733815345337523629418153320353979305111376689863085648611,
+        104687155973234788629019002022092259654980491765810407159876957497202123932974
+    );
+    let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
+    let r: u256 = 95437112186174797789664334960588533698737767255085371034984164217167695098110;
+    let s: u256 = 63388326908708772584861479634976619804070587018055170293344087415276669617609;
+    let type_offset = 9_usize;
+    let challenge_offset = 36;
+    let mut challenge = ArrayTrait::<u8>::new();
+    challenge.append(6);
+    challenge.append(58);
+    challenge.append(153);
+    challenge.append(157);
+    challenge.append(39);
+    challenge.append(33);
+    challenge.append(87);
+    challenge.append(210);
+    challenge.append(184);
+    challenge.append(177);
+    challenge.append(106);
+    challenge.append(213);
+    challenge.append(136);
+    challenge.append(44);
+    challenge.append(177);
+    challenge.append(9);
+    challenge.append(230);
+    challenge.append(56);
+    challenge.append(158);
+    challenge.append(56);
+    challenge.append(180);
+    challenge.append(165);
+    challenge.append(220);
+    challenge.append(108);
+    challenge.append(105);
+    challenge.append(207);
+    challenge.append(246);
+    challenge.append(245);
+    challenge.append(21);
+    challenge.append(226);
+    challenge.append(30);
+    challenge.append(31);
+
+    let origin_offset = 91;
+    let mut origin = ArrayTrait::<u8>::new();
+    origin.append(0x68);
+    origin.append(0x74);
+    origin.append(0x74);
+    origin.append(0x70);
+    origin.append(0x73);
+    origin.append(0x3A);
+    origin.append(0x2F);
+    origin.append(0x2F);
+    origin.append(0x63);
+    origin.append(0x6F);
+    origin.append(0x6E);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x6F);
+    origin.append(0x6C);
+    origin.append(0x6C);
+    origin.append(0x65);
+    origin.append(0x72);
+    origin.append(0x2D);
+    origin.append(0x65);
+    origin.append(0x31);
+    origin.append(0x33);
+    origin.append(0x70);
+    origin.append(0x74);
+    origin.append(0x39);
+    origin.append(0x77);
+    origin.append(0x77);
+    origin.append(0x76);
+    origin.append(0x2E);
+    origin.append(0x70);
+    origin.append(0x72);
+    origin.append(0x65);
+    origin.append(0x76);
+    origin.append(0x69);
+    origin.append(0x65);
+    origin.append(0x77);
+    origin.append(0x2E);
+    origin.append(0x63);
+    origin.append(0x61);
+    origin.append(0x72);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x69);
+    origin.append(0x64);
+    origin.append(0x67);
+    origin.append(0x65);
+    origin.append(0x2E);
+    origin.append(0x67);
+    origin.append(0x67);
+    let mut client_data_json = ArrayTrait::<u8>::new();
+    client_data_json.append(123);
+    client_data_json.append(34);
+    client_data_json.append(116);
+    client_data_json.append(121);
+    client_data_json.append(112);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(119);
+    client_data_json.append(101);
+    client_data_json.append(98);
+    client_data_json.append(97);
+    client_data_json.append(117);
+    client_data_json.append(116);
+    client_data_json.append(104);
+    client_data_json.append(110);
+    client_data_json.append(46);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(116);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(108);
+    client_data_json.append(101);
+    client_data_json.append(110);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(66);
+    client_data_json.append(106);
+    client_data_json.append(113);
+    client_data_json.append(90);
+    client_data_json.append(110);
+    client_data_json.append(83);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(86);
+    client_data_json.append(57);
+    client_data_json.append(75);
+    client_data_json.append(52);
+    client_data_json.append(115);
+    client_data_json.append(87);
+    client_data_json.append(114);
+    client_data_json.append(86);
+    client_data_json.append(105);
+    client_data_json.append(67);
+    client_data_json.append(121);
+    client_data_json.append(120);
+    client_data_json.append(67);
+    client_data_json.append(101);
+    client_data_json.append(89);
+    client_data_json.append(52);
+    client_data_json.append(110);
+    client_data_json.append(106);
+    client_data_json.append(105);
+    client_data_json.append(48);
+    client_data_json.append(112);
+    client_data_json.append(100);
+    client_data_json.append(120);
+    client_data_json.append(115);
+    client_data_json.append(97);
+    client_data_json.append(99);
+    client_data_json.append(95);
+    client_data_json.append(50);
+    client_data_json.append(57);
+    client_data_json.append(82);
+    client_data_json.append(88);
+    client_data_json.append(105);
+    client_data_json.append(72);
+    client_data_json.append(104);
+    client_data_json.append(56);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(111);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(97);
+    client_data_json.append(97);
+    client_data_json.append(97);
+    client_data_json.append(97);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(114);
+    client_data_json.append(111);
+    client_data_json.append(115);
+    client_data_json.append(115);
+    client_data_json.append(79);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(102);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(115);
+    client_data_json.append(101);
+    client_data_json.append(125);
+
+    let mut authenticator_data = ArrayTrait::<u8>::new();
+    authenticator_data.append(32);
+    authenticator_data.append(169);
+    authenticator_data.append(126);
+    authenticator_data.append(195);
+    authenticator_data.append(248);
+    authenticator_data.append(239);
+    authenticator_data.append(188);
+    authenticator_data.append(42);
+    authenticator_data.append(202);
+    authenticator_data.append(12);
+    authenticator_data.append(247);
+    authenticator_data.append(202);
+    authenticator_data.append(187);
+    authenticator_data.append(66);
+    authenticator_data.append(11);
+    authenticator_data.append(74);
+    authenticator_data.append(9);
+    authenticator_data.append(208);
+    authenticator_data.append(174);
+    authenticator_data.append(201);
+    authenticator_data.append(144);
+    authenticator_data.append(84);
+    authenticator_data.append(102);
+    authenticator_data.append(201);
+    authenticator_data.append(173);
+    authenticator_data.append(247);
+    authenticator_data.append(149);
+    authenticator_data.append(132);
+    authenticator_data.append(250);
+    authenticator_data.append(117);
+    authenticator_data.append(254);
+    authenticator_data.append(211);
+    authenticator_data.append(5);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+
+    let verify_result = verify(
+        public_key_pt,
+        r,
+        s,
+        type_offset,
+        challenge_offset,
+        origin_offset,
+        client_data_json,
+        challenge,
+        origin,
+        authenticator_data
+    );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(e) => assert(false, AuthnErrorIntoFelt252::into(e))
+    }
+}
+
+#[test]
+#[available_gas(200000000000)]
+fn test_signer_5() {
+    let public_key_pt: Result<Option<Secp256r1Point>> = Secp256Trait::secp256_ec_new_syscall(
+        8236224060468752415759636503165209497612420961814464558747630367579696898717,
+        1108828119947971670290203363416788033308168378227008734253063918012458842826
+    );
+    let public_key_pt: Secp256r1Point = public_key_pt.unwrap().unwrap();
+    let r: u256 = 77141485546584576139248159556342184323351821942524281174821847070251410927774;
+    let s: u256 = 69323606870149198438034679486208385673860745996598132019481117924987182112692;
+    let type_offset = 9_usize;
+    let challenge_offset = 36;
+    let mut challenge = ArrayTrait::<u8>::new();
+    challenge.append(6);
+    challenge.append(58);
+    challenge.append(153);
+    challenge.append(157);
+    challenge.append(39);
+    challenge.append(33);
+    challenge.append(87);
+    challenge.append(210);
+    challenge.append(184);
+    challenge.append(177);
+    challenge.append(106);
+    challenge.append(213);
+    challenge.append(136);
+    challenge.append(44);
+    challenge.append(177);
+    challenge.append(9);
+    challenge.append(230);
+    challenge.append(56);
+    challenge.append(158);
+    challenge.append(56);
+    challenge.append(180);
+    challenge.append(165);
+    challenge.append(220);
+    challenge.append(108);
+    challenge.append(105);
+    challenge.append(207);
+    challenge.append(246);
+    challenge.append(245);
+    challenge.append(21);
+    challenge.append(226);
+    challenge.append(30);
+    challenge.append(31);
+
+    let origin_offset = 91;
+    let mut origin = ArrayTrait::<u8>::new();
+    origin.append(0x68);
+    origin.append(0x74);
+    origin.append(0x74);
+    origin.append(0x70);
+    origin.append(0x73);
+    origin.append(0x3A);
+    origin.append(0x2F);
+    origin.append(0x2F);
+    origin.append(0x63);
+    origin.append(0x6F);
+    origin.append(0x6E);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x6F);
+    origin.append(0x6C);
+    origin.append(0x6C);
+    origin.append(0x65);
+    origin.append(0x72);
+    origin.append(0x2D);
+    origin.append(0x65);
+    origin.append(0x31);
+    origin.append(0x33);
+    origin.append(0x70);
+    origin.append(0x74);
+    origin.append(0x39);
+    origin.append(0x77);
+    origin.append(0x77);
+    origin.append(0x76);
+    origin.append(0x2E);
+    origin.append(0x70);
+    origin.append(0x72);
+    origin.append(0x65);
+    origin.append(0x76);
+    origin.append(0x69);
+    origin.append(0x65);
+    origin.append(0x77);
+    origin.append(0x2E);
+    origin.append(0x63);
+    origin.append(0x61);
+    origin.append(0x72);
+    origin.append(0x74);
+    origin.append(0x72);
+    origin.append(0x69);
+    origin.append(0x64);
+    origin.append(0x67);
+    origin.append(0x65);
+    origin.append(0x2E);
+    origin.append(0x67);
+    origin.append(0x67);
+    let mut client_data_json = ArrayTrait::<u8>::new();
+    client_data_json.append(123);
+    client_data_json.append(34);
+    client_data_json.append(116);
+    client_data_json.append(121);
+    client_data_json.append(112);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(119);
+    client_data_json.append(101);
+    client_data_json.append(98);
+    client_data_json.append(97);
+    client_data_json.append(117);
+    client_data_json.append(116);
+    client_data_json.append(104);
+    client_data_json.append(110);
+    client_data_json.append(46);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(116);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(108);
+    client_data_json.append(101);
+    client_data_json.append(110);
+    client_data_json.append(103);
+    client_data_json.append(101);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(66);
+    client_data_json.append(106);
+    client_data_json.append(113);
+    client_data_json.append(90);
+    client_data_json.append(110);
+    client_data_json.append(83);
+    client_data_json.append(99);
+    client_data_json.append(104);
+    client_data_json.append(86);
+    client_data_json.append(57);
+    client_data_json.append(75);
+    client_data_json.append(52);
+    client_data_json.append(115);
+    client_data_json.append(87);
+    client_data_json.append(114);
+    client_data_json.append(86);
+    client_data_json.append(105);
+    client_data_json.append(67);
+    client_data_json.append(121);
+    client_data_json.append(120);
+    client_data_json.append(67);
+    client_data_json.append(101);
+    client_data_json.append(89);
+    client_data_json.append(52);
+    client_data_json.append(110);
+    client_data_json.append(106);
+    client_data_json.append(105);
+    client_data_json.append(48);
+    client_data_json.append(112);
+    client_data_json.append(100);
+    client_data_json.append(120);
+    client_data_json.append(115);
+    client_data_json.append(97);
+    client_data_json.append(99);
+    client_data_json.append(95);
+    client_data_json.append(50);
+    client_data_json.append(57);
+    client_data_json.append(82);
+    client_data_json.append(88);
+    client_data_json.append(105);
+    client_data_json.append(72);
+    client_data_json.append(104);
+    client_data_json.append(56);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(111);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(34);
+    client_data_json.append(97);
+    client_data_json.append(97);
+    client_data_json.append(97);
+    client_data_json.append(97);
+    client_data_json.append(97);
+    client_data_json.append(34);
+    client_data_json.append(44);
+    client_data_json.append(34);
+    client_data_json.append(99);
+    client_data_json.append(114);
+    client_data_json.append(111);
+    client_data_json.append(115);
+    client_data_json.append(115);
+    client_data_json.append(79);
+    client_data_json.append(114);
+    client_data_json.append(105);
+    client_data_json.append(103);
+    client_data_json.append(105);
+    client_data_json.append(110);
+    client_data_json.append(34);
+    client_data_json.append(58);
+    client_data_json.append(102);
+    client_data_json.append(97);
+    client_data_json.append(108);
+    client_data_json.append(115);
+    client_data_json.append(101);
+    client_data_json.append(125);
+
+    let mut authenticator_data = ArrayTrait::<u8>::new();
+    authenticator_data.append(32);
+    authenticator_data.append(169);
+    authenticator_data.append(126);
+    authenticator_data.append(195);
+    authenticator_data.append(248);
+    authenticator_data.append(239);
+    authenticator_data.append(188);
+    authenticator_data.append(42);
+    authenticator_data.append(202);
+    authenticator_data.append(12);
+    authenticator_data.append(247);
+    authenticator_data.append(202);
+    authenticator_data.append(187);
+    authenticator_data.append(66);
+    authenticator_data.append(11);
+    authenticator_data.append(74);
+    authenticator_data.append(9);
+    authenticator_data.append(208);
+    authenticator_data.append(174);
+    authenticator_data.append(201);
+    authenticator_data.append(144);
+    authenticator_data.append(84);
+    authenticator_data.append(102);
+    authenticator_data.append(201);
+    authenticator_data.append(173);
+    authenticator_data.append(247);
+    authenticator_data.append(149);
+    authenticator_data.append(132);
+    authenticator_data.append(250);
+    authenticator_data.append(117);
+    authenticator_data.append(254);
+    authenticator_data.append(211);
+    authenticator_data.append(5);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+    authenticator_data.append(0);
+
+    let verify_result = verify(
+        public_key_pt,
+        r,
+        s,
+        type_offset,
+        challenge_offset,
+        origin_offset,
+        client_data_json,
+        challenge,
+        origin,
+        authenticator_data
+    );
+    match verify_result {
+        Result::Ok => (),
+        Result::Err(e) => assert(false, AuthnErrorIntoFelt252::into(e))
+    }
+}
+
