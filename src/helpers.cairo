@@ -31,14 +31,6 @@ fn arrays_equal<T, impl TPartialEqImpl: PartialEq<T>, impl TDrop: Drop<T>>(
     }
 }
 
-impl PartialEqArray<T, impl TEq: PartialEq<T>, impl TDrop: Drop<T>> of PartialEq<Array<T>> {
-    fn eq(lhs: @Array<T>, rhs: @Array<T>) -> bool {
-        arrays_equal(lhs, rhs)
-    }
-    fn ne(lhs: @Array<T>, rhs: @Array<T>) -> bool {
-        !arrays_equal(lhs, rhs)
-    }
-}
 
 
 trait ContainsTrait<A, T> {
