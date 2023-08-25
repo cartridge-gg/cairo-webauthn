@@ -12,7 +12,7 @@ use alexandria_encoding::base64::Base64UrlEncoder;
 use webauthn::ecdsa::verify_ecdsa;
 use webauthn::errors::{AuthnError, StoreError, RTSEIntoRTAE};
 use webauthn::helpers::{
-    allow_credentials_contain_credential, PartialEqArray, UTF8Decoder, JSONClientDataParser,
+    allow_credentials_contain_credential,  UTF8Decoder, JSONClientDataParser,
     OriginChecker, concatenate, extract_r_and_s_from_array
 };
 

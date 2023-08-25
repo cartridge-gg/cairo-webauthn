@@ -9,7 +9,6 @@ use webauthn::types::AuthenticatorData;
 use webauthn::webauthn::ImplArrayu8TryIntoAuthData;
 use webauthn::errors::AuthnErrorIntoFelt252;
 use webauthn::webauthn::expand_auth_data_and_verify_rp_id_hash;
-use webauthn::helpers::PartialEqArray;
 use starknet::secp256r1::Secp256r1Impl;
 use starknet::secp256r1::Secp256r1Point;
 use starknet::SyscallResultTrait;
