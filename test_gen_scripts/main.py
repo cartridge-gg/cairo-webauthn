@@ -1,9 +1,9 @@
 from structure import TestSuite
-from verify_ecdsa_test import VerifyECDSATest
-from helpers_test import HelpersTest
-from verify_signature_test import VerifySignatureTest
-from expand_auth_data_test import ExpandAuthDataTest
-from webauthn_test import WebauthnTest
+from auth.verify_ecdsa_test import VerifyECDSATest
+from auth.helpers_test import HelpersTest
+from auth.verify_signature_test import VerifySignatureTest
+from auth.expand_auth_data_test import ExpandAuthDataTest
+from auth.webauthn_test import WebauthnTest
 
 
 def main():
