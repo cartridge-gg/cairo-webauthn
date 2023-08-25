@@ -1,0 +1,8 @@
+[package]
+name = "webauthn_auth"
+version = "0.1.0"
+description = "Webauthn authentication library"
+homepage = "https://github.com/cartridge-gg/cairo-webauthn/tree/main/src/auth"
+
+[dependencies]
+alexandria_encoding = { git = "https://github.com/keep-starknet-strange/alexandria" }

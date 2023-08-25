@@ -2,10 +2,9 @@ use array::ArrayTrait;
 use traits::PartialEq;
 use traits::Into;
 use clone::Clone;
-use webauthn::types::PublicKeyCredentialDescriptor;
-use webauthn::types::PublicKeyCredential;
-use webauthn::types::CollectedClientData;
-use webauthn::types::DomString;
+use webauthn_auth::types::{
+    PublicKeyCredentialDescriptor, PublicKeyCredential, CollectedClientData, DomString
+};
 use alexandria_math::BitShift;
 use integer::upcast;
 

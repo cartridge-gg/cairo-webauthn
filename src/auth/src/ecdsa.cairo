@@ -10,8 +10,8 @@ use alexandria_math::BitShift;
 use alexandria_math::sha256::sha256;
 use core::traits::Into;
 
-use webauthn::mod_arithmetic::{mod_inv, mod_mul};
-use webauthn::helpers::extract_u256_from_u8_array;
+use webauthn_auth::mod_arithmetic::{mod_inv, mod_mul};
+use webauthn_auth::helpers::extract_u256_from_u8_array;
 
 
 // Verifies the signature

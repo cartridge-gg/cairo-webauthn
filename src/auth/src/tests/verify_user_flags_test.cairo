@@ -1,8 +1,8 @@
 use core::result::ResultTrait;
 use core::debug::PrintTrait;
 use core::option::OptionTrait;
-use webauthn::webauthn::verify_user_flags;
-use webauthn::types::AuthenticatorData;
+use webauthn_auth::webauthn::verify_user_flags;
+use webauthn_auth::types::AuthenticatorData;
 use array::ArrayTrait;
 
 #[test]

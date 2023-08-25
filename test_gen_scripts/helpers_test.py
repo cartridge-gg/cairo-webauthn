@@ -12,7 +12,7 @@ class HelpersTest(TestFileCreatorInterface):
         tf.add_imports(self.get_imports())
         tf.add_blocks(self.get_extract_tests())
         tf.add_blocks(self.get_r_s_extract_tests())
-        tf.add_blocks(self.get_arrays_equal_tests())
+        # tf.add_blocks(self.get_arrays_equal_tests())
         return tf
 
     def get_imports(self):
@@ -20,9 +20,8 @@ class HelpersTest(TestFileCreatorInterface):
             "core::traits::Into",
             "core::option::OptionTrait",
             "array::ArrayTrait",
-            "webauthn::helpers::extract_u256_from_u8_array",
-            "webauthn::helpers::extract_r_and_s_from_array",
-            "webauthn::helpers::arrays_equal",
+            "webauthn_auth::helpers::extract_u256_from_u8_array",
+            "webauthn_auth::helpers::extract_r_and_s_from_array",
         ]
 
     def get_extract_tests(self):

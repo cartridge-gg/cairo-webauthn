@@ -523,10 +523,10 @@ class WebauthnTest(TestFileCreatorInterface):
 
     def get_imports(self):
         return [
-            "webauthn::webauthn::verify",
+            "webauthn_auth::webauthn::verify",
             "array::ArrayTrait",
-            "webauthn::types::PublicKey",
-            "webauthn::errors::AuthnErrorIntoFelt252",
+            "webauthn_auth::types::PublicKey",
+            "webauthn_auth::errors::AuthnErrorIntoFelt252",
             "core::option::OptionTrait",
             "core::result::ResultTrait",
             "starknet::secp256r1::Secp256Trait",

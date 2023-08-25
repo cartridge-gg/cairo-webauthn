@@ -119,7 +119,7 @@ match {func_name}(pub_key, msg, r, s) {{
         return [
             "core::traits::Into",
             "core::option::OptionTrait",
-            "webauthn::ecdsa::{verify_ecdsa, verify_hashed_ecdsa, VerifyEcdsaError}",
+            "webauthn_auth::ecdsa::{verify_ecdsa, verify_hashed_ecdsa, VerifyEcdsaError}",
             "starknet::secp256r1::Secp256r1Impl",
             "starknet::secp256r1::Secp256r1Point",
             "starknet::SyscallResultTrait",
