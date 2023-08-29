@@ -1,5 +1,8 @@
 [workspace]
-members = ["src/auth"]
+members = [
+    "src/auth",
+    "src/session"
+]
 name = "webauthn"
 version = "0.1.0"
 description = "Cairo webauthn library"

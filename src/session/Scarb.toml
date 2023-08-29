@@ -1,0 +1,8 @@
+[package]
+name = "webauthn_session"
+version = "0.1.0"
+description = "Session token library"
+homepage = "https://github.com/cartridge-gg/cairo-webauthn/tree/main/src/session"
+
+[dependencies]
+alexandria_encoding = { git = "https://github.com/keep-starknet-strange/alexandria" }
