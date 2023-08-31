@@ -7,8 +7,8 @@ class VerifySignatureTest(TestFileCreatorInterface):
     def __init__(self) -> None:
         super().__init__()
 
-    def test_file(self) -> TestFile:
-        tf = TestFile("verify_signature", "verify_signature_test")
+    def test_file(self, python_source_folder: str) -> TestFile:
+        tf = TestFile("verify_signature", python_source_folder)
         tf.add_imports(self.get_imports())
         tf.add_blocks(self.get_tests())
         return tf

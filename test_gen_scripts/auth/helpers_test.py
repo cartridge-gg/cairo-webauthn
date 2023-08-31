@@ -7,8 +7,8 @@ class HelpersTest(TestFileCreatorInterface):
     def __init__(self) -> None:
         super().__init__()
 
-    def test_file(self) -> TestFile:
-        tf = TestFile("helpers", "helpers_test")
+    def test_file(self, python_source_folder: str) -> TestFile:
+        tf = TestFile("helpers", python_source_folder)
         tf.add_imports(self.get_imports())
         tf.add_blocks(self.get_extract_tests())
         tf.add_blocks(self.get_r_s_extract_tests())

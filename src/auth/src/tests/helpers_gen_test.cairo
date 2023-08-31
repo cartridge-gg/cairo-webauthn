@@ -1,6 +1,6 @@
 // This file is script-generated.
 // Don't modify it manually!
-// See test_gen_scripts/helpers_test.py for details
+// See test_gen_scripts/test_gen_scripts/authhelpers_test.py.py for details
 use core::traits::Into;
 use core::option::OptionTrait;
 use array::ArrayTrait;

@@ -48,13 +48,13 @@ class TestFile:
     path: str
     imports: List[str]
     tests: List[CodeBlock]
-    python_source: str
+    python_suite_folder: str
 
-    def __init__(self, name: str, python_source: str) -> None:
+    def __init__(self, name: str, python_suite_folder: str) -> None:
         self.imports = []
         self.tests = []
         self.name = name
-        self.python_source = python_source
+        self.python_suite_folder = python_suite_folder + name + "_test.py"
 
     def add_block(self, block: CodeBlock):
         self.tests.append(block)
@@ -72,7 +72,7 @@ class TestFile:
         with open(path + "/" + self.file_name(), "w") as file:
             contents = "// This file is script-generated.\n"
             contents += "// Don't modify it manually!\n"
-            contents += f"// See test_gen_scripts/{self.python_source}.py for details\n"
+            contents += f"// See test_gen_scripts/{self.python_suite_folder}.py for details\n"
             for i in self.imports:
                 contents += "use " + i + ";\n"
 
@@ -83,20 +83,28 @@ class TestFile:
             file.write(contents)
 
 
+class TestFileCreatorInterface(ABC):
+    @abstractmethod
+    def test_file(self, python_source_folder) -> TestFile:
+        pass
+
+
 class TestSuite:
     path: str
     mod_file_path: str
     test_files: List[TestFile]
+    python_source_folder: str
 
     splitter = "// ^^^ Auto generated tests ^^^ Place your code below this line!!!"
 
-    def __init__(self, path: str, mod_file_path: str) -> None:
+    def __init__(self, path: str, mod_file_path: str, python_source_folder: str) -> None:
         self.path = path
         self.mod_file_path = mod_file_path
         self.test_files = []
+        self.python_source_folder = python_source_folder
 
-    def add_test_file(self, file: TestFile):
-        self.test_files.append(file)
+    def add_test_file(self, file: TestFileCreatorInterface):
+        self.test_files.append(file.test_file(self.python_source_folder))
 
     def generate(self, delete_old_tests=False):
         if delete_old_tests:
@@ -146,8 +154,3 @@ class TestSuite:
 
 from abc import ABC, abstractmethod
 
-
-class TestFileCreatorInterface(ABC):
-    @abstractmethod
-    def test_file(self) -> TestFile:
-        pass

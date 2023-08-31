@@ -30,8 +30,8 @@ match {func_name}(pub_key, msg, r, s) {{
     def __init__(self) -> None:
         super().__init__()
 
-    def test_file(self) -> TestFile:
-        tf = TestFile("verify_ecdsa", "verify_ecdsa_test")
+    def test_file(self, python_source_folder: str) -> TestFile:
+        tf = TestFile("verify_ecdsa", python_source_folder)
         tf.add_imports(self.get_imports())
         tf.add_blocks(self.get_good_tests())
         tf.add_block(self.create_wrong_arguments_test())

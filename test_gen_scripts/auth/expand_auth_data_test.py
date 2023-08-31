@@ -7,8 +7,8 @@ class ExpandAuthDataTest(TestFileCreatorInterface):
     def __init__(self) -> None:
         super().__init__()
 
-    def test_file(self) -> TestFile:
-        tf = TestFile("expand_auth_data", "expand_auth_data_test")
+    def test_file(self, python_source_folder: str) -> TestFile:
+        tf = TestFile("expand_auth_data", python_source_folder)
         tf.add_imports(self.get_imports())
         tf.add_blocks(self.get_tests())
         return tf
