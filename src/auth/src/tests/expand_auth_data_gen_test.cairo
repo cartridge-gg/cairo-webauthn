@@ -1,6 +1,6 @@
 // This file is script-generated.
 // Don't modify it manually!
-// See /test_gen_scripts/auth/expand_auth_data_test.py for details
+// See test_gen_scripts/auth/expand_auth_data_auth.py for details
 use core::traits::Into;
 use core::option::OptionTrait;
 use result::ResultTrait;
