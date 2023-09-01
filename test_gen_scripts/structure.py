@@ -72,7 +72,7 @@ class TestFile:
         with open(path + "/" + self.file_name(), "w") as file:
             contents = "// This file is script-generated.\n"
             contents += "// Don't modify it manually!\n"
-            contents += f"// See {self.python_suite_folder}/{self.name}_auth.py for details\n"
+            contents += f"// See {self.python_suite_folder}/{self.name}_test.py for details\n"
             for i in self.imports:
                 contents += "use " + i + ";\n"
 
