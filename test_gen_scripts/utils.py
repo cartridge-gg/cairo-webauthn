@@ -4,7 +4,9 @@ from hashlib import sha256
 from ecdsa import SigningKey, NIST256p, util
 import os
 
-def generate_deterministic_key(seed=None):
+RANDOM_GENERATOR_SEED_BASE = ""
+
+def generate_deterministic_key(seed=RANDOM_GENERATOR_SEED_BASE):
     if seed is not None:
         rng = DeterministicPRNG(seed)
     else:
@@ -18,11 +20,15 @@ class DeterministicPRNG:
         self.seed = seed
 
     def __call__(self, n):
-        hash_value = sha256(self.seed).digest()
+        hash_value = sha256(self.seed.encode()).digest()
         return hash_value[:n]
+    
+def generate_next_seed():
+    global RANDOM_GENERATOR_SEED_BASE
+    RANDOM_GENERATOR_SEED_BASE = "b" + str(os.urandom)
 
-def get_good_signature(message: bytes, hash=False, seed=None):
-    sk = generate_deterministic_key(seed)
+def get_good_signature(message: bytes, hash=False):
+    sk = generate_deterministic_key()
     vk = sk.get_verifying_key()
 
     signature = (
@@ -36,9 +42,9 @@ def get_good_signature(message: bytes, hash=False, seed=None):
 
     return (px, py, r, s)
 
-
 def get_raw_signature(message: bytes):
-    sk = SigningKey.generate(curve=NIST256p)
+    seed = generate_next_seed()
+    sk = generate_deterministic_key(seed)
     vk = sk.get_verifying_key()
     sig = sk.sign(message, hashfunc=sha256)
     (px, py) = (vk.pubkey.point.x(), vk.pubkey.point.y())
