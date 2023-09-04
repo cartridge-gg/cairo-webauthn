@@ -5,6 +5,7 @@ struct TxInfoSignature {
     session_key: felt252,
     session_expires: u64,
     root: felt252,
+    //TODO:  Change the naming of proof_len and proofs_len since its veeeeryyy confusing
     proof_len: usize,
     proofs_len: usize,
     proofs: Span<felt252>,

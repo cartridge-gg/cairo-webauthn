@@ -10,11 +10,13 @@ use starknet::{contract_address::ContractAddress};
 
 use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature};
 use webauthn_session::hash::{compute_session_hash, compute_call_hash};
+use webauthn_session::merkle::merkle_verify;
 
 
 use core::ecdsa::check_ecdsa_signature;
 
 mod hash;
+mod merkle;
 mod signature;
 
 type ValidationResult = Result<(), ()>;
@@ -58,7 +60,7 @@ fn void() {
     a.validate_session(ArrayTrait::new());
 }
 
-#[derive(Drop)]
+#[derive(Drop, Copy)]
 struct Call {
     to: felt252,
     selector: felt252,
@@ -123,7 +125,13 @@ fn check_policy(
         if i >= call_array.len() {
             break Result::Ok(());
         }
-        // TODO: merkle verify
+        let leaf = compute_call_hash(*call_array.at(i));
+        match merkle_verify(leaf, root, proof_len, proofs.slice(i * proof_len, proofs.len())) {
+            Result::Ok => (),
+            Result::Err => {
+                break Result::Err(());
+            }
+        };
         i += 1;
     }
 }
