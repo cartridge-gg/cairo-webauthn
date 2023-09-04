@@ -2,27 +2,10 @@ import random
 import string
 from hashlib import sha256
 from ecdsa import SigningKey, NIST256p, util
-import os
 
-def generate_deterministic_key(seed=None):
-    if seed is not None:
-        rng = DeterministicPRNG(seed)
-    else:
-        rng = os.urandom
 
-    sk = SigningKey.generate(curve=NIST256p, entropy=rng)
-    return sk
-
-class DeterministicPRNG:
-    def __init__(self, seed):
-        self.seed = seed
-
-    def __call__(self, n):
-        hash_value = sha256(self.seed).digest()
-        return hash_value[:n]
-
-def get_good_signature(message: bytes, hash=False, seed=None):
-    sk = generate_deterministic_key(seed)
+def get_good_signature(message: bytes, hash=False):
+    sk = SigningKey.generate(curve=NIST256p)
     vk = sk.get_verifying_key()
 
     signature = (
