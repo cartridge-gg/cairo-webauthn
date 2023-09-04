@@ -4,6 +4,7 @@ use core::pedersen::{PedersenImpl, PedersenTrait};
 use starknet::{contract_address::ContractAddress};
 
 use webauthn_session::signature::TxInfoSignature;
+use webauthn_session::Call;
 
 // H('StarkNetDomain(chainId:felt)')
 const STARKNET_DOMAIN_TYPE_HASH: felt252 =
@@ -27,6 +28,10 @@ fn compute_session_hash(
         .update(account.into())
         .update(message_hash)
         .finalize()
+}
+
+fn compute_call_hash(call: Call) -> felt252 {
+    PedersenImpl::new(POLICY_TYPE_HASH).update(call.to).update(call.selector).finalize()
 }
 
 fn hash_domain(chain_id: felt252) -> felt252 {

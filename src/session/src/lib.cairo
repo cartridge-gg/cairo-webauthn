@@ -9,7 +9,7 @@ use core::{TryInto, Into};
 use starknet::{contract_address::ContractAddress};
 
 use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature};
-use webauthn_session::hash::compute_session_hash;
+use webauthn_session::hash::{compute_session_hash, compute_call_hash};
 
 
 use core::ecdsa::check_ecdsa_signature;
@@ -58,12 +58,20 @@ fn void() {
     a.validate_session(ArrayTrait::new());
 }
 
+#[derive(Drop)]
+struct Call {
+    to: felt252,
+    selector: felt252,
+    data_offset: felt252,
+    data_len: felt252,
+}
+
 #[generate_trait]
 impl SessionValidatorImpl<
     S, impl StoreImpl: RevokedSessionKeyStorageTrait<S>, T, impl TxInfoImpl: TxInfoProviderTrait<T>,
 > of SessionValidatorTrait<S, StoreImpl, T, TxInfoImpl> {
     fn validate_session(
-        self: @SessionValidator<S, StoreImpl, T, TxInfoImpl>, call_array: Array<felt252>,
+        self: @SessionValidator<S, StoreImpl, T, TxInfoImpl>, call_array: Array<Call>,
     ) -> ValidationResult {
         let tx_info = self.tx_info_provider.get_tx_info();
         let sig: TxInfoSignature = match tx_info.signature.try_into() {
@@ -100,12 +108,25 @@ impl SessionValidatorImpl<
             return Result::Err(());
         }
 
-        // TODO: Check policy
+        check_policy(call_array, sig.root, sig.proof_len, sig.proofs)?;
 
         Result::Ok(())
     }
 }
 
+
+fn check_policy(
+    call_array: Array<Call>, root: felt252, proof_len: usize, proofs: Span<felt252>,
+) -> Result<(), ()> {
+    let mut i = 0_usize;
+    loop {
+        if i >= call_array.len() {
+            break Result::Ok(());
+        }
+        // TODO: merkle verify
+        i += 1;
+    }
+}
 
 // https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo#L118-L122
 // https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo#L36-L37
