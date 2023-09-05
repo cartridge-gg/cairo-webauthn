@@ -4,9 +4,9 @@ from hashlib import sha256
 from ecdsa import SigningKey, NIST256p, util
 import os
 
-RANDOM_GENERATOR_SEED_BASE = ""
+RANDOM_GENERATOR_SEED_BASE = 1
 
-def generate_deterministic_key(seed=RANDOM_GENERATOR_SEED_BASE):
+def generate_deterministic_key(seed: bytes):
     if seed is not None:
         rng = DeterministicPRNG(seed)
     else:
@@ -20,26 +20,28 @@ class DeterministicPRNG:
         self.seed = seed
 
     def __call__(self, n):
-        hash_value = sha256(self.seed.encode()).digest()
+        hash_value = sha256(self.seed).digest()
         return hash_value[:n]
     
 def generate_next_seed():
     global RANDOM_GENERATOR_SEED_BASE
-    RANDOM_GENERATOR_SEED_BASE = "b" + str(os.urandom)
-    return RANDOM_GENERATOR_SEED_BASE
+    RANDOM_GENERATOR_SEED_BASE += 1
+    return RANDOM_GENERATOR_SEED_BASE.to_bytes(1, 'big')
 
 def get_good_signature(message: bytes, hash=False):
-    sk = generate_deterministic_key()
+    sk = generate_deterministic_key(generate_next_seed())
     vk = sk.get_verifying_key()
 
     signature = (
-        sk.sign(message, hashfunc=sha256)
+        sk.sign_deterministic(message, hashfunc=sha256)
         if hash
         else sk.sign(message, hashfunc=my_hash, allow_truncate=False)
     )
-
+    
     (px, py) = (vk.pubkey.point.x(), vk.pubkey.point.y())
     r, s = util.sigdecode_string(signature, sk.curve.order)
+
+    print(s)
 
     return (px, py, r, s)
 
