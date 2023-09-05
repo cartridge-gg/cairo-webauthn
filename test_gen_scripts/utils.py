@@ -26,6 +26,7 @@ class DeterministicPRNG:
 def generate_next_seed():
     global RANDOM_GENERATOR_SEED_BASE
     RANDOM_GENERATOR_SEED_BASE = "b" + str(os.urandom)
+    return RANDOM_GENERATOR_SEED_BASE
 
 def get_good_signature(message: bytes, hash=False):
     sk = generate_deterministic_key()
