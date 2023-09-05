@@ -33,7 +33,9 @@ def get_good_signature(message: bytes, hash=False):
     vk = sk.get_verifying_key()
 
     signature = (
-        sk.sign_deterministic(message, hashfunc=sha256)
+        sk.sign(message, hashfunc=sha256)
+        if hash
+        else sk.sign(message, hashfunc=my_hash, allow_truncate=False)
     )
     
     (px, py) = (vk.pubkey.point.x(), vk.pubkey.point.y())
