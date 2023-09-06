@@ -1,10 +1,12 @@
 import random
 import string
 from hashlib import sha256
+
 from ecdsa import SigningKey, NIST256p, util
 import os
 
-RANDOM_GENERATOR_SEED_BASE = 1
+from seed_generator import generate_next_seed
+
 
 def generate_deterministic_key(seed: bytes):
     if seed is not None:
@@ -23,25 +25,20 @@ class DeterministicPRNG:
         hash_value = sha256(self.seed).digest()
         return hash_value[:n]
     
-def generate_next_seed():
-    global RANDOM_GENERATOR_SEED_BASE
-    RANDOM_GENERATOR_SEED_BASE += 1
-    return RANDOM_GENERATOR_SEED_BASE.to_bytes(1, 'big')
+
 
 def get_good_signature(message: bytes, hash=False):
     sk = generate_deterministic_key(generate_next_seed())
     vk = sk.get_verifying_key()
 
     signature = (
-        sk.sign(message, hashfunc=sha256)
+        sk.sign_deterministic(message, hashfunc=sha256)
         if hash
-        else sk.sign(message, hashfunc=my_hash, allow_truncate=False)
+        else sk.sign_deterministic(message, hashfunc=my_hash)
     )
     
     (px, py) = (vk.pubkey.point.x(), vk.pubkey.point.y())
     r, s = util.sigdecode_string(signature, sk.curve.order)
-
-    print(s)
 
     return (px, py, r, s)
 
@@ -65,14 +62,29 @@ def bytes_as_cairo_array(bytes: bytes, name: str = "msg") -> str:
     return "\n".join(declare + lines) + "\n"
 
 
-# Dummy hash function returning a mock of a digestable object
-def my_hash(message):
-    return Digestable(message)
+# Dummy hash function returning an object of class IdentityHasher
+def my_hash(message = b''):
+    return IdentityHasher(message)
 
 
-class Digestable:
-    def __init__(self, val) -> None:
+class IdentityHasher:
+    block_size = 64
+    val: bytes
+    def __init__(self, val=b'') -> None:
         self.val = val
+
+    def update(self, val):
+        self.val += val
 
     def digest(self):
         return self.val
+
+    def hexdigest(self):
+        return self.val.hex()
+
+    @property
+    def digest_size(self):
+        return len(self.val)
+    
+    def copy(self):
+        return IdentityHasher(self.val)
