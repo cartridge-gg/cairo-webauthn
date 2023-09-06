@@ -1,3 +1,4 @@
+use webauthn_session::signature::SignatureProofsTrait;
 use alexandria_data_structures::array_ext::ArrayTraitExt;
 use core::box::BoxTrait;
 use core::array::SpanTrait;
@@ -8,7 +9,7 @@ use array::ArrayTrait;
 use core::{TryInto, Into};
 use starknet::{contract_address::ContractAddress};
 
-use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature};
+use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature, SignatureProofs};
 use webauthn_session::hash::{compute_session_hash, compute_call_hash};
 use alexandria_data_structures::merkle_tree::MerkleTreeImpl;
 
@@ -82,7 +83,7 @@ impl SessionValidatorImpl<
             }
         };
 
-        if sig.proofs_len != call_array.len() * sig.proof_len {
+        if sig.proofs.len() != call_array.len() {
             return Result::Err(());
         };
 
@@ -109,7 +110,7 @@ impl SessionValidatorImpl<
             return Result::Err(());
         }
 
-        check_policy(call_array, sig.root, sig.proof_len, sig.proofs)?;
+        check_policy(call_array, sig.root, sig.proofs)?;
 
         Result::Ok(())
     }
@@ -117,7 +118,7 @@ impl SessionValidatorImpl<
 
 
 fn check_policy(
-    call_array: Array<Call>, root: felt252, proof_len: usize, proofs: Span<felt252>,
+    call_array: Array<Call>, root: felt252, proofs: SignatureProofs,
 ) -> Result<(), ()> {
     let mut i = 0_usize;
     loop {
@@ -126,7 +127,7 @@ fn check_policy(
         }
         let leaf = compute_call_hash(*call_array.at(i));
         let mut merkle = MerkleTreeImpl::new();
-        if merkle.verify(root, leaf, proofs.slice(i * proof_len, proofs.len())) == false{
+        if merkle.verify(root, leaf, proofs.at(i)) == false {
             break Result::Err(());
         };
         i += 1;
