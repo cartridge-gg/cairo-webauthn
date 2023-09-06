@@ -12,7 +12,6 @@ class HelpersTest(TestFileCreatorInterface):
         tf.add_imports(self.get_imports())
         tf.add_blocks(self.get_extract_tests())
         tf.add_blocks(self.get_r_s_extract_tests())
-        # tf.add_blocks(self.get_arrays_equal_tests())
         return tf
 
     def get_imports(self):

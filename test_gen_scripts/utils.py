@@ -56,9 +56,9 @@ def get_random_string(a: int, b: int):
     return "".join(random.choice(characters) for _ in range(random.randint(a, b)))
 
 
-def bytes_as_cairo_array(bytes: bytes, name: str = "msg", type: str = "u8") -> str:
+def iterable_as_cairo_array(iterable, name: str = "msg", type: str = "u8") -> str:
     declare = [f"let mut {name}: Array<{type}> = ArrayTrait::new();"]
-    lines = [f"{name}.append({hex(b)});" for b in bytes]
+    lines = [f"{name}.append({hex(b)});" for b in iterable]
     return "\n".join(declare + lines) + "\n"
 
 def assert_option_is_some(value: str) -> str:

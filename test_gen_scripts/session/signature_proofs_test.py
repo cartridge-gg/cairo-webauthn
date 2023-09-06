@@ -1,6 +1,6 @@
 from typing import List
 from structure import Test, TestFile, TestFileCreatorInterface, SimpleBlock
-from utils import bytes_as_cairo_array, assert_option_is_some, assert_option_is_none
+from utils import iterable_as_cairo_array, assert_option_is_some, assert_option_is_none
 
 
 class SignatureProofsTest(TestFileCreatorInterface):
@@ -24,8 +24,7 @@ class SignatureProofsTest(TestFileCreatorInterface):
         ]
     
     def get_test(self, length: int):
-        bts = bytes([i % 256 for i in range(length)])
-        body = bytes_as_cairo_array(bytes([i % 256 for i in range(length)]), 'proofs', 'felt252')
+        body = iterable_as_cairo_array(bytes([i % 256 for i in range(length)]), 'proofs', 'felt252')
         for proof_size in [i + 1 for i in range(length)]:
             value = f'ImplSignatureProofs::try_new(proofs.span(), {proof_size})'
             if length % proof_size == 0:

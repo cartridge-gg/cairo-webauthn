@@ -1,6 +1,6 @@
 from hashlib import sha256
 from structure import Test, TestFile, TestFileCreatorInterface
-from utils import get_raw_signature, bytes_as_cairo_array, get_random_string
+from utils import get_raw_signature, iterable_as_cairo_array, get_random_string
 
 
 class VerifySignatureTest(TestFileCreatorInterface):
@@ -23,9 +23,9 @@ class VerifySignatureTest(TestFileCreatorInterface):
         hash = sha256(get_random_string(5, 100).encode()).digest()
         (sig, px, py) = get_raw_signature(auth_data + hash)
 
-        text = bytes_as_cairo_array(hash, "hash")
-        text += bytes_as_cairo_array(auth_data, "auth_data")
-        text += bytes_as_cairo_array(sig, "sig")
+        text = iterable_as_cairo_array(hash, "hash")
+        text += iterable_as_cairo_array(auth_data, "auth_data")
+        text += iterable_as_cairo_array(sig, "sig")
         text += (
             "let pk = PublicKey {\n\t x: " + str(px) + ", \n\t y: " + str(py) + "\n};\n"
         )
