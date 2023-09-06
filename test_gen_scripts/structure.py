@@ -107,6 +107,9 @@ class TestSuite:
         self.test_files.append(file.test_file(self.python_source_folder))
 
     def generate(self, delete_old_tests=False):
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+
         if delete_old_tests:
             self.delete_old()
 
@@ -116,6 +119,8 @@ class TestSuite:
             tf.write_to_file(self.path)
 
     def manipulate_mod_file(self):
+        with open(self.mod_file_path, 'a+') as file:
+            pass
         with open(self.mod_file_path, "r") as file:
             content = file.read()
 
