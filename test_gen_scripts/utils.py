@@ -56,10 +56,24 @@ def get_random_string(a: int, b: int):
     return "".join(random.choice(characters) for _ in range(random.randint(a, b)))
 
 
-def bytes_as_cairo_array(bytes: bytes, name: str = "msg") -> str:
-    declare = [f"let mut {name}: Array<u8> = ArrayTrait::new();"]
+def bytes_as_cairo_array(bytes: bytes, name: str = "msg", type: str = "u8") -> str:
+    declare = [f"let mut {name}: Array<{type}> = ArrayTrait::new();"]
     lines = [f"{name}.append({hex(b)});" for b in bytes]
     return "\n".join(declare + lines) + "\n"
+
+def assert_option_is_some(value: str) -> str:
+    return """match {option_value} {{
+    Option::Some(_) => (),
+    Option::None => assert(false, 'Should be Some')
+}};
+""".format(option_value=value)
+
+def assert_option_is_none(value: str) -> str:
+    return """match {option_value} {{
+    Option::Some(_) => assert(false, 'Should be None!'),
+    Option::None => ()
+}};
+""".format(option_value=value)
 
 
 # Dummy hash function returning an object of class IdentityHasher

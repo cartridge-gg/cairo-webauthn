@@ -19,6 +19,9 @@ use core::ecdsa::check_ecdsa_signature;
 mod hash;
 mod signature;
 
+#[cfg(test)]
+mod tests;
+
 type ValidationResult = Result<(), ()>;
 
 
