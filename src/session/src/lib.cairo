@@ -10,13 +10,12 @@ use starknet::{contract_address::ContractAddress};
 
 use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature};
 use webauthn_session::hash::{compute_session_hash, compute_call_hash};
-use webauthn_session::merkle::merkle_verify;
+use alexandria_data_structures::merkle_tree::MerkleTreeImpl;
 
 
 use core::ecdsa::check_ecdsa_signature;
 
 mod hash;
-mod merkle;
 mod signature;
 
 type ValidationResult = Result<(), ()>;
@@ -126,11 +125,9 @@ fn check_policy(
             break Result::Ok(());
         }
         let leaf = compute_call_hash(*call_array.at(i));
-        match merkle_verify(leaf, root, proof_len, proofs.slice(i * proof_len, proofs.len())) {
-            Result::Ok => (),
-            Result::Err => {
-                break Result::Err(());
-            }
+        let mut merkle = MerkleTreeImpl::new();
+        if merkle.verify(root, leaf, proofs.slice(i * proof_len, proofs.len())) == false{
+            break Result::Err(());
         };
         i += 1;
     }
