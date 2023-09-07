@@ -9,14 +9,14 @@ use alexandria_math::{sha256::sha256, BitShift};
 
 use alexandria_encoding::base64::Base64UrlEncoder;
 
-use webauthn::ecdsa::verify_ecdsa;
-use webauthn::errors::{AuthnError, StoreError, RTSEIntoRTAE};
-use webauthn::helpers::{
-    allow_credentials_contain_credential,  UTF8Decoder, JSONClientDataParser,
-    OriginChecker, concatenate, extract_r_and_s_from_array
+use webauthn_auth::ecdsa::verify_ecdsa;
+use webauthn_auth::errors::{AuthnError, StoreError, RTSEIntoRTAE};
+use webauthn_auth::helpers::{
+    allow_credentials_contain_credential, UTF8Decoder, JSONClientDataParser, OriginChecker,
+    concatenate, extract_r_and_s_from_array
 };
 
-use webauthn::types::{
+use webauthn_auth::types::{
     PublicKeyCredentialRequestOptions, PublicKeyCredential, PublicKey,
     PublicKeyCredentialDescriptor, AuthenticatorResponse, AuthenticatorAssertionResponse,
     AuthenticatorData, AssertionOptions

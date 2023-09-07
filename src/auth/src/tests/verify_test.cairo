@@ -1,7 +1,7 @@
 use webauthn::webauthn::verify;
 use array::ArrayTrait;
-use webauthn::types::PublicKey;
-use webauthn::errors::AuthnErrorIntoFelt252;
+use webauthn_auth::types::PublicKey;
+use webauthn_auth::errors::AuthnErrorIntoFelt252;
 use core::option::OptionTrait;
 use core::result::ResultTrait;
 use starknet::secp256r1::Secp256Trait;

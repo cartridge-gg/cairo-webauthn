@@ -1,5 +1,4 @@
 import os
-from typing import List
 from abc import ABC, abstractmethod
 
 
@@ -46,23 +45,23 @@ class SimpleBlock(CodeBlock):
 class TestFile:
     name: str
     path: str
-    imports: List[str]
-    tests: List[CodeBlock]
-    python_source: str
+    imports: list[str]
+    tests: list[CodeBlock]
+    python_suite_folder: str
 
-    def __init__(self, name: str, python_source: str) -> None:
+    def __init__(self, name: str, python_suite_folder: str) -> None:
         self.imports = []
         self.tests = []
         self.name = name
-        self.python_source = python_source
+        self.python_suite_folder = python_suite_folder
 
     def add_block(self, block: CodeBlock):
         self.tests.append(block)
 
-    def add_blocks(self, blocks: List[CodeBlock]):
+    def add_blocks(self, blocks: list[CodeBlock]):
         self.tests += blocks
 
-    def add_imports(self, imports: List[str]):
+    def add_imports(self, imports: list[str]):
         self.imports += imports
 
     def file_name(self):
@@ -72,7 +71,9 @@ class TestFile:
         with open(path + "/" + self.file_name(), "w") as file:
             contents = "// This file is script-generated.\n"
             contents += "// Don't modify it manually!\n"
-            contents += f"// See test_gen_scripts/{self.python_source}.py for details\n"
+            contents += (
+                f"// See {self.python_suite_folder}/{self.name}_test.py for details\n"
+            )
             for i in self.imports:
                 contents += "use " + i + ";\n"
 
@@ -83,22 +84,35 @@ class TestFile:
             file.write(contents)
 
 
+class TestFileCreatorInterface(ABC):
+    @abstractmethod
+    def test_file(self, python_source_folder) -> TestFile:
+        pass
+
+
 class TestSuite:
     path: str
     mod_file_path: str
-    test_files: List[TestFile]
+    test_files: list[TestFile]
+    python_source_folder: str
 
     splitter = "// ^^^ Auto generated tests ^^^ Place your code below this line!!!"
 
-    def __init__(self, path: str, mod_file_path: str) -> None:
+    def __init__(
+        self, path: str, mod_file_path: str, python_source_folder: str
+    ) -> None:
         self.path = path
         self.mod_file_path = mod_file_path
         self.test_files = []
+        self.python_source_folder = python_source_folder
 
-    def add_test_file(self, file: TestFile):
-        self.test_files.append(file)
+    def add_test_file(self, file: TestFileCreatorInterface):
+        self.test_files.append(file.test_file(self.python_source_folder))
 
     def generate(self, delete_old_tests=False):
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+
         if delete_old_tests:
             self.delete_old()
 
@@ -108,6 +122,8 @@ class TestSuite:
             tf.write_to_file(self.path)
 
     def manipulate_mod_file(self):
+        with open(self.mod_file_path, "a+") as file:
+            pass
         with open(self.mod_file_path, "r") as file:
             content = file.read()
 
@@ -142,12 +158,3 @@ class TestSuite:
                     print(f"Deleted: {file_path}")
                 except Exception as e:
                     print(f"Error deleting file {file_path}. Reason: {e}")
-
-
-from abc import ABC, abstractmethod
-
-
-class TestFileCreatorInterface(ABC):
-    @abstractmethod
-    def test_file(self) -> TestFile:
-        pass

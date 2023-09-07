@@ -221,8 +221,8 @@ class WebauthnTest(TestFileCreatorInterface):
     def __init__(self) -> None:
         super().__init__()
 
-    def test_file(self) -> TestFile:
-        tf = TestFile("webauthn", "webauthn_test")
+    def test_file(self, python_source_folder: str) -> TestFile:
+        tf = TestFile("webauthn", python_source_folder)
         tf.add_imports(self.get_imports())
         tf.add_blocks(self.get_tests())
         return tf
@@ -523,10 +523,10 @@ class WebauthnTest(TestFileCreatorInterface):
 
     def get_imports(self):
         return [
-            "webauthn::webauthn::verify",
+            "webauthn_auth::webauthn::verify",
             "array::ArrayTrait",
-            "webauthn::types::PublicKey",
-            "webauthn::errors::AuthnErrorIntoFelt252",
+            "webauthn_auth::types::PublicKey",
+            "webauthn_auth::errors::AuthnErrorIntoFelt252",
             "core::option::OptionTrait",
             "core::result::ResultTrait",
             "starknet::secp256r1::Secp256Trait",

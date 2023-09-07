@@ -1,14 +1,14 @@
 from hashlib import sha256
 from structure import Test, TestFile, TestFileCreatorInterface
-from utils import get_raw_signature, bytes_as_cairo_array, get_random_string
+from utils import get_raw_signature, iterable_as_cairo_array, get_random_string
 
 
 class VerifySignatureTest(TestFileCreatorInterface):
     def __init__(self) -> None:
         super().__init__()
 
-    def test_file(self) -> TestFile:
-        tf = TestFile("verify_signature", "verify_signature_test")
+    def test_file(self, python_source_folder: str) -> TestFile:
+        tf = TestFile("verify_signature", python_source_folder)
         tf.add_imports(self.get_imports())
         tf.add_blocks(self.get_tests())
         return tf
@@ -23,9 +23,9 @@ class VerifySignatureTest(TestFileCreatorInterface):
         hash = sha256(get_random_string(5, 100).encode()).digest()
         (sig, px, py) = get_raw_signature(auth_data + hash)
 
-        text = bytes_as_cairo_array(hash, "hash")
-        text += bytes_as_cairo_array(auth_data, "auth_data")
-        text += bytes_as_cairo_array(sig, "sig")
+        text = iterable_as_cairo_array(hash, "hash")
+        text += iterable_as_cairo_array(auth_data, "auth_data")
+        text += iterable_as_cairo_array(sig, "sig")
         text += (
             "let pk = PublicKey {\n\t x: " + str(px) + ", \n\t y: " + str(py) + "\n};\n"
         )
@@ -52,10 +52,10 @@ class VerifySignatureTest(TestFileCreatorInterface):
             "core::traits::Into",
             "result::ResultTrait",
             "core::option::OptionTrait",
-            "webauthn::ecdsa::{verify_ecdsa, verify_hashed_ecdsa, VerifyEcdsaError}",
-            "webauthn::types::PublicKey",
-            "webauthn::webauthn::verify_signature",
-            "webauthn::errors::AuthnErrorIntoFelt252",
+            "webauthn_auth::ecdsa::{verify_ecdsa, verify_hashed_ecdsa, VerifyEcdsaError}",
+            "webauthn_auth::types::PublicKey",
+            "webauthn_auth::webauthn::verify_signature",
+            "webauthn_auth::errors::AuthnErrorIntoFelt252",
             "starknet::secp256r1::Secp256r1Impl",
             "starknet::secp256r1::Secp256r1Point",
             "starknet::SyscallResultTrait",

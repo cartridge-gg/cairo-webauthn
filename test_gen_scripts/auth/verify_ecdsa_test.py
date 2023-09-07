@@ -1,5 +1,5 @@
-from structure import Test, TestFile, TestFileCreatorInterface, SimpleBlock
-from utils import get_good_signature, bytes_as_cairo_array
+from structure import Test, TestFile, TestFileCreatorInterface
+from utils import get_good_signature, iterable_as_cairo_array
 
 
 class VerifyECDSATest(TestFileCreatorInterface):
@@ -30,8 +30,8 @@ match {func_name}(pub_key, msg, r, s) {{
     def __init__(self) -> None:
         super().__init__()
 
-    def test_file(self) -> TestFile:
-        tf = TestFile("verify_ecdsa", "verify_ecdsa_test")
+    def test_file(self, python_source_folder: str) -> TestFile:
+        tf = TestFile("verify_ecdsa", python_source_folder)
         tf.add_imports(self.get_imports())
         tf.add_blocks(self.get_good_tests())
         tf.add_block(self.create_wrong_arguments_test())
@@ -64,7 +64,7 @@ match {func_name}(pub_key, msg, r, s) {{
                 py=py,
                 r=r,
                 s=s,
-                msg=bytes_as_cairo_array(message),
+                msg=iterable_as_cairo_array(message),
                 ok_code="()",
                 err_code="assert(false, m.into())",
                 func_name="verify_ecdsa",
@@ -119,7 +119,7 @@ match {func_name}(pub_key, msg, r, s) {{
         return [
             "core::traits::Into",
             "core::option::OptionTrait",
-            "webauthn::ecdsa::{verify_ecdsa, verify_hashed_ecdsa, VerifyEcdsaError}",
+            "webauthn_auth::ecdsa::{verify_ecdsa, verify_hashed_ecdsa, VerifyEcdsaError}",
             "starknet::secp256r1::Secp256r1Impl",
             "starknet::secp256r1::Secp256r1Point",
             "starknet::SyscallResultTrait",

@@ -2,35 +2,11 @@ use array::ArrayTrait;
 use traits::PartialEq;
 use traits::Into;
 use clone::Clone;
-use webauthn::types::PublicKeyCredentialDescriptor;
-use webauthn::types::PublicKeyCredential;
-use webauthn::types::CollectedClientData;
-use webauthn::types::DomString;
+use webauthn_auth::types::{
+    PublicKeyCredentialDescriptor, PublicKeyCredential, CollectedClientData, DomString
+};
 use alexandria_math::BitShift;
 use integer::upcast;
-
-
-// TODO: test
-fn arrays_equal<T, impl TPartialEqImpl: PartialEq<T>, impl TDrop: Drop<T>>(
-    a: @Array<T>, b: @Array<T>
-) -> bool {
-    let la: usize = a.len();
-    let lb: usize = b.len();
-    if la != lb {
-        return false;
-    }
-    let mut i: usize = 0;
-    loop {
-        if i == la {
-            break true;
-        }
-        if a.at(i) != b.at(i) {
-            break false;
-        }
-        i += 1_usize;
-    }
-}
-
 
 
 trait ContainsTrait<A, T> {
@@ -83,7 +59,7 @@ Array<u16>> {
 }
 
 fn allow_credentials_contain_credential(
-    options: @Array<PublicKeyCredentialDescriptor>, credential: @PublicKeyCredential, 
+    options: @Array<PublicKeyCredentialDescriptor>, credential: @PublicKeyCredential,
 ) -> bool {
     let ids: Array<Array<u16>> = options.clone().map();
     ids.contains(credential.id)

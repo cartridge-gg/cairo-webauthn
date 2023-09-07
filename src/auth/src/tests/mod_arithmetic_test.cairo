@@ -1,7 +1,7 @@
 use core::debug::PrintTrait;
 use core::option::OptionTrait;
-use webauthn::mod_arithmetic::extended_gcd;
-use webauthn::mod_arithmetic::{mod_inv, mod_mul};
+use webauthn_auth::mod_arithmetic::extended_gcd;
+use webauthn_auth::mod_arithmetic::{mod_inv, mod_mul};
 
 #[test]
 #[available_gas(20000000000)]
