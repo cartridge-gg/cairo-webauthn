@@ -27,7 +27,6 @@ type ValidationResult = Result<(), ()>;
 
 trait RevokedSessionKeyStorageTrait<T> {
     fn contains_revoked_key(self: @T, key: felt252) -> bool;
-// fn add(self: T, key: felt252) -> Result<(), ()>;
 }
 
 // This trait makes the validation more generic and provides easier testing.
