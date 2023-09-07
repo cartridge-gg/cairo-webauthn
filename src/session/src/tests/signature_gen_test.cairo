@@ -4,7 +4,6 @@
 use core::traits::Into;
 use core::option::OptionTrait;
 use array::ArrayTrait;
-use core::pedersen::pedersen;
 use webauthn_session::signature::FeltSpanTryIntoSignature;
 use webauthn_session::signature::ImplSignatureProofs;
 

@@ -1,5 +1,5 @@
 use core::hash::HashStateTrait;
-use core::pedersen::{PedersenImpl, PedersenTrait};
+use core::poseidon::{PoseidonImpl, PoseidonTrait};
 
 use starknet::{contract_address::ContractAddress};
 
@@ -23,7 +23,8 @@ fn compute_session_hash(
     let message_hash = hash_message(
         signature.session_key, signature.session_expires.into(), signature.root
     );
-    PedersenImpl::new('StarkNet Message')
+    PoseidonImpl::new()
+        .update('StarkNet Message')
         .update(domain_hash)
         .update(account.into())
         .update(message_hash)
@@ -31,15 +32,16 @@ fn compute_session_hash(
 }
 
 fn compute_call_hash(call: Call) -> felt252 {
-    PedersenImpl::new(POLICY_TYPE_HASH).update(call.to).update(call.selector).finalize()
+    PoseidonImpl::new().update(POLICY_TYPE_HASH).update(call.to).update(call.selector).finalize()
 }
 
 fn hash_domain(chain_id: felt252) -> felt252 {
-    PedersenImpl::new(STARKNET_DOMAIN_TYPE_HASH).update(chain_id).finalize()
+    PoseidonImpl::new().update(STARKNET_DOMAIN_TYPE_HASH).update(chain_id).finalize()
 }
 
 fn hash_message(session_key: felt252, session_expires: felt252, root: felt252) -> felt252 {
-    PedersenImpl::new(SESSION_TYPE_HASH)
+    PoseidonImpl::new()
+        .update(SESSION_TYPE_HASH)
         .update(session_key)
         .update(session_expires)
         .update(root)
