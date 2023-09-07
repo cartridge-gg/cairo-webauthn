@@ -1,5 +1,4 @@
 import os
-from typing import List
 from abc import ABC, abstractmethod
 
 
@@ -46,23 +45,23 @@ class SimpleBlock(CodeBlock):
 class TestFile:
     name: str
     path: str
-    imports: List[str]
-    tests: List[CodeBlock]
+    imports: list[str]
+    tests: list[CodeBlock]
     python_suite_folder: str
 
     def __init__(self, name: str, python_suite_folder: str) -> None:
         self.imports = []
         self.tests = []
         self.name = name
-        self.python_suite_folder = python_suite_folder 
+        self.python_suite_folder = python_suite_folder
 
     def add_block(self, block: CodeBlock):
         self.tests.append(block)
 
-    def add_blocks(self, blocks: List[CodeBlock]):
+    def add_blocks(self, blocks: list[CodeBlock]):
         self.tests += blocks
 
-    def add_imports(self, imports: List[str]):
+    def add_imports(self, imports: list[str]):
         self.imports += imports
 
     def file_name(self):
@@ -72,7 +71,9 @@ class TestFile:
         with open(path + "/" + self.file_name(), "w") as file:
             contents = "// This file is script-generated.\n"
             contents += "// Don't modify it manually!\n"
-            contents += f"// See {self.python_suite_folder}/{self.name}_test.py for details\n"
+            contents += (
+                f"// See {self.python_suite_folder}/{self.name}_test.py for details\n"
+            )
             for i in self.imports:
                 contents += "use " + i + ";\n"
 
@@ -92,12 +93,14 @@ class TestFileCreatorInterface(ABC):
 class TestSuite:
     path: str
     mod_file_path: str
-    test_files: List[TestFile]
+    test_files: list[TestFile]
     python_source_folder: str
 
     splitter = "// ^^^ Auto generated tests ^^^ Place your code below this line!!!"
 
-    def __init__(self, path: str, mod_file_path: str, python_source_folder: str) -> None:
+    def __init__(
+        self, path: str, mod_file_path: str, python_source_folder: str
+    ) -> None:
         self.path = path
         self.mod_file_path = mod_file_path
         self.test_files = []
@@ -119,7 +122,7 @@ class TestSuite:
             tf.write_to_file(self.path)
 
     def manipulate_mod_file(self):
-        with open(self.mod_file_path, 'a+') as file:
+        with open(self.mod_file_path, "a+") as file:
             pass
         with open(self.mod_file_path, "r") as file:
             content = file.read()
@@ -155,7 +158,3 @@ class TestSuite:
                     print(f"Deleted: {file_path}")
                 except Exception as e:
                     print(f"Error deleting file {file_path}. Reason: {e}")
-
-
-from abc import ABC, abstractmethod
-

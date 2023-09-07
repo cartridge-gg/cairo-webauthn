@@ -1,6 +1,5 @@
 from typing import List
-from structure import Test, TestFile, TestFileCreatorInterface, SimpleBlock
-from utils import get_good_signature
+from structure import Test, TestFile, TestFileCreatorInterface
 
 
 class HelpersTest(TestFileCreatorInterface):

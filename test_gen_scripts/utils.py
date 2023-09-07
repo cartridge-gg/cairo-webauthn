@@ -1,10 +1,8 @@
 import random
 import string
-from hashlib import sha256
-
-from ecdsa import SigningKey, NIST256p, util
 import os
-
+from hashlib import sha256
+from ecdsa import SigningKey, NIST256p, util
 from seed_generator import generate_next_seed
 
 
@@ -17,6 +15,7 @@ def generate_deterministic_key(seed: bytes):
     sk = SigningKey.generate(curve=NIST256p, entropy=rng)
     return sk
 
+
 class DeterministicPRNG:
     def __init__(self, seed):
         self.seed = seed
@@ -24,7 +23,6 @@ class DeterministicPRNG:
     def __call__(self, n):
         hash_value = sha256(self.seed).digest()
         return hash_value[:n]
-    
 
 
 def get_good_signature(message: bytes, hash=False):
@@ -36,11 +34,12 @@ def get_good_signature(message: bytes, hash=False):
         if hash
         else sk.sign_deterministic(message, hashfunc=my_hash)
     )
-    
+
     (px, py) = (vk.pubkey.point.x(), vk.pubkey.point.y())
     r, s = util.sigdecode_string(signature, sk.curve.order)
 
     return (px, py, r, s)
+
 
 def get_raw_signature(message: bytes):
     seed = generate_next_seed()
@@ -61,30 +60,37 @@ def iterable_as_cairo_array(iterable, name: str = "msg", type: str = "u8") -> st
     lines = [f"{name}.append({b});" for b in iterable]
     return "\n".join(declare + lines) + "\n"
 
+
 def assert_option_is_some(value: str) -> str:
     return """match {option_value} {{
     Option::Some(_) => (),
     Option::None => assert(false, 'Should be Some')
 }};
-""".format(option_value=value)
+""".format(
+        option_value=value
+    )
+
 
 def assert_option_is_none(value: str) -> str:
     return """match {option_value} {{
     Option::Some(_) => assert(false, 'Should be None!'),
     Option::None => ()
 }};
-""".format(option_value=value)
+""".format(
+        option_value=value
+    )
 
 
 # Dummy hash function returning an object of class IdentityHasher
-def my_hash(message = b''):
+def my_hash(message=b""):
     return IdentityHasher(message)
 
 
 class IdentityHasher:
     block_size = 64
     val: bytes
-    def __init__(self, val=b'') -> None:
+
+    def __init__(self, val=b"") -> None:
         self.val = val
 
     def update(self, val):
@@ -99,6 +105,6 @@ class IdentityHasher:
     @property
     def digest_size(self):
         return len(self.val)
-    
+
     def copy(self):
         return IdentityHasher(self.val)

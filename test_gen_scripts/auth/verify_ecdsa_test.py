@@ -1,4 +1,4 @@
-from structure import Test, TestFile, TestFileCreatorInterface, SimpleBlock
+from structure import Test, TestFile, TestFileCreatorInterface
 from utils import get_good_signature, iterable_as_cairo_array
 
 

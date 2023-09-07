@@ -1,5 +1,5 @@
 from hashlib import sha256
-from structure import Test, TestFile, TestFileCreatorInterface, SimpleBlock
+from structure import Test, TestFile, TestFileCreatorInterface
 from utils import iterable_as_cairo_array
 
 

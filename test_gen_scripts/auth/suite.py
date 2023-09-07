@@ -7,7 +7,9 @@ from auth.webauthn_test import WebauthnTest
 
 
 def get_auth_suite():
-    suite = TestSuite("src/auth/src/tests", "src/auth/src/tests.cairo", "test_gen_scripts/auth")
+    suite = TestSuite(
+        "src/auth/src/tests", "src/auth/src/tests.cairo", "test_gen_scripts/auth"
+    )
     suite.add_test_file(VerifyECDSATest())
     suite.add_test_file(HelpersTest())
     suite.add_test_file(VerifySignatureTest())
