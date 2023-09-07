@@ -98,7 +98,7 @@ impl SessionValidatorImpl<
             sig, tx_info.chain_id, tx_info.account_contract_address
         );
 
-        if i_account_is_valid_signature(
+        if is_valid_signature(
             tx_info.account_contract_address, session_hash, sig.session_token
         ) == false {
             return Result::Err(());
@@ -138,7 +138,7 @@ fn check_policy(
 
 // https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo#L118-L122
 // https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo#L36-L37
-fn i_account_is_valid_signature(
+fn is_valid_signature(
     contract_address: ContractAddress, hash: felt252, session_token: Span<felt252>
 ) -> bool {
     //TODO: See what this method should do and if the implementation is required here or somewhere else
