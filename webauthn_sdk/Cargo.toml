@@ -1,0 +1,17 @@
+[package]
+name = "webauthn-sdk"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.66"
+clap = { version = "4.0", features = ["derive"] }
+cairo-lang-compiler = "2.2.0"
+cairo-lang-sierra-generator = "2.2.0"
+cairo-lang-diagnostics = "2.2.0"
+cairo-lang-runner = "2.2.0"
+cairo-lang-starknet = "2.2.0"
+cairo-lang-utils = {version = "2.2.0", features = ["env_logger"]}
+cairo-lang-filesystem = "2.2.0"
