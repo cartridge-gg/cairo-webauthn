@@ -2,7 +2,6 @@
 members = [
     "src/auth",
     "src/session",
-    "src/dev-sdk"
 ]
 name = "webauthn"
 version = "0.1.0"
