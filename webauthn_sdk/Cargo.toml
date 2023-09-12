@@ -16,4 +16,5 @@ cairo-lang-diagnostics = "2.2.0"
 cairo-lang-runner = "2.2.0"
 cairo-lang-starknet = "2.2.0"
 cairo-lang-utils = {version = "2.2.0", features = ["env_logger"]}
+cairo-lang-sierra = "2.2.0"
 
