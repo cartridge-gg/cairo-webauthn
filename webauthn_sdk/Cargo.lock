@@ -4399,6 +4399,7 @@ name = "webauthn-sdk"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "cairo-felt",
  "cairo-lang-compiler",
  "cairo-lang-diagnostics",
  "cairo-lang-runner",
