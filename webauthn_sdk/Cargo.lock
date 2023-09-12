@@ -4407,6 +4407,7 @@ dependencies = [
  "cairo-lang-utils",
  "clap",
  "scarb",
+ "termcolor",
 ]
 
 [[package]]
