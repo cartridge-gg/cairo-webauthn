@@ -6,7 +6,7 @@ use cairo_lang_utils::ordered_hash_map::OrderedHashMap;
 use cairo_felt::Felt252;
 
 pub trait DevRunner {
-    fn run(self: Box<Self>) -> Result<Vec<Felt252>>;
+    fn run(self: Box<Self>) -> Result<()>;
 }
 
 pub struct SingleFunctionRunner{
@@ -25,7 +25,7 @@ impl SingleFunctionRunner {
 }
 
 impl DevRunner for SingleFunctionRunner {
-    fn run(self: Box<Self>) -> Result<Vec<Felt252>> {
+    fn run(self: Box<Self>) -> Result<()> {
         let runner = SierraCasmRunner::new(
             self.progarm,
             None,
@@ -41,7 +41,7 @@ impl DevRunner for SingleFunctionRunner {
             )
             .with_context(|| "Failed to run the function.")?;
         match result.value {
-            cairo_lang_runner::RunResultValue::Success(values) => Ok(values),
+            cairo_lang_runner::RunResultValue::Success(_values) => Ok(()),
             cairo_lang_runner::RunResultValue::Panic(_) => Err(Error::msg("The progam has panicked!"))
         }
     }
