@@ -2,11 +2,13 @@ use crate::{generate::DevGenerator, compile::DevCompiler, parse::DevParser, run:
 use anyhow::Result;
 use std::io::Write;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use crate::run::RunnerError;
+use cairo_felt::Felt252;
 
 pub struct LoggerGenerator(pub Box<dyn DevGenerator>);
 pub struct LoggerCompiler(pub Box<dyn DevCompiler>);
 pub struct LoggerParser(pub Box<dyn DevParser>);
-pub struct LoggerRunner(pub Box<dyn DevRunner>);
+pub struct LoggerRunner(pub Box<dyn DevRunner>, String);
 
 impl LoggerGenerator {
     pub fn new(generator: Box<dyn DevGenerator>) -> Box<Self> {
@@ -29,19 +31,19 @@ impl DevCompiler for LoggerCompiler {
 }
 
 impl DevParser for LoggerParser {
-    fn parse(self: Box<Self>) -> Result<Box<dyn DevRunner>> {
+    fn parse(self: Box<Self>) -> Result<Vec<Box<dyn DevRunner>>>  {
         print_blue("Parsing sierra code...\n");
-        Ok(Box::new(LoggerRunner(self.0.parse()?)))
+        Ok(self.0.parse()?.into_iter().enumerate().map(|(i, r)| Box::new(LoggerRunner(r, format!("Runner {}", i + 1))) as _).collect())
     }
 }
 
 impl DevRunner for LoggerRunner {
-    fn run(self: Box<Self>) -> Result<()> {
-        print_blue("Running...\n");
+    fn run(self: Box<Self>) -> Result<Vec<Felt252>, RunnerError> {
+        print_blue(format!("[{}] Running...\n", self.1));
         let result = self.0.run();
         match &result {
-            Ok(_) => print_color("Run successful!\n", Color::Green),
-            Err(_) => print_color("Run failed!\n", Color::Red),
+            Ok(_) => print_color(format!("[{}] Run successful!\n", self.1), Color::Green),
+            Err(_) => print_color(format!("[{}] Run failed!\n", self.1), Color::Red),
         }
         result
     }

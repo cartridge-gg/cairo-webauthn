@@ -18,6 +18,6 @@ impl DummyGenerator {
 
 impl DevGenerator for DummyGenerator {
     fn generate(self: Box<Self>) -> Result<Box<dyn DevCompiler>> {
-        Ok(ProjectCompiler::new(self.folder, self.package, vec!["main".to_string()]))
+        Ok(ProjectCompiler::new(self.folder, self.package, vec!["main".to_string(), "main2".to_string()]))
     }
 }

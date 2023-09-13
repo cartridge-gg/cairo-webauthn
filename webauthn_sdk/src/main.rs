@@ -13,5 +13,9 @@ mod run;
 mod logger;
 
 fn main() -> Result<()> {
-    LoggerGenerator::new(DummyGenerator::new("cairo", "dev_sdk")).generate()?.compile()?.parse()?.run()
+    let runners = LoggerGenerator::new(DummyGenerator::new("cairo", "dev_sdk")).generate()?.compile()?.parse()?;
+    for runner in runners {
+        runner.run()?;
+    };
+    Ok(())
 }

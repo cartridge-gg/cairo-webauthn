@@ -7,7 +7,7 @@ use crate::run::{DevRunner, SingleFunctionRunner};
 
 
 pub trait DevParser{
-    fn parse(self: Box<Self>) -> Result<Box<dyn DevRunner>>;
+    fn parse(self: Box<Self>) -> Result<Vec<Box<dyn DevRunner>>>;
 }
 
 pub struct SingleFileParser{
@@ -22,11 +22,11 @@ impl SingleFileParser {
 }
 
 impl DevParser for SingleFileParser {
-    fn parse(self: Box<Self>) -> Result<Box<dyn DevRunner>> {
+    fn parse(self: Box<Self>) -> Result<Vec<Box<dyn DevRunner>>> {
         let sierra_code = fs::read_to_string(self.file_name).with_context(|| "Could not read file!")?;
         let Ok(sierra_program) = ProgramParser::new().parse(&sierra_code) else {
             anyhow::bail!("Failed to parse sierra program.")
         };
-        Ok(SingleFunctionRunner::new(sierra_program, self.functions[0].clone()))
+        Ok(self.functions.into_iter().map(|f| SingleFunctionRunner::new(sierra_program.clone(), f) as _).collect())
     }
 }

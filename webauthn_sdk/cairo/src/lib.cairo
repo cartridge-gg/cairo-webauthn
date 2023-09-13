@@ -6,3 +6,6 @@ use array::ArrayTrait;
 fn main() {
     'Hello, World!'.print();
 }
+fn main2() {
+    'Hello2, World!'.print();
+}
