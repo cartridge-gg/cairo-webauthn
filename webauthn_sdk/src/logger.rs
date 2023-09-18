@@ -2,7 +2,7 @@ use crate::{generate::DevGenerator, compile::DevCompiler, parse::DevParser, run:
 use anyhow::Result;
 use std::io::Write;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
-use crate::run::RunnerError;
+use crate::run::DevRunnerError;
 use cairo_felt::Felt252;
 
 pub struct LoggerGenerator(pub Box<dyn DevGenerator>);
@@ -38,7 +38,7 @@ impl DevParser for LoggerParser {
 }
 
 impl DevRunner for LoggerRunner {
-    fn run(self: Box<Self>) -> Result<Vec<Felt252>, RunnerError> {
+    fn run(self: Box<Self>) -> Result<Vec<Felt252>, DevRunnerError> {
         print_blue(format!("[{}] Running...\n", self.1));
         let result = self.0.run();
         match &result {

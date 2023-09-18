@@ -5,6 +5,8 @@ pub trait DevGenerator {
     fn generate(self: Box<Self>) -> Result<Box<dyn DevCompiler>>;
 }
 
+
+
 pub struct DummyGenerator {
     folder: String,
     package: String,
@@ -18,6 +20,6 @@ impl DummyGenerator {
 
 impl DevGenerator for DummyGenerator {
     fn generate(self: Box<Self>) -> Result<Box<dyn DevCompiler>> {
-        Ok(ProjectCompiler::new(self.folder, self.package, vec!["main".to_string(), "main2".to_string()]))
+        Ok(ProjectCompiler::new(self.folder, self.package, vec!["testing".to_string()]))
     }
 }

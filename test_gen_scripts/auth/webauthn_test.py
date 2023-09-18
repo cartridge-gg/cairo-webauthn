@@ -19,7 +19,10 @@ from pyasn1.type.namedtype import NamedTypes
 from pyasn1.type.namedtype import NamedType
 import hashlib
 import binascii
+from hashlib import sha256
+import os
 
+from deterministic_generator import generate_next_seed
 
 TRANSACTION_VERSION = 1
 
@@ -65,10 +68,25 @@ def bytes_to_base64url(val: bytes) -> str:
 def sigencode(r, s, order):
     return (r, s)
 
+def generate_deterministic_key(seed: bytes):
+    if seed is not None:
+        rng = DeterministicPRNG(seed)
+    else:
+        rng = os.urandom
+
+    return rng
+
+class DeterministicPRNG:
+    def __init__(self, seed):
+        self.seed = seed
+
+    def __call__(self, n):
+        hash_value = sha256(self.seed).digest()
+        return hash_value[:n]
 
 class WebauthnSigner:
     def __init__(self):
-        self.signing_key = SigningKey.generate(curve=NIST256p)
+        self.signing_key = SigningKey.generate(curve=NIST256p, entropy=generate_deterministic_key(generate_next_seed()))
         pt = self.signing_key.verifying_key.pubkey.point
 
         self.public_key = (pt.x(), pt.y())
@@ -103,7 +121,7 @@ class WebauthnSigner:
         # if authenticator_data_rem == 4:
         # authenticator_data_rem = 0
 
-        (r, s) = self.signing_key.sign(
+        (r, s) = self.signing_key.sign_deterministic(
             authenticator_data_bytes + client_data_hash_bytes,
             hashfunc=hashlib.sha256,
             sigencode=sigencode,
