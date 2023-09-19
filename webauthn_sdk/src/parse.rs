@@ -3,7 +3,7 @@ use std::fs;
 use cairo_lang_sierra::ProgramParser;
 use anyhow::{Result, Context};
 
-use crate::run::SingleFunctionRunner;
+use crate::{run::SingleFunctionRunner, function::DevFunction};
 
 
 pub trait DevParser<T>{
@@ -12,11 +12,11 @@ pub trait DevParser<T>{
 
 pub struct SingleFileParser{
     file_name: String,
-    functions: Vec<String>
+    functions: Vec<DevFunction>
 }
 
 impl SingleFileParser {
-    pub fn new(file_name: String, functions: Vec<String>) -> Self {
+    pub fn new(file_name: String, functions: Vec<DevFunction>) -> Self {
         SingleFileParser { file_name, functions }
     }
 }

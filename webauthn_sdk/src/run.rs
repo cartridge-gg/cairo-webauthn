@@ -6,6 +6,8 @@ use cairo_lang_sierra::program::Program;
 use cairo_lang_starknet::contract::ContractInfo;
 use cairo_lang_utils::ordered_hash_map::OrderedHashMap;
 
+use crate::function::DevFunction;
+
 pub enum DevRunnerError {
     FailedSettingUp,
     FailedFindingFunction,
@@ -38,17 +40,17 @@ pub trait DevRunner<T> {
 
 pub struct SingleFunctionRunner {
     progarm: Program,
-    function: String,
+    function: DevFunction,
     contracts_info: OrderedHashMap<Felt252, ContractInfo>,
 }
 
 impl SingleFunctionRunner {
-    pub fn new(progarm: Program, function: String) -> Self {
+    pub fn new(progarm: Program, function: DevFunction) -> Self {
         Self::with_contracts_info(progarm, function, OrderedHashMap::default())
     }
     pub fn with_contracts_info(
         progarm: Program,
-        function: String,
+        function: DevFunction,
         contracts_info: OrderedHashMap<Felt252, ContractInfo>,
     ) -> Self {
         SingleFunctionRunner {
@@ -66,11 +68,11 @@ impl DevRunner<Vec<Felt252>> for SingleFunctionRunner {
             None,
             self.contracts_info,
         ) else {return Err(DevRunnerError::FailedSettingUp)};
-        let Ok(function) = runner.find_function(&self.function) else {return Err(DevRunnerError::FailedFindingFunction)};
+        let Ok(function) = runner.find_function(&self.function.name) else {return Err(DevRunnerError::FailedFindingFunction)};
         let result = match runner
             .run_function_with_starknet_context(
                 function,
-                &[Arg::Array(vec![Felt252::new(0x1830), Felt252::new(0x1), Felt252::new(0x2)]), Arg::Array(vec![Felt252::new(0x1830), Felt252::new(0x1), Felt252::new(0x2)])],
+                &self.function.arguments,
                 None,
                 StarknetState::default(),
             ) {
