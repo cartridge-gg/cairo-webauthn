@@ -2,10 +2,10 @@ use scarb::ops;
 use scarb::core::Config;
 use anyhow::Result;
 
-use crate::parse::{DevParser, SingleFileParser};
+use crate::parse::SingleFileParser;
 
-pub trait DevCompiler where{
-    fn compile(self: Box<Self>) -> Result<Box<dyn DevParser>>;
+pub trait DevCompiler<T> {
+    fn compile(self) -> Result<T>;
 }
 
 pub struct ProjectCompiler {
@@ -15,13 +15,13 @@ pub struct ProjectCompiler {
 }
 
 impl ProjectCompiler {
-    pub fn new(folder: String, package: String, functions: Vec<String>) -> Box<Self> {
-        Box::new(ProjectCompiler { folder, package, functions })
+    pub fn new(folder: String, package: String, functions: Vec<String>) -> Self {
+        ProjectCompiler { folder, package, functions }
     }
 }
 
-impl DevCompiler for ProjectCompiler {
-    fn compile(self: Box<Self>) -> Result<Box<dyn DevParser>> {
+impl DevCompiler<SingleFileParser> for ProjectCompiler {
+    fn compile(self) -> Result<SingleFileParser> {
         let manifest_path = ops::find_manifest_path(Some((self.folder.clone() + "/Scarb.toml").as_str().into()))?;
         let config = Config::builder(manifest_path).build()?;
         let ws = ops::read_workspace(config.manifest_path(), &config)?;

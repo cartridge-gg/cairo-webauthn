@@ -1,11 +1,9 @@
-use crate::compile::{DevCompiler, ProjectCompiler};
+use crate::compile::ProjectCompiler;
 use anyhow::Result;
 
-pub trait DevGenerator {
-    fn generate(self: Box<Self>) -> Result<Box<dyn DevCompiler>>;
+pub trait DevGenerator<T> {
+    fn generate(self) -> Result<T>;
 }
-
-
 
 pub struct DummyGenerator {
     folder: String,
@@ -13,13 +11,13 @@ pub struct DummyGenerator {
 }
 
 impl DummyGenerator {
-    pub fn new(folder: impl Into<String>, package: impl Into<String>) -> Box<Self> {
-        Box::new(DummyGenerator { folder: folder.into(), package: package.into() })
+    pub fn new(folder: impl Into<String>, package: impl Into<String>) -> Self {
+        DummyGenerator { folder: folder.into(), package: package.into() }
     }
 }
 
-impl DevGenerator for DummyGenerator {
-    fn generate(self: Box<Self>) -> Result<Box<dyn DevCompiler>> {
+impl DevGenerator<ProjectCompiler> for DummyGenerator {
+    fn generate(self) -> Result<ProjectCompiler> {
         Ok(ProjectCompiler::new(self.folder, self.package, vec!["testing".to_string()]))
     }
 }

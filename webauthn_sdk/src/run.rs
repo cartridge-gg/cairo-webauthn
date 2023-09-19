@@ -32,8 +32,8 @@ impl fmt::Debug for DevRunnerError {
 
 impl std::error::Error for DevRunnerError {}
 
-pub trait DevRunner {
-    fn run(self: Box<Self>) -> Result<Vec<Felt252>, DevRunnerError>;
+pub trait DevRunner<T> {
+    fn run(self) -> Result<T, DevRunnerError>;
 }
 
 pub struct SingleFunctionRunner {
@@ -43,24 +43,24 @@ pub struct SingleFunctionRunner {
 }
 
 impl SingleFunctionRunner {
-    pub fn new(progarm: Program, function: String) -> Box<Self> {
+    pub fn new(progarm: Program, function: String) -> Self {
         Self::with_contracts_info(progarm, function, OrderedHashMap::default())
     }
     pub fn with_contracts_info(
         progarm: Program,
         function: String,
         contracts_info: OrderedHashMap<Felt252, ContractInfo>,
-    ) -> Box<Self> {
-        Box::new(SingleFunctionRunner {
+    ) -> Self {
+        SingleFunctionRunner {
             progarm,
             function,
             contracts_info,
-        })
+        }
     }
 }
 
-impl DevRunner for SingleFunctionRunner {
-    fn run(self: Box<Self>) -> Result<Vec<Felt252>, DevRunnerError> {
+impl DevRunner<Vec<Felt252>> for SingleFunctionRunner {
+    fn run(self) -> Result<Vec<Felt252>, DevRunnerError> {
         let Ok(runner) = SierraCasmRunner::new(
             self.progarm,
             None,
