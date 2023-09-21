@@ -1,6 +1,6 @@
 use crate::{generate::DevGenerator, compile::DevCompiler, parse::DevParser, run::DevRunner};
 use anyhow::Result;
-use std::{io::Write, marker::PhantomData};
+use std::{io::Write, marker::PhantomData, fmt::Debug};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use crate::run::DevRunnerError;
 
@@ -63,13 +63,13 @@ impl <T, U> DevParser<U> for LoggerParser<T, U> where T: DevParser<U> {
     }
 }
 
-impl <T, U> DevRunner<U> for LoggerRunner<T, U> where T: DevRunner<U> {
+impl <T, U> DevRunner<U> for LoggerRunner<T, U> where T: DevRunner<U>, U: Debug {
     fn run(self) -> Result<U, DevRunnerError> {
         print_blue(format!("[{}] Running...\n", self.1));
         let result = self.0.run();
         match &result {
-            Ok(_) => print_color(format!("[{}] Run successful!\n", self.1), Color::Green),
-            Err(_) => print_color(format!("[{}] Run failed!\n", self.1), Color::Red),
+            Ok(v) => print_color(format!("[{}] Run successful!\nReturning:\n{:?}\n", self.1, v), Color::Green),
+            Err(e) => print_color(format!("[{}] Run failed!\nReturning:\n{}\n", self.1, e), Color::Red),
         }
         result
     }

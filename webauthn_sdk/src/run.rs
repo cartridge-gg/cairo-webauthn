@@ -1,7 +1,7 @@
 use std::fmt;
 
 use cairo_felt::Felt252;
-use cairo_lang_runner::{Arg, SierraCasmRunner, StarknetState};
+use cairo_lang_runner::{SierraCasmRunner, StarknetState};
 use cairo_lang_sierra::program::Program;
 use cairo_lang_starknet::contract::ContractInfo;
 use cairo_lang_utils::ordered_hash_map::OrderedHashMap;
@@ -9,7 +9,7 @@ use cairo_lang_utils::ordered_hash_map::OrderedHashMap;
 use crate::function::DevFunction;
 
 pub enum DevRunnerError {
-    FailedSettingUp,
+    FailedSettingUp(String),
     FailedFindingFunction,
     FailedRunning,
     Panicked(Vec<Felt252>),
@@ -18,7 +18,7 @@ pub enum DevRunnerError {
 impl fmt::Display for DevRunnerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            DevRunnerError::FailedSettingUp => write!(f, "Failed setting up"),
+            DevRunnerError::FailedSettingUp(e) => write!(f, "Failed setting up: {}", e),
             DevRunnerError::FailedFindingFunction => write!(f, "Failed finding function"),
             DevRunnerError::FailedRunning => write!(f, "Failed running"),
             DevRunnerError::Panicked(_) => write!(f, "Panicked"),
@@ -63,11 +63,16 @@ impl SingleFunctionRunner {
 
 impl DevRunner<Vec<Felt252>> for SingleFunctionRunner {
     fn run(self) -> Result<Vec<Felt252>, DevRunnerError> {
-        let Ok(runner) = SierraCasmRunner::new(
+        let runner = match SierraCasmRunner::new(
             self.progarm,
             None,
             self.contracts_info,
-        ) else {return Err(DevRunnerError::FailedSettingUp)};
+        ) {
+            Ok(runner) => runner,
+            Err(e) => {
+                return Err(DevRunnerError::FailedSettingUp(e.to_string()));
+            }
+        };
         let Ok(function) = runner.find_function(&self.function.name) else {return Err(DevRunnerError::FailedFindingFunction)};
         let result = match runner
             .run_function_with_starknet_context(

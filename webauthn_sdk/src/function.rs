@@ -6,6 +6,7 @@ pub struct DevFunction {
 }
 
 impl DevFunction {
+    #[allow(dead_code)]
     pub fn new(name: impl Into<String>) -> Self {
         DevFunction::with_arguments(name, vec![])
     }
