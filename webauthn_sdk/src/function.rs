@@ -2,7 +2,7 @@ use cairo_lang_runner::Arg;
 
 pub struct DevFunction {
     pub name: String,
-    pub arguments: Vec<Arg>
+    pub arguments: Vec<Arg>,
 }
 
 impl DevFunction {
@@ -12,6 +12,9 @@ impl DevFunction {
     }
 
     pub fn with_arguments(name: impl Into<String>, arguments: Vec<Arg>) -> Self {
-        DevFunction { name: name.into(), arguments }
+        DevFunction {
+            name: name.into(),
+            arguments,
+        }
     }
 }

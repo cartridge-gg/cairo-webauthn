@@ -63,33 +63,30 @@ impl SingleFunctionRunner {
 
 impl DevRunner<Vec<Felt252>> for SingleFunctionRunner {
     fn run(self) -> Result<Vec<Felt252>, DevRunnerError> {
-        let runner = match SierraCasmRunner::new(
-            self.progarm,
-            None,
-            self.contracts_info,
-        ) {
+        let runner = match SierraCasmRunner::new(self.progarm, Some(Default::default()), self.contracts_info) {
             Ok(runner) => runner,
             Err(e) => {
                 return Err(DevRunnerError::FailedSettingUp(e.to_string()));
             }
         };
         let Ok(function) = runner.find_function(&self.function.name) else {return Err(DevRunnerError::FailedFindingFunction)};
-        let result = match runner
-            .run_function_with_starknet_context(
-                function,
-                &self.function.arguments,
-                None,
-                StarknetState::default(),
-            ) {
-                Ok(r) => r,
-                Err(e) => {
-                    println!("{:?}", e);
-                    return Err(DevRunnerError::FailedRunning);
-                }
-            } ;
+        let result = match runner.run_function_with_starknet_context(
+            function,
+            &self.function.arguments,
+            Some(usize::MAX),
+            StarknetState::default(),
+        ) {
+            Ok(r) => r,
+            Err(e) => {
+                println!("{:?}", e);
+                return Err(DevRunnerError::FailedRunning);
+            }
+        };
         match result.value {
             cairo_lang_runner::RunResultValue::Success(values) => Ok(values),
-            cairo_lang_runner::RunResultValue::Panic(values) => Err(DevRunnerError::Panicked(values)),
+            cairo_lang_runner::RunResultValue::Panic(values) => {
+                Err(DevRunnerError::Panicked(values))
+            }
         }
     }
 }

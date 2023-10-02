@@ -1,9 +1,21 @@
+use std::env;
+
 use cairo_felt::Felt252;
 use cairo_lang_runner::Arg;
 use ecdsa::signature::Signer;
 use p256::{ecdsa::Signature, NistP256};
 use rand::rngs::OsRng;
 use serde::Serialize;
+use webauthn_sdk::{
+    compile::DevCompiler,
+    function::DevFunction,
+    generate::{DevGenerator, DummyGenerator},
+    logger::{LoggerCompiler, LoggerGenerator, LoggerParser, LoggerRunner},
+    parse::DevParser,
+    run::DevRunner,
+};
+
+use anyhow::Result;
 
 #[derive(Serialize, Debug)]
 struct ClientData {
@@ -67,12 +79,18 @@ fn extract_u128_pair(arr: [u8; 32]) -> (u128, u128) {
     )
 }
 
-fn to_felts<T, Iter>(arr: impl IntoIterator<Item = T, IntoIter = Iter>) -> Vec<Felt252>
+trait ToFelts {
+    fn into_felts(&self) -> Vec<Felt252>;
+}
+
+impl<'a, T: 'a> ToFelts for Vec<T>
 where
     Felt252: From<T>,
-    Iter: Iterator<Item = T>,
+    T: Copy,
 {
-    arr.into_iter().map(Felt252::from).collect()
+    fn into_felts(&self) -> Vec<Felt252> {
+        self.into_iter().map(|i| Felt252::from(*i)).collect()
+    }
 }
 
 impl AuthenticatorData {
@@ -95,21 +113,40 @@ impl AuthenticatorData {
     }
 }
 
-fn main() {
+// macro_rules! felts {
+//     ($($a:expr),*) => {
+//         vec![$(Felt252::from($a)),*]
+//     };
+// }
+
+macro_rules! arg_val {
+    ($a:expr) => {
+        Arg::Value(Felt252::from($a))
+    };
+}
+
+fn main() -> Result<()> {
     let mut rng = OsRng;
     let signing_key = ecdsa::SigningKey::<NistP256>::random(&mut rng);
 
     // Get the public key associated with the private key
     let verifying_key = signing_key.verifying_key();
+    
+    let args: Vec<String> = env::args().collect();
 
-    let origin = "example_origin.org";
-    let challenge = "RadnomChallenge";
+    let (origin, challenge) = match &args[..] {
+        [_, o, c] => (o, c),
+        _ => {
+            return Result::Err(anyhow::Error::msg("Usage: cargo run [origin] [challenge]"));
+        }
+    };
+
     let client_data = ClientData::new("webauthn.get", challenge, origin);
     let client_data_json = client_data.to_client_data_json();
-    let client_data_hash = sha256::digest(client_data_json.json).into_bytes();
+    let client_data_hash = decode_hex(&sha256::digest(&client_data_json.json)).unwrap();
     let authenticator_data = AuthenticatorData::new(origin, 0b00000101).to_bytes();
 
-    let to_hash = [authenticator_data, client_data_hash].join(&[][..]);
+    let to_hash = [authenticator_data.clone(), client_data_hash.clone()].join(&[][..]);
 
     let signature: Signature = signing_key.sign(&to_hash);
 
@@ -117,7 +154,6 @@ fn main() {
     let (pub_x, pub_y) = (pub_point.x().unwrap(), pub_point.y().unwrap());
     let pub_x_u128 = extract_u128_pair(pub_x[..].try_into().unwrap());
     let pub_y_u128 = extract_u128_pair(pub_y[..].try_into().unwrap());
-    let pub_ = [pub_x_u128.0, pub_x_u128.1, pub_y_u128.0, pub_y_u128.1];
 
     let (r, s): ([u8; 32], [u8; 32]) = (
         signature.r().to_bytes()[..].try_into().unwrap(),
@@ -126,24 +162,65 @@ fn main() {
 
     let r_u128 = extract_u128_pair(r[..].try_into().unwrap());
     let s_u128 = extract_u128_pair(s[..].try_into().unwrap());
-    let r_s = [r_u128.0, r_u128.1, s_u128.0, s_u128.1];
 
-    // let generator = LoggerGenerator::new(DummyGenerator::new(
-    //     "cairo",
-    //     "dev_sdk",
-    //     vec![DevFunction::with_arguments(
-    //         "verify_interface",
-    //         vec![
-    //             Arg::Array(authenticator_data.iter().map(Felt252::from).collect()),
-    //             Arg::Array(client_data.origin.as_bytes().ite),
-    //         ],
-    //     )],
-    // ));
-    // let compiler = LoggerCompiler::new(generator.generate()?);
-    // let parser = LoggerParser::new(compiler.compile()?);
-    // let runners = LoggerRunner::new_vec(parser.parse()?);
-    // for runner in runners {
-    //     let _ = runner.run();
-    // }
-    // Ok(())
+    let data = [
+        client_data_json.json.clone(), 
+        challenge.as_bytes().to_vec(),
+        origin.as_bytes().to_vec(),
+        authenticator_data
+    ].join(&[][..]);
+
+    println!("Generated assertion challenge for: \n\t origin: {origin} \n\t challenge: {challenge}");
+
+    let generator = LoggerGenerator::new(DummyGenerator::new(
+        "cairo",
+        "dev_sdk",
+        vec![
+            DevFunction::with_arguments(
+                "::verify_interface",
+                vec![
+                    arg_val!(pub_x_u128.0),
+                    arg_val!(pub_x_u128.1),
+                    arg_val!(pub_y_u128.0),
+                    arg_val!(pub_y_u128.1),
+                    arg_val!(r_u128.0),
+                    arg_val!(r_u128.1),
+                    arg_val!(s_u128.0),
+                    arg_val!(s_u128.1),
+                    arg_val!(client_data_json.type_offset),
+                    arg_val!(client_data_json.challenge_offset),
+                    arg_val!(client_data_json.origin_offset),
+                    arg_val!(client_data_json.json.len()),
+                    arg_val!(challenge.as_bytes().len()),
+                    arg_val!(origin.as_bytes().len()),
+                    Arg::Array(data.into_felts()),
+                ],
+            ),
+            // DevFunction::with_arguments(
+            //     "::test_order",
+            //     vec![
+            //         Arg::Array(felts!(1)),
+            //         Arg::Array(felts!(2, 2)),
+            //         Arg::Array(felts!(3, 3, 3)),
+            //     ],
+            // )
+        ],
+    ));
+    let compiler = LoggerCompiler::new(generator.generate()?);
+    let parser = LoggerParser::new(compiler.compile()?);
+    let runners = LoggerRunner::new_vec(parser.parse()?);
+    for runner in runners {
+        let result = runner.run();
+        if let Result::Ok(v) = result {
+            if v[0] == Felt252::from(0) {
+                println!("Success!")
+            } else {
+                println!("Fail!")
+            }
+        } else {
+            println!("Fail!")
+        }
+    }
+    Ok(())
 }
+

@@ -1,33 +1,53 @@
-use crate::{generate::DevGenerator, compile::DevCompiler, parse::DevParser, run::DevRunner};
-use anyhow::Result;
-use std::{io::Write, marker::PhantomData, fmt::Debug};
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use crate::run::DevRunnerError;
+use crate::{compile::DevCompiler, generate::DevGenerator, parse::DevParser, run::DevRunner};
+use anyhow::Result;
+use std::{fmt::Debug, io::Write, marker::PhantomData};
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
-pub struct LoggerGenerator<T, U> (pub T, PhantomData<U>) where T: DevGenerator<U>;
-pub struct LoggerCompiler<T, U> (pub T, PhantomData<U>) where T: DevCompiler<U>;
-pub struct LoggerParser<T, U> (pub T, PhantomData<U>) where T: DevParser<U>;
-pub struct LoggerRunner<T, U> (pub T, String, PhantomData<U>) where T: DevRunner<U>;
+pub struct LoggerGenerator<T, U>(pub T, PhantomData<U>)
+where
+    T: DevGenerator<U>;
+pub struct LoggerCompiler<T, U>(pub T, PhantomData<U>)
+where
+    T: DevCompiler<U>;
+pub struct LoggerParser<T, U>(pub T, PhantomData<U>)
+where
+    T: DevParser<U>;
+pub struct LoggerRunner<T, U>(pub T, String, PhantomData<U>)
+where
+    T: DevRunner<U>;
 
-impl <T, U> LoggerGenerator<T, U> where T: DevGenerator<U>{
+impl<T, U> LoggerGenerator<T, U>
+where
+    T: DevGenerator<U>,
+{
     pub fn new(generator: T) -> Self {
         LoggerGenerator(generator, PhantomData)
     }
 }
 
-impl <T, U> LoggerCompiler<T, U> where T: DevCompiler<U>{
+impl<T, U> LoggerCompiler<T, U>
+where
+    T: DevCompiler<U>,
+{
     pub fn new(compiler: T) -> Self {
         LoggerCompiler(compiler, PhantomData)
     }
 }
 
-impl <T, U> LoggerParser<T, U> where T: DevParser<U>{
+impl<T, U> LoggerParser<T, U>
+where
+    T: DevParser<U>,
+{
     pub fn new(parser: T) -> Self {
         LoggerParser(parser, PhantomData)
     }
 }
 
-impl <T, U> LoggerRunner<T, U> where T: DevRunner<U>{
+impl<T, U> LoggerRunner<T, U>
+where
+    T: DevRunner<U>,
+{
     #[allow(dead_code)]
     pub fn new(runner: T) -> Self {
         LoggerRunner::with_name(runner, "")
@@ -38,38 +58,61 @@ impl <T, U> LoggerRunner<T, U> where T: DevRunner<U>{
     }
 
     pub fn new_vec(runners: Vec<T>) -> Vec<Self> {
-        runners.into_iter().enumerate().map(|(i, r)| LoggerRunner::with_name(r, format!("Runner {}", i + 1))).collect()
+        runners
+            .into_iter()
+            .enumerate()
+            .map(|(i, r)| LoggerRunner::with_name(r, format!("Runner {}", i + 1)))
+            .collect()
     }
 }
 
-impl <T, U> DevGenerator<U> for LoggerGenerator<T, U> where T: DevGenerator<U> {
+impl<T, U> DevGenerator<U> for LoggerGenerator<T, U>
+where
+    T: DevGenerator<U>,
+{
     fn generate(self) -> Result<U> {
         print_blue("Generating cairo code...\n");
         self.0.generate()
     }
 }
 
-impl <T, U> DevCompiler<U> for LoggerCompiler<T, U> where T: DevCompiler<U> {
+impl<T, U> DevCompiler<U> for LoggerCompiler<T, U>
+where
+    T: DevCompiler<U>,
+{
     fn compile(self) -> Result<U> {
         print_blue("Compiling cairo to sierra...\n");
         self.0.compile()
     }
 }
 
-impl <T, U> DevParser<U> for LoggerParser<T, U> where T: DevParser<U> {
-    fn parse(self) -> Result<U>  {
+impl<T, U> DevParser<U> for LoggerParser<T, U>
+where
+    T: DevParser<U>,
+{
+    fn parse(self) -> Result<U> {
         print_blue("Parsing sierra code...\n");
         self.0.parse()
     }
 }
 
-impl <T, U> DevRunner<U> for LoggerRunner<T, U> where T: DevRunner<U>, U: Debug {
+impl<T, U> DevRunner<U> for LoggerRunner<T, U>
+where
+    T: DevRunner<U>,
+    U: Debug,
+{
     fn run(self) -> Result<U, DevRunnerError> {
         print_blue(format!("[{}] Running...\n", self.1));
         let result = self.0.run();
         match &result {
-            Ok(v) => print_color(format!("[{}] Run successful!\nReturning:\n{:?}\n", self.1, v), Color::Green),
-            Err(e) => print_color(format!("[{}] Run failed!\nReturning:\n{}\n", self.1, e), Color::Red),
+            Ok(v) => print_color(
+                format!("[{}] Run successful!\nReturning:\n{:?}\n", self.1, v),
+                Color::Green,
+            ),
+            Err(e) => print_color(
+                format!("[{}] Run failed!\nReturning:\n{}\n", self.1, e),
+                Color::Red,
+            ),
         }
         result
     }
