@@ -1,7 +1,6 @@
-use crate::run::DevRunnerError;
 use crate::{compile::DevCompiler, generate::DevGenerator, parse::DevParser, run::DevRunner};
 use anyhow::Result;
-use std::{fmt::Debug, io::Write, marker::PhantomData};
+use std::{io::Write, marker::PhantomData};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 pub struct LoggerGenerator<T, U>(pub T, PhantomData<U>)
@@ -96,27 +95,27 @@ where
     }
 }
 
-impl<T, U> DevRunner<U> for LoggerRunner<T, U>
-where
-    T: DevRunner<U>,
-    U: Debug,
-{
-    fn run(self) -> Result<U, DevRunnerError> {
-        print_blue(format!("[{}] Running...\n", self.1));
-        let result = self.0.run();
-        match &result {
-            Ok(v) => print_color(
-                format!("[{}] Run successful!\nReturning:\n{:?}\n", self.1, v),
-                Color::Green,
-            ),
-            Err(e) => print_color(
-                format!("[{}] Run failed!\nReturning:\n{}\n", self.1, e),
-                Color::Red,
-            ),
-        }
-        result
-    }
-}
+// impl<T, U> DevRunner<U> for LoggerRunner<T, U>
+// where
+//     T: DevRunner<U>,
+//     U: Debug,
+// {
+//     fn run(self) -> Result<U, DevRunnerError> {
+//         print_blue(format!("[{}] Running...\n", self.1));
+//         let result = self.0.run();
+//         match &result {
+//             Ok(v) => print_color(
+//                 format!("[{}] Run successful!\nReturning:\n{:?}\n", self.1, v),
+//                 Color::Green,
+//             ),
+//             Err(e) => print_color(
+//                 format!("[{}] Run failed!\nReturning:\n{}\n", self.1, e),
+//                 Color::Red,
+//             ),
+//         }
+//         result
+//     }
+// }
 
 fn print_blue(message: impl Into<String>) {
     print_color(message, Color::Blue)

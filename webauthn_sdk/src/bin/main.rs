@@ -7,10 +7,10 @@ use p256::{ecdsa::Signature, NistP256};
 use rand::rngs::OsRng;
 use serde::Serialize;
 use webauthn_sdk::{
+    arg_val,
     compile::DevCompiler,
-    function::DevFunction,
     generate::{DevGenerator, DummyGenerator},
-    logger::{LoggerCompiler, LoggerGenerator, LoggerParser, LoggerRunner},
+    logger::{LoggerCompiler, LoggerGenerator, LoggerParser},
     parse::DevParser,
     run::DevRunner,
 };
@@ -113,25 +113,13 @@ impl AuthenticatorData {
     }
 }
 
-// macro_rules! felts {
-//     ($($a:expr),*) => {
-//         vec![$(Felt252::from($a)),*]
-//     };
-// }
-
-macro_rules! arg_val {
-    ($a:expr) => {
-        Arg::Value(Felt252::from($a))
-    };
-}
-
 fn main() -> Result<()> {
     let mut rng = OsRng;
     let signing_key = ecdsa::SigningKey::<NistP256>::random(&mut rng);
 
     // Get the public key associated with the private key
     let verifying_key = signing_key.verifying_key();
-    
+
     let args: Vec<String> = env::args().collect();
 
     let (origin, challenge) = match &args[..] {
@@ -164,63 +152,51 @@ fn main() -> Result<()> {
     let s_u128 = extract_u128_pair(s[..].try_into().unwrap());
 
     let data = [
-        client_data_json.json.clone(), 
+        client_data_json.json.clone(),
         challenge.as_bytes().to_vec(),
         origin.as_bytes().to_vec(),
-        authenticator_data
-    ].join(&[][..]);
+        authenticator_data,
+    ]
+    .join(&[][..]);
 
-    println!("Generated assertion challenge for: \n\t origin: {origin} \n\t challenge: {challenge}");
+    println!(
+        "Generated assertion challenge for: \n\t origin: {origin} \n\t challenge: {challenge}"
+    );
 
-    let generator = LoggerGenerator::new(DummyGenerator::new(
-        "cairo",
-        "dev_sdk",
-        vec![
-            DevFunction::with_arguments(
-                "::verify_interface",
-                vec![
-                    arg_val!(pub_x_u128.0),
-                    arg_val!(pub_x_u128.1),
-                    arg_val!(pub_y_u128.0),
-                    arg_val!(pub_y_u128.1),
-                    arg_val!(r_u128.0),
-                    arg_val!(r_u128.1),
-                    arg_val!(s_u128.0),
-                    arg_val!(s_u128.1),
-                    arg_val!(client_data_json.type_offset),
-                    arg_val!(client_data_json.challenge_offset),
-                    arg_val!(client_data_json.origin_offset),
-                    arg_val!(client_data_json.json.len()),
-                    arg_val!(challenge.as_bytes().len()),
-                    arg_val!(origin.as_bytes().len()),
-                    Arg::Array(data.into_felts()),
-                ],
-            ),
-            // DevFunction::with_arguments(
-            //     "::test_order",
-            //     vec![
-            //         Arg::Array(felts!(1)),
-            //         Arg::Array(felts!(2, 2)),
-            //         Arg::Array(felts!(3, 3, 3)),
-            //     ],
-            // )
-        ],
-    ));
+    let generator = LoggerGenerator::new(DummyGenerator::new("cairo", "dev_sdk"));
     let compiler = LoggerCompiler::new(generator.generate()?);
     let parser = LoggerParser::new(compiler.compile()?);
-    let runners = LoggerRunner::new_vec(parser.parse()?);
-    for runner in runners {
-        let result = runner.run();
-        if let Result::Ok(v) = result {
-            if v[0] == Felt252::from(0) {
-                println!("Success!")
-            } else {
-                println!("Fail!")
-            }
+    let runner = parser.parse()?;
+
+    let result = runner.run(
+        "::verify_interface",
+        &vec![
+            arg_val!(pub_x_u128.0),
+            arg_val!(pub_x_u128.1),
+            arg_val!(pub_y_u128.0),
+            arg_val!(pub_y_u128.1),
+            arg_val!(r_u128.0),
+            arg_val!(r_u128.1),
+            arg_val!(s_u128.0),
+            arg_val!(s_u128.1),
+            arg_val!(client_data_json.type_offset),
+            arg_val!(client_data_json.challenge_offset),
+            arg_val!(client_data_json.origin_offset),
+            arg_val!(client_data_json.json.len()),
+            arg_val!(challenge.as_bytes().len()),
+            arg_val!(origin.as_bytes().len()),
+            Arg::Array(data.into_felts()),
+        ],
+    );
+    if let Result::Ok(v) = result {
+        if v[0] == Felt252::from(0) {
+            println!("Success!")
         } else {
             println!("Fail!")
         }
+    } else {
+        println!("Fail!")
     }
+
     Ok(())
 }
-

@@ -1,12 +1,10 @@
 use std::fmt;
 
 use cairo_felt::Felt252;
-use cairo_lang_runner::{SierraCasmRunner, StarknetState};
+use cairo_lang_runner::{Arg, SierraCasmRunner, StarknetState};
 use cairo_lang_sierra::program::Program;
 use cairo_lang_starknet::contract::ContractInfo;
 use cairo_lang_utils::ordered_hash_map::OrderedHashMap;
-
-use crate::function::DevFunction;
 
 pub enum DevRunnerError {
     FailedSettingUp(String),
@@ -35,44 +33,59 @@ impl fmt::Debug for DevRunnerError {
 impl std::error::Error for DevRunnerError {}
 
 pub trait DevRunner<T> {
-    fn run(self) -> Result<T, DevRunnerError>;
-}
-
-pub struct SingleFunctionRunner {
-    progarm: Program,
-    function: DevFunction,
-    contracts_info: OrderedHashMap<Felt252, ContractInfo>,
-}
-
-impl SingleFunctionRunner {
-    pub fn new(progarm: Program, function: DevFunction) -> Self {
-        Self::with_contracts_info(progarm, function, OrderedHashMap::default())
-    }
-    pub fn with_contracts_info(
-        progarm: Program,
-        function: DevFunction,
+    fn run_with_contracts_info(
+        self,
+        name: &str,
+        arguments: &Vec<Arg>,
         contracts_info: OrderedHashMap<Felt252, ContractInfo>,
-    ) -> Self {
-        SingleFunctionRunner {
-            progarm,
-            function,
-            contracts_info,
-        }
+    ) -> Result<Vec<Felt252>, DevRunnerError>;
+    fn run(self, name: &str, arguments: &Vec<Arg>) -> Result<Vec<Felt252>, DevRunnerError>;
+}
+
+pub struct SierraRunner {
+    progarm: Program,
+}
+
+impl SierraRunner {
+    pub fn new(progarm: Program) -> Self {
+        SierraRunner { progarm }
     }
 }
 
-impl DevRunner<Vec<Felt252>> for SingleFunctionRunner {
-    fn run(self) -> Result<Vec<Felt252>, DevRunnerError> {
-        let runner = match SierraCasmRunner::new(self.progarm, Some(Default::default()), self.contracts_info) {
-            Ok(runner) => runner,
-            Err(e) => {
-                return Err(DevRunnerError::FailedSettingUp(e.to_string()));
-            }
-        };
-        let Ok(function) = runner.find_function(&self.function.name) else {return Err(DevRunnerError::FailedFindingFunction)};
+#[macro_export]
+macro_rules! arg_vec {
+    ($($a:expr),*) => {
+        vec![$(Felt252::from($a)),*]
+    };
+}
+
+#[macro_export]
+macro_rules! arg_val {
+    ($a:expr) => {
+        Arg::Value(Felt252::from($a))
+    };
+}
+
+pub use arg_val;
+
+impl DevRunner<Vec<Felt252>> for SierraRunner {
+    fn run_with_contracts_info(
+        self,
+        name: &str,
+        arguments: &Vec<Arg>,
+        contracts_info: OrderedHashMap<Felt252, ContractInfo>,
+    ) -> Result<Vec<Felt252>, DevRunnerError> {
+        let runner =
+            match SierraCasmRunner::new(self.progarm, Some(Default::default()), contracts_info) {
+                Ok(runner) => runner,
+                Err(e) => {
+                    return Err(DevRunnerError::FailedSettingUp(e.to_string()));
+                }
+            };
+        let Ok(function) = runner.find_function(name) else {return Err(DevRunnerError::FailedFindingFunction)};
         let result = match runner.run_function_with_starknet_context(
             function,
-            &self.function.arguments,
+            arguments,
             Some(usize::MAX),
             StarknetState::default(),
         ) {
@@ -88,5 +101,8 @@ impl DevRunner<Vec<Felt252>> for SingleFunctionRunner {
                 Err(DevRunnerError::Panicked(values))
             }
         }
+    }
+    fn run(self, name: &str, arguments: &Vec<Arg>) -> Result<Vec<Felt252>, DevRunnerError> {
+        self.run_with_contracts_info(name, arguments, OrderedHashMap::default())
     }
 }

@@ -2,7 +2,6 @@ use anyhow::Result;
 use scarb::core::Config;
 use scarb::ops;
 
-use crate::function::DevFunction;
 use crate::parse::SingleFileParser;
 
 pub trait DevCompiler<T> {
@@ -12,16 +11,11 @@ pub trait DevCompiler<T> {
 pub struct ProjectCompiler {
     folder: String,
     package: String,
-    functions: Vec<DevFunction>,
 }
 
 impl ProjectCompiler {
-    pub fn new(folder: String, package: String, functions: Vec<DevFunction>) -> Self {
-        ProjectCompiler {
-            folder,
-            package,
-            functions,
-        }
+    pub fn new(folder: String, package: String) -> Self {
+        ProjectCompiler { folder, package }
     }
 }
 
@@ -35,7 +29,6 @@ impl DevCompiler<SingleFileParser> for ProjectCompiler {
         ops::compile(packages, &ws)?;
         Ok(SingleFileParser::new(
             self.folder + "/target/dev/" + &self.package + ".sierra",
-            self.functions,
         ))
     }
 }
