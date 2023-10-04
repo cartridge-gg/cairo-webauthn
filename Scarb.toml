@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "src/auth",
-    "src/session"
+    "src/session",
 ]
 name = "webauthn"
 version = "0.1.0"

@@ -11,7 +11,7 @@ use starknet::{contract_address::ContractAddress};
 
 use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature, SignatureProofs};
 use webauthn_session::hash::{compute_session_hash, compute_call_hash};
-use alexandria_data_structures::merkle_tree::MerkleTreeImpl;
+use alexandria_data_structures::merkle_tree::{Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait};
 
 
 use core::ecdsa::check_ecdsa_signature;
@@ -128,7 +128,7 @@ fn check_policy(
             break Result::Ok(());
         }
         let leaf = compute_call_hash(*call_array.at(i));
-        let mut merkle = MerkleTreeImpl::new();
+        let mut merkle: MerkleTree<Hasher> = MerkleTreeTrait::new();
         if merkle.verify(root, leaf, proofs.at(i)) == false {
             break Result::Err(());
         };

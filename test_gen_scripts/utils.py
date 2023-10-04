@@ -3,7 +3,7 @@ import string
 import os
 from hashlib import sha256
 from ecdsa import SigningKey, NIST256p, util
-from seed_generator import generate_next_seed
+from deterministic_generator import generate_next_seed
 
 
 def generate_deterministic_key(seed: bytes):
@@ -41,11 +41,10 @@ def get_good_signature(message: bytes, hash=False):
     return (px, py, r, s)
 
 
-def get_raw_signature(message: bytes):
-    seed = generate_next_seed()
-    sk = generate_deterministic_key(seed)
+def get_raw_signature(message: bytes, sk):
+    sk = generate_deterministic_key(generate_next_seed())
     vk = sk.get_verifying_key()
-    sig = sk.sign(message, hashfunc=sha256)
+    sig = sk.sign_deterministic(message, hashfunc=sha256)
     (px, py) = (vk.pubkey.point.x(), vk.pubkey.point.y())
     return (sig, px, py)
 

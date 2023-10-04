@@ -124,7 +124,9 @@ fn extract_u256_from_u8_array(arr: @Array<u8>, offset: usize) -> Option<u256> {
 
 // A dummy string representation, waiting for Cairo support of strings
 #[derive(Drop, Clone)]
-struct MyString {}
+struct MyString {
+    data: Array<u8>
+}
 
 trait UTF8Decoder {
     fn decode(data: Array<u8>) -> MyString;

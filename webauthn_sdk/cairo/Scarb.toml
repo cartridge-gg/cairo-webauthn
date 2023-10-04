@@ -1,0 +1,11 @@
+[package]
+name = "dev_sdk"
+version = "0.1.0"
+description = "Webauthn sdk interface"
+homepage = "https://github.com/cartridge-gg/cairo-webauthn/tree/main/webauthn_sdk/cairo"
+
+[dependencies]
+webauthn_session = { path = "../../src/session"}
+webauthn_auth = { path = "../../src/auth"}
+alexandria_encoding = { git = "https://github.com/keep-starknet-strange/alexandria" }
+alexandria_data_structures = { git = "https://github.com/keep-starknet-strange/alexandria" }
