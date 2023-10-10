@@ -26,7 +26,7 @@ fn main() -> Result<()> {
     let function_execution = VerifyFunction.into_execution(VerifyArguments::new(origin, challenge));
     println!(
         "Result of the execution: {:?}",
-        runner.run(function_execution)
+        runner.run::<_, FunctionResult, _>(function_execution)
     );
 
     Ok(())
