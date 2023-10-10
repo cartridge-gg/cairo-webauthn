@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts for Cairo v0.7.0 (utils/unwrap_and_cast.cairo)
 
-use webauthn_foundry::utils::Felt252TryIntoBool;
+use openzeppelin::utils::Felt252TryIntoBool;
 use starknet::ContractAddress;
 use starknet::Felt252TryIntoContractAddress;
 use starknet::SyscallResult;

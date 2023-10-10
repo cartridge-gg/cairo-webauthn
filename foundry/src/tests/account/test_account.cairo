@@ -573,7 +573,7 @@ fn test__is_valid_signature() {
 
 #[test]
 #[available_gas(2000000)]
-fn test__set_public_key() {
+fn test__set_public_key() {<
     let mut state = STATE();
     Account::InternalImpl::_set_public_key(ref state, PUBLIC_KEY);
 
