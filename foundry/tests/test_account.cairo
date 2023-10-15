@@ -88,8 +88,8 @@ impl ERC20ConstructorArgumentsImpl of ERC20ConstructorArgumentsTrait {
 
 #[derive(Drop)]
 struct TransferCall{
-    from: ContractAddress,
-    to: ContractAddress,
+    erc20: ContractAddress,
+    recipient: ContractAddress,
     amount: u256,
 }
 
@@ -98,10 +98,10 @@ struct TransferCall{
 impl TransferCallImpl of TransferCallTrait {
     fn to_call(self: TransferCall) -> Call {
         let mut calldata = array![];
-        calldata.append_serde(self.to);
+        calldata.append_serde(self.recipient);
         calldata.append_serde(self.amount);
         Call {
-            to: self.from, 
+            to: self.erc20, 
             selector: selectors::transfer, 
             calldata: calldata
         }
@@ -141,8 +141,8 @@ fn test_account() {
 
     let recipient = contract_address_const::<0x123>();
     let call = TransferCall {
-        from: erc20_address,
-        to: recipient,
+        erc20: erc20_address,
+        recipient: recipient,
         amount: 200
     }.to_call();
     let ret = account.__execute__(array![call]);
