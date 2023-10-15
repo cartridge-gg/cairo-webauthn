@@ -34,12 +34,12 @@ impl std::error::Error for DevRunnerError {}
 
 pub trait DevRunner<T> {
     fn run_with_contracts_info(
-        self,
+        &self,
         name: &str,
         arguments: &Vec<Arg>,
         contracts_info: OrderedHashMap<Felt252, ContractInfo>,
     ) -> Result<Vec<Felt252>, DevRunnerError>;
-    fn run(self, name: &str, arguments: &Vec<Arg>) -> Result<Vec<Felt252>, DevRunnerError>;
+    fn run(&self, name: &str, arguments: &Vec<Arg>) -> Result<Vec<Felt252>, DevRunnerError>;
 }
 
 pub struct SierraRunner {
@@ -70,18 +70,21 @@ pub use arg_val;
 
 impl DevRunner<Vec<Felt252>> for SierraRunner {
     fn run_with_contracts_info(
-        self,
+        &self,
         name: &str,
         arguments: &Vec<Arg>,
         contracts_info: OrderedHashMap<Felt252, ContractInfo>,
     ) -> Result<Vec<Felt252>, DevRunnerError> {
-        let runner =
-            match SierraCasmRunner::new(self.progarm, Some(Default::default()), contracts_info) {
-                Ok(runner) => runner,
-                Err(e) => {
-                    return Err(DevRunnerError::FailedSettingUp(e.to_string()));
-                }
-            };
+        let runner = match SierraCasmRunner::new(
+            self.progarm.clone(),
+            Some(Default::default()),
+            contracts_info,
+        ) {
+            Ok(runner) => runner,
+            Err(e) => {
+                return Err(DevRunnerError::FailedSettingUp(e.to_string()));
+            }
+        };
         let Ok(function) = runner.find_function(name) else {return Err(DevRunnerError::FailedFindingFunction)};
         let result = match runner.run_function_with_starknet_context(
             function,
@@ -102,7 +105,7 @@ impl DevRunner<Vec<Felt252>> for SierraRunner {
             }
         }
     }
-    fn run(self, name: &str, arguments: &Vec<Arg>) -> Result<Vec<Felt252>, DevRunnerError> {
+    fn run(&self, name: &str, arguments: &Vec<Arg>) -> Result<Vec<Felt252>, DevRunnerError> {
         self.run_with_contracts_info(name, arguments, OrderedHashMap::default())
     }
 }
