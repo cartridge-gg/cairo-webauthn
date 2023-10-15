@@ -10,8 +10,8 @@
 #[starknet::contract]
 mod ERC20 {
     use integer::BoundedInt;
-    use webauthn_foundry::token::erc20::interface::IERC20;
-    use webauthn_foundry::token::erc20::interface::IERC20CamelOnly;
+    use openzeppelin::token::erc20::interface::IERC20;
+    use openzeppelin::token::erc20::interface::IERC20CamelOnly;
     use starknet::ContractAddress;
     use starknet::get_caller_address;
 
