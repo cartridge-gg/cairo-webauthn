@@ -1,4 +1,4 @@
-use super::compile::ProjectCompiler;
+use crate::compile::ProjectCompiler;
 use anyhow::Result;
 
 pub trait DevGenerator<T> {

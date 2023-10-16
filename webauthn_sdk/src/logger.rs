@@ -1,4 +1,4 @@
-use super::{compile::DevCompiler, generate::DevGenerator, parse::DevParser, run::DevRunner};
+use crate::{compile::DevCompiler, generate::DevGenerator, parse::DevParser, run::DevRunner};
 use anyhow::Result;
 use std::{io::Write, marker::PhantomData};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};

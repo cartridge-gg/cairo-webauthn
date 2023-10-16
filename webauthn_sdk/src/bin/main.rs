@@ -8,11 +8,11 @@ use rand::rngs::OsRng;
 use serde::Serialize;
 use webauthn_sdk::{
     arg_val,
-    prepare::compile::DevCompiler,
-    prepare::generate::{DevGenerator, DummyGenerator},
-    prepare::logger::{LoggerCompiler, LoggerGenerator, LoggerParser},
-    prepare::parse::DevParser,
-    prepare::run::DevRunner,
+    compile::DevCompiler,
+    generate::{DevGenerator, DummyGenerator},
+    logger::{LoggerCompiler, LoggerGenerator, LoggerParser},
+    parse::DevParser,
+    run::DevRunner,
 };
 
 use anyhow::Result;
