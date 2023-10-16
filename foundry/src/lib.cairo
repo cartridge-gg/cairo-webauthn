@@ -16,7 +16,6 @@ trait PublicKeyCamelTrait<TState> {
 }
 
 
-
 #[starknet::contract]
 mod Account {
     use ecdsa::check_ecdsa_signature;

@@ -1,4 +1,3 @@
-
 use webauthn_foundry::Account;
 use webauthn_foundry::Account::{TRANSACTION_VERSION, QUERY_VERSION};
 
@@ -10,13 +9,7 @@ use openzeppelin::token::erc20::interface::IERC20DispatcherTrait;
 use openzeppelin::utils::serde::SerializedAppend;
 use openzeppelin::utils::selectors;
 
-use snforge_std::{ 
-    declare, 
-    ContractClassTrait, 
-    TxInfoMock, 
-    TxInfoMockTrait,
-    start_spoof
-};
+use snforge_std::{declare, ContractClassTrait, TxInfoMock, TxInfoMockTrait, start_spoof};
 
 use starknet::ContractAddress;
 use starknet::contract_address_const;
@@ -59,7 +52,7 @@ fn SIGNED_TX_DATA() -> SignedTransactionData {
 }
 
 #[derive(Drop)]
-struct ERC20ConstructorArguments{
+struct ERC20ConstructorArguments {
     name: felt252,
     symbol: felt252,
     initial_supply: u256,
@@ -69,14 +62,11 @@ struct ERC20ConstructorArguments{
 #[generate_trait]
 impl ERC20ConstructorArgumentsImpl of ERC20ConstructorArgumentsTrait {
     fn new(recipient: ContractAddress, initial_supply: u256) -> ERC20ConstructorArguments {
-        ERC20ConstructorArguments{
-            name: 0_felt252,
-            symbol: 0_felt252,
-            initial_supply: initial_supply,
-            recipient: recipient
+        ERC20ConstructorArguments {
+            name: 0_felt252, symbol: 0_felt252, initial_supply: initial_supply, recipient: recipient
         }
     }
-    fn to_calldata(self: ERC20ConstructorArguments) -> Array<felt252>{
+    fn to_calldata(self: ERC20ConstructorArguments) -> Array<felt252> {
         let mut calldata = array![];
         calldata.append_serde(self.name);
         calldata.append_serde(self.symbol);
@@ -87,7 +77,7 @@ impl ERC20ConstructorArgumentsImpl of ERC20ConstructorArgumentsTrait {
 }
 
 #[derive(Drop)]
-struct TransferCall{
+struct TransferCall {
     erc20: ContractAddress,
     recipient: ContractAddress,
     amount: u256,
@@ -100,11 +90,7 @@ impl TransferCallImpl of TransferCallTrait {
         let mut calldata = array![];
         calldata.append_serde(self.recipient);
         calldata.append_serde(self.amount);
-        Call {
-            to: self.erc20, 
-            selector: selectors::transfer, 
-            calldata: calldata
-        }
+        Call { to: self.erc20, selector: selectors::transfer, calldata: calldata }
     }
 }
 
@@ -112,39 +98,24 @@ impl TransferCallImpl of TransferCallTrait {
 fn test_account() {
     let data = SIGNED_TX_DATA();
 
-    let account_address = declare('Account')
-        .deploy(@array![data.public_key])
-        .unwrap();
-    
+    let account_address = declare('Account').deploy(@array![data.public_key]).unwrap();
+
     // Account associated with the account_address will have 1000 tokens assigned.
     let constructor_args = ERC20ConstructorArgumentsImpl::new(account_address, 1000);
-    
-    let erc20_address = declare('ERC20')
-        .deploy(@constructor_args.to_calldata())
-        .unwrap();
-    let account = AccountABIDispatcher { 
-        contract_address: account_address 
-    };
-    let erc20 = IERC20Dispatcher { 
-        contract_address: erc20_address 
-    };
-    
+
+    let erc20_address = declare('ERC20').deploy(@constructor_args.to_calldata()).unwrap();
+    let account = AccountABIDispatcher { contract_address: account_address };
+    let erc20 = IERC20Dispatcher { contract_address: erc20_address };
+
     // Mock the transaction version
     let mut tx_info = TxInfoMockTrait::default();
     tx_info.version = Option::Some(TRANSACTION_VERSION);
     start_spoof(account_address, tx_info);
 
-    assert(
-        erc20.balance_of(account_address) == 1000, 
-        'Initial balance should be equal'
-    );
+    assert(erc20.balance_of(account_address) == 1000, 'Initial balance should be equal');
 
     let recipient = contract_address_const::<0x123>();
-    let call = TransferCall {
-        erc20: erc20_address,
-        recipient: recipient,
-        amount: 200
-    }.to_call();
+    let call = TransferCall { erc20: erc20_address, recipient: recipient, amount: 200 }.to_call();
     let ret = account.__execute__(array![call]);
 
     // Verify that the transfer of tokens was succesful
