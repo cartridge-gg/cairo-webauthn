@@ -1,32 +1,31 @@
-use std::marker::PhantomData;
+use cairo_felt::Felt252;
 
-use cairo_lang_runner::Arg;
+use crate::prepare::run::{DevRunner, SierraRunner};
 
-pub trait IntoArguments {
-    fn into_arguments(self) -> Vec<Arg>;
+use anyhow::Result;
+
+use self::functions::{FunctionExecution, IntoArguments};
+
+pub mod functions;
+
+pub struct FunctionRunner {
+    sierra_runner: SierraRunner,
 }
 
-pub struct Function<Args: IntoArguments> {
-    name: String,
-    arg_phantom: PhantomData<Args>,
-}
-impl<Args: IntoArguments> Function<Args> {
-    pub fn new(name: &str) -> Self {
-        Function {
-            name: name.into(),
-            arg_phantom: PhantomData,
-        }
+impl FunctionRunner {
+    pub fn new(sierra_runner: SierraRunner) -> Self {
+        FunctionRunner { sierra_runner }
     }
 
-    pub fn to_execution(&self, args: Args) -> FunctionExecution<Args> {
-        FunctionExecution {
-            name: self.name.clone(),
-            args,
-        }
+    pub fn run<Args, OutputT, TryFromErr>(self, fe: FunctionExecution<Args>) -> Result<OutputT>
+    where
+        Args: IntoArguments,
+        OutputT: TryFrom<Vec<Felt252>, Error = TryFromErr>,
+        anyhow::Error: From<TryFromErr>,
+    {
+        Ok(OutputT::try_from(
+            self.sierra_runner
+                .run(&fe.name, &fe.args.into_arguments())?,
+        )?)
     }
-}
-
-pub struct FunctionExecution<Args: IntoArguments> {
-    name: String,
-    args: Args,
 }
