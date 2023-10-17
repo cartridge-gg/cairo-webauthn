@@ -18,3 +18,7 @@ Cargo.lock
 
 # Envs
 **/.cargo/
+
+# IDEs and editors
+**/.vscode/
+**/.idea/
