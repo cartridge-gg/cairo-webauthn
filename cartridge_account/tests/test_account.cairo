@@ -1,8 +1,8 @@
-use webauthn_foundry::Account;
-use webauthn_foundry::Account::{TRANSACTION_VERSION, QUERY_VERSION};
+use cartridge_account::Account;
+use cartridge_account::Account::{TRANSACTION_VERSION, QUERY_VERSION};
 
-use webauthn_foundry::interface::AccountABIDispatcher;
-use webauthn_foundry::interface::AccountABIDispatcherTrait;
+use cartridge_account::interface::AccountABIDispatcher;
+use cartridge_account::interface::AccountABIDispatcherTrait;
 use openzeppelin::token::erc20::interface::IERC20Dispatcher;
 use openzeppelin::token::erc20::interface::IERC20DispatcherTrait;
 
