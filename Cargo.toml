@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+    "webauthn_sdk"
+]
+
+[workspace.package]
+edition = "2021"
+version = "0.1.0"
