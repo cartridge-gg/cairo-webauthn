@@ -9,7 +9,7 @@ use openzeppelin::token::erc20::interface::IERC20DispatcherTrait;
 use openzeppelin::utils::serde::SerializedAppend;
 use openzeppelin::utils::selectors;
 
-use snforge_std::{declare, ContractClassTrait, TxInfoMock, TxInfoMockTrait, start_spoof};
+use snforge_std::{declare, ContractClassTrait, TxInfoMock, TxInfoMockTrait, start_spoof, start_prank};
 
 use starknet::ContractAddress;
 use starknet::contract_address_const;
@@ -111,6 +111,9 @@ fn test_account() {
     let mut tx_info = TxInfoMockTrait::default();
     tx_info.version = Option::Some(TRANSACTION_VERSION);
     start_spoof(account_address, tx_info);
+
+    let caller_address = contract_address_const::<0>();
+    start_prank(account_address, caller_address);
 
     assert(erc20.balance_of(account_address) == 1000, 'Initial balance should be equal');
 
