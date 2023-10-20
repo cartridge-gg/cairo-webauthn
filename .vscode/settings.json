@@ -1,5 +1,0 @@
-{
-    "rust-analyzer.linkedProjects": [
-        "./webauthn_sdk/Cargo.toml"
-    ]
-}
