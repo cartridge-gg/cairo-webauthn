@@ -15,6 +15,17 @@ trait PublicKeyCamelTrait<TState> {
     fn getPublicKey(self: @TState) -> felt252;
 }
 
+#[starknet::interface]
+trait StarkPairTrait<TState> {
+    fn is_valid_stark_pair(self: @TState, verifying_key: felt252, hash: felt252, signature: Array<felt252>) -> felt252;
+}
+
+#[starknet::interface]
+trait StarkPairCamelTrait<TState> {
+    fn isValidStarkPair(self: @TState, verifying_key: felt252, hash: felt252, signature: Array<felt252>) -> felt252;
+}
+
+
 
 #[starknet::contract]
 mod Account {
@@ -160,6 +171,28 @@ mod Account {
     }
 
     #[external(v0)]
+    impl StarkPairImpl of super::StarkPairTrait<ContractState> {
+        fn is_valid_stark_pair(
+            self: @ContractState, verifying_key: felt252, hash: felt252, signature: Array<felt252>
+        ) -> felt252 {
+            if self._is_valid_stark_pair(verifying_key, hash, signature.span()) {
+                starknet::VALIDATED
+            } else {
+                0
+            }
+        }
+    }
+
+    #[external(v0)]
+    impl StarkPairCamelImpl of super::StarkPairCamelTrait<ContractState> {
+        fn isValidStarkPair(
+            self: @ContractState, verifying_key: felt252, hash: felt252, signature: Array<felt252>
+        ) -> felt252 {
+            StarkPairImpl::is_valid_stark_pair(self, verifying_key, hash, signature)
+        }
+    }
+
+    #[external(v0)]
     fn __validate_deploy__(
         self: @ContractState,
         class_hash: felt252,
@@ -202,6 +235,19 @@ mod Account {
             if valid_length {
                 check_ecdsa_signature(
                     hash, self.Account_public_key.read(), *signature.at(0_u32), *signature.at(1_u32)
+                )
+            } else {
+                false
+            }
+        }
+        fn _is_valid_stark_pair(
+            self: @ContractState, verifying_key: felt252, hash: felt252, signature: Span<felt252>
+        ) -> bool {
+            let valid_length = signature.len() == 2_u32;
+
+            if valid_length {
+                check_ecdsa_signature(
+                    hash, verifying_key, *signature.at(0_u32), *signature.at(1_u32)
                 )
             } else {
                 false

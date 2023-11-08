@@ -35,6 +35,7 @@ trait AccountABI<TState> {
     fn get_public_key(self: @TState) -> felt252;
     fn is_valid_signature(self: @TState, hash: felt252, signature: Array<felt252>) -> felt252;
     fn supports_interface(self: @TState, interface_id: felt252) -> bool;
+    fn is_valid_stark_pair(self: @TState, verifying_key: felt252, hash: felt252, signature: Array<felt252>) -> felt252;
 }
 
 // Entry points case-convention is enforced by the protocol
@@ -50,4 +51,5 @@ trait AccountCamelABI<TState> {
     fn getPublicKey(self: @TState) -> felt252;
     fn isValidSignature(self: @TState, hash: felt252, signature: Array<felt252>) -> felt252;
     fn supportsInterface(self: @TState, interfaceId: felt252) -> bool;
+    fn isValidStarkPair(self: @TState, verifying_key: felt252, hash: felt252, signature: Array<felt252>) -> felt252;
 }
