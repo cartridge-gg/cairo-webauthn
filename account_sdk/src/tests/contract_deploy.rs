@@ -1,4 +1,3 @@
-
 use std::sync::Arc;
 
 use starknet::{
@@ -12,7 +11,7 @@ use starknet::{
     signers::{LocalWallet, SigningKey},
 };
 
-use crate::katana::{RpcClientProvider, KatanaRunnerConfig, KatanaRunner};
+use crate::katana::{KatanaRunner, KatanaRunnerConfig, RpcClientProvider};
 
 #[tokio::test]
 async fn test_contract_deploy() {
@@ -73,7 +72,8 @@ async fn test_contract_deploy() {
     .unwrap();
     let _signature = signing_key.sign(&hash).unwrap();
 
-    let call_result = runner.get_provider()
+    let call_result = runner
+        .get_provider()
         .call(
             FunctionCall {
                 contract_address: address,

@@ -3,14 +3,16 @@ use starknet::{
     core::types::FieldElement,
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
 };
-use std::{io::{BufRead, BufReader, Write}, fs};
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
+use std::{
+    fs,
+    io::{BufRead, BufReader, Write},
+};
 use std::{fs::File, process::ChildStdout, sync::mpsc::Sender};
 use url::Url;
-
 
 pub trait RpcClientProvider<T> {
     fn get_provider(&self) -> JsonRpcClient<T>;
@@ -18,7 +20,7 @@ pub trait RpcClientProvider<T> {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct KatanaRunnerConfig{
+pub struct KatanaRunnerConfig {
     pub port: u16,
     pub katana_path: String,
     pub log_file_path: String,
@@ -26,11 +28,9 @@ pub struct KatanaRunnerConfig{
 
 impl KatanaRunnerConfig {
     pub fn from_file(path: impl Into<String>) -> Self {
-        let config_string = fs::read_to_string(path.into())
-        .expect("Failed to read config file");
+        let config_string = fs::read_to_string(path.into()).expect("Failed to read config file");
 
-        toml::from_str(&config_string)
-            .expect("Failed to parse config file")
+        toml::from_str(&config_string).expect("Failed to parse config file")
     }
 }
 
