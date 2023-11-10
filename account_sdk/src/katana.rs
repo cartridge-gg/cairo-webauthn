@@ -14,10 +14,7 @@ use std::{
 use std::{fs::File, process::ChildStdout, sync::mpsc::Sender};
 use url::Url;
 
-pub trait RpcClientProvider<T> {
-    fn get_provider(&self) -> JsonRpcClient<T>;
-    fn chain_id(&self) -> FieldElement;
-}
+use crate::rpc_provider::RpcClientProvider;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct KatanaRunnerConfig {
@@ -32,6 +29,10 @@ impl KatanaRunnerConfig {
 
         toml::from_str(&config_string).expect("Failed to parse config file")
     }
+    pub fn port(mut self, port: u16) -> Self {
+        self.port = port;
+        self
+    }
 }
 
 #[derive(Debug)]
@@ -42,7 +43,7 @@ pub struct KatanaRunner {
 
 impl KatanaRunner {
     pub fn new(config: KatanaRunnerConfig) -> Self {
-        let mut child = Command::new("katana")
+        let mut child = Command::new(config.katana_path)
             .args(["-p", &config.port.to_string()])
             .args(["--disable-fee", "--no-mining", "--json-log"])
             .stdout(Stdio::piped())
@@ -89,8 +90,19 @@ impl KatanaRunner {
     }
 }
 
-impl RpcClientProvider<HttpTransport> for KatanaRunner {
-    fn get_provider(&self) -> JsonRpcClient<HttpTransport> {
+#[derive(Debug, Clone, Copy)]
+pub struct KatanaClientProvider {
+    port: u16,
+}
+
+impl From<&KatanaRunner> for KatanaClientProvider {
+    fn from(value: &KatanaRunner) -> Self {
+        KatanaClientProvider { port: value.port }
+    }
+}
+
+impl RpcClientProvider<HttpTransport> for KatanaClientProvider {
+    fn get_client(&self) -> JsonRpcClient<HttpTransport> {
         JsonRpcClient::new(HttpTransport::new(
             Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
         ))
@@ -110,9 +122,4 @@ impl Drop for KatanaRunner {
             eprintln!("Failed to wait for katana subprocess: {}", e);
         }
     }
-}
-
-#[test]
-fn test_katana_runner() {
-    KatanaRunner::new(KatanaRunnerConfig::from_file("KatanaConfig.toml"));
 }
