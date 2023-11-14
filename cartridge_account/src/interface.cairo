@@ -49,5 +49,6 @@ trait AccountCamelABI<TState> {
     fn setPublicKey(ref self: TState, newPublicKey: felt252);
     fn getPublicKey(self: @TState) -> felt252;
     fn isValidSignature(self: @TState, hash: felt252, signature: Array<felt252>) -> felt252;
+    fn getZero(self: @TState) -> felt252;
     fn supportsInterface(self: @TState, interfaceId: felt252) -> bool;
 }
