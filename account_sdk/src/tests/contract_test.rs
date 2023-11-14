@@ -57,13 +57,7 @@ async fn test_contract_call() {
         .await
         .unwrap();
 
-    // let hash = FieldElement::from_hex_be(
-    //     "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973",
-    // )
-    // .unwrap();
-    // let signature = signing_key.sign(&hash).unwrap();
-
-    let _call_result = provider
+    let call_result = provider
         .get_client()
         .call(
             FunctionCall {
@@ -75,4 +69,8 @@ async fn test_contract_call() {
         )
         .await
         .expect("failed to call contract");
+    assert_eq!(
+        FieldElement::from_hex_be("0x2b191c2f3ecf685a91af7cf72a43e7b90e2e41220175de5c4f7498981b10053").unwrap(),
+        call_result[0]
+    )
 }
