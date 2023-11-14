@@ -13,6 +13,8 @@ use std::{
 };
 use std::{fs::File, process::ChildStdout, sync::mpsc::Sender};
 use url::Url;
+use std::path::{Path, PathBuf};
+
 
 use crate::rpc_provider::RpcClientProvider;
 
@@ -31,7 +33,22 @@ impl KatanaRunnerConfig {
     }
     pub fn port(mut self, port: u16) -> Self {
         self.port = port;
+        self.log_file_path = KatanaRunnerConfig::add_port_to_filename(&self.log_file_path, port);
         self
+    }
+    fn add_port_to_filename(file_path: &str, port: u16) -> String {
+        let path = Path::new(file_path);
+        let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+        let extension = path.extension().and_then(|s| s.to_str()).unwrap_or("");
+    
+        let new_file_name = if extension.is_empty() {
+            format!("{}_{}", stem, port)
+        } else {
+            format!("{}_{}.{}", stem, port, extension)
+        };
+        let mut new_path = PathBuf::from(path.parent().unwrap_or_else(|| Path::new("")));
+        new_path.push(new_file_name);
+        new_path.to_string_lossy().into_owned()
     }
 }
 

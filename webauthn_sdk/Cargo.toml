@@ -10,7 +10,7 @@ default-run = "main"
 anyhow = "1.0.75"
 clap = { version = "4.3.23", features = ["derive", "env", "string"] }
 termcolor = "1.1"
-scarb = { git = "https://github.com/software-mansion/scarb.git", tag="v0.7.0" }
+scarb = { git = "https://github.com/software-mansion/scarb.git", tag="v2.3.0" }
 cairo-lang-compiler = "2.2.0"
 cairo-lang-sierra-generator = "2.2.0"
 cairo-lang-diagnostics = "2.2.0"

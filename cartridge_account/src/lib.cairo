@@ -5,37 +5,25 @@ mod interface;
 
 use starknet::testing;
 
-trait PublicKeyTrait<TState> {
+#[starknet::interface]
+trait IPublicKey<TState> {
     fn set_public_key(ref self: TState, new_public_key: felt252);
     fn get_public_key(self: @TState) -> felt252;
 }
 
-trait PublicKeyCamelTrait<TState> {
+#[starknet::interface]
+trait IPublicKeyCamel<TState> {
     fn setPublicKey(ref self: TState, newPublicKey: felt252);
     fn getPublicKey(self: @TState) -> felt252;
-}
-
-trait StarkPairTrait<TState> {
-    fn is_valid_stark_pair(self: @TState) -> felt252;
-}
-
-trait StarkPairCamelTrait<TState> {
-    fn isValidStarkPair(self: @TState) -> felt252;
 }
 
 
 
 #[starknet::contract]
 mod Account {
-    use core::traits::Into;
-use core::array::ArrayTrait;
-use ecdsa::check_ecdsa_signature;
-
-    use super::interface;
-    use openzeppelin::introspection::interface::ISRC5;
-    use openzeppelin::introspection::interface::ISRC5Camel;
-    use openzeppelin::introspection::src5::SRC5;
-    use openzeppelin::introspection::src5::unsafe_state as src5_state;
+    use ecdsa::check_ecdsa_signature;
+    use openzeppelin::account::interface;
+    use openzeppelin::introspection::src5::SRC5 as src5_component;
     use starknet::account::Call;
     use starknet::get_caller_address;
     use starknet::get_contract_address;
@@ -45,9 +33,19 @@ use ecdsa::check_ecdsa_signature;
     // 2**128 + TRANSACTION_VERSION
     const QUERY_VERSION: felt252 = 0x100000000000000000000000000000001;
 
+    component!(path: src5_component, storage: src5, event: SRC5Event);
+
+    #[abi(embed_v0)]
+    impl SRC5Impl = src5_component::SRC5Impl<ContractState>;
+    #[abi(embed_v0)]
+    impl SRC5CamelImpl = src5_component::SRC5CamelImpl<ContractState>;
+    impl SRC5InternalImpl = src5_component::InternalImpl<ContractState>;
+
     #[storage]
     struct Storage {
-        Account_public_key: felt252
+        Account_public_key: felt252,
+        #[substorage(v0)]
+        src5: src5_component::Storage
     }
 
     #[event]
@@ -55,6 +53,7 @@ use ecdsa::check_ecdsa_signature;
     enum Event {
         OwnerAdded: OwnerAdded,
         OwnerRemoved: OwnerRemoved,
+        SRC5Event: src5_component::Event
     }
 
     #[derive(Drop, starknet::Event)]
@@ -121,7 +120,6 @@ use ecdsa::check_ecdsa_signature;
         fn isValidSignature(
             self: @ContractState, hash: felt252, signature: Array<felt252>
         ) -> felt252 {
-            return 0;
             SRC6Impl::is_valid_signature(self, hash, signature)
         }
     }
@@ -134,21 +132,7 @@ use ecdsa::check_ecdsa_signature;
     }
 
     #[external(v0)]
-    impl SRC5Impl of ISRC5<ContractState> {
-        fn supports_interface(self: @ContractState, interface_id: felt252) -> bool {
-            SRC5::SRC5Impl::supports_interface(@src5_state(), interface_id)
-        }
-    }
-
-    #[external(v0)]
-    impl SRC5CamelImpl of ISRC5Camel<ContractState> {
-        fn supportsInterface(self: @ContractState, interfaceId: felt252) -> bool {
-            SRC5::SRC5CamelImpl::supportsInterface(@src5_state(), interfaceId)
-        }
-    }
-
-    #[external(v0)]
-    impl PublicKeyImpl of super::PublicKeyTrait<ContractState> {
+    impl PublicKeyImpl of super::IPublicKey<ContractState> {
         fn get_public_key(self: @ContractState) -> felt252 {
             self.Account_public_key.read()
         }
@@ -161,37 +145,13 @@ use ecdsa::check_ecdsa_signature;
     }
 
     #[external(v0)]
-    impl PublicKeyCamelImpl of super::PublicKeyCamelTrait<ContractState> {
+    impl PublicKeyCamelImpl of super::IPublicKeyCamel<ContractState> {
         fn getPublicKey(self: @ContractState) -> felt252 {
             self.Account_public_key.read()
         }
 
         fn setPublicKey(ref self: ContractState, newPublicKey: felt252) {
             PublicKeyImpl::set_public_key(ref self, newPublicKey);
-        }
-    }
-
-    #[external(v0)]
-    impl StarkPairImpl of super::StarkPairTrait<ContractState> {
-        fn is_valid_stark_pair(
-            self: @ContractState
-        ) -> felt252 {
-            return 0;
-            // if self._is_valid_stark_pair(verifying_key, hash, signature.span()) {
-            //     starknet::VALIDATED
-            // } else {
-            //     0
-            // }
-        }
-    }
-
-    #[external(v0)]
-    impl StarkPairCamelImpl of super::StarkPairCamelTrait<ContractState> {
-        fn isValidStarkPair(
-            self: @ContractState
-        ) -> felt252 {
-            return 0;
-            // StarkPairImpl::is_valid_stark_pair(self, verifying_key, hash, signature)
         }
     }
 
@@ -212,8 +172,7 @@ use ecdsa::check_ecdsa_signature;
     #[generate_trait]
     impl InternalImpl of InternalTrait {
         fn initializer(ref self: ContractState, _public_key: felt252) {
-            let mut unsafe_state = src5_state();
-            SRC5::InternalImpl::register_interface(ref unsafe_state, interface::ISRC6_ID);
+            self.src5.register_interface(interface::ISRC6_ID);
             self._set_public_key(_public_key);
         }
 
@@ -243,29 +202,14 @@ use ecdsa::check_ecdsa_signature;
                 false
             }
         }
-        fn _is_valid_stark_pair(
-            self: @ContractState, verifying_key: felt252, hash: felt252, signature: Span<felt252>
-        ) -> bool {
-            let valid_length = signature.len() == 2_u32;
-
-            if valid_length {
-                check_ecdsa_signature(
-                    hash, verifying_key, *signature.at(0_u32), *signature.at(1_u32)
-                )
-            } else {
-                false
-            }
-        }
     }
 
-    #[internal]
     fn assert_only_self() {
         let caller = get_caller_address();
         let self = get_contract_address();
         assert(self == caller, Errors::UNAUTHORIZED);
     }
 
-    #[private]
     fn _execute_calls(mut calls: Array<Call>) -> Array<Span<felt252>> {
         let mut res = ArrayTrait::new();
         loop {
@@ -274,15 +218,12 @@ use ecdsa::check_ecdsa_signature;
                     let _res = _execute_single_call(call);
                     res.append(_res);
                 },
-                Option::None(_) => {
-                    break ();
-                },
+                Option::None(_) => { break (); },
             };
         };
         res
     }
 
-    #[private]
     fn _execute_single_call(call: Call) -> Span<felt252> {
         let Call{to, selector, calldata } = call;
         starknet::call_contract_syscall(to, selector, calldata.span()).unwrap()

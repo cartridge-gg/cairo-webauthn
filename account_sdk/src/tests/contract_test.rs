@@ -9,7 +9,7 @@ use crate::{
     deploy_contract::deploy_contract,
     katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
     rpc_provider::RpcClientProvider,
-    tests::find_free_port, field_elem,
+    tests::find_free_port
 };
 
 fn get_key_and_address() -> (SigningKey, FieldElement) {
@@ -68,8 +68,8 @@ async fn test_contract_call() {
         .call(
             FunctionCall {
                 contract_address: address,
-                entry_point_selector: selector!("isValidSignature"),
-                calldata: vec![field_elem!("0x0"), field_elem!("0x0"), field_elem!("0x0")],
+                entry_point_selector: selector!("getPublicKey"),
+                calldata: vec![],
             },
             BlockId::Tag(BlockTag::Latest),
         )

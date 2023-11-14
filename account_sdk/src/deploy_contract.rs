@@ -12,9 +12,9 @@ use starknet::{
 };
 
 const SIERRA_STR: &str =
-    include_str!("../../cartridge_account/target/dev/cartridge_account_Account.sierra.json");
+    include_str!("../../cartridge_account/target/dev/cartridge_account_Account.contract_class.json");
 const CASM_STR: &str =
-    include_str!("../../cartridge_account/target/dev/cartridge_account_Account.casm.json");
+    include_str!("../../cartridge_account/target/dev/cartridge_account_Account.compiled_contract_class.json");
 
 pub async fn deploy_contract<T>(
     rpc_provider: impl RpcClientProvider<T>,

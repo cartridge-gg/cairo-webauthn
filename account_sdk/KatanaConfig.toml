@@ -1,3 +1,3 @@
 port = 5050
 katana_path = "katana"
-log_file_path = "katana.log"
+log_file_path = "log/katana.json"
