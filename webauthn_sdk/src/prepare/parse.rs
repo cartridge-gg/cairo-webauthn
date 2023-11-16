@@ -21,8 +21,7 @@ impl SingleFileParser {
 
 impl DevParser<SierraRunner> for SingleFileParser {
     fn parse(self) -> Result<SierraRunner> {
-        let sierra_code =
-            fs::read_to_string(self.file_name).with_context(|| "Could not read file!")?;
+        let sierra_code = fs::read_to_string(self.file_name + ".json").unwrap();
         let Ok(sierra_program) = ProgramParser::new().parse(&sierra_code) else {
             anyhow::bail!("Failed to parse sierra program.")
         };
