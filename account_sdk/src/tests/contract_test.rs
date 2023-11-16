@@ -9,7 +9,7 @@ use crate::{
     deploy_contract::deploy_contract,
     katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
     rpc_provider::RpcClientProvider,
-    tests::find_free_port
+    tests::find_free_port,
 };
 
 fn get_key_and_address() -> (SigningKey, FieldElement) {
@@ -43,8 +43,6 @@ async fn test_contract_deploy() {
     let _signature = signing_key.sign(&hash).unwrap();
 }
 
-
-
 #[tokio::test]
 async fn test_contract_call() {
     let runner = KatanaRunner::new(
@@ -62,7 +60,7 @@ async fn test_contract_call() {
         .call(
             FunctionCall {
                 contract_address: address,
-                entry_point_selector: selector!("getPublicKey"),
+                entry_point_selector: selector!("setPublicKey2"),
                 calldata: vec![],
             },
             BlockId::Tag(BlockTag::Latest),
@@ -70,7 +68,10 @@ async fn test_contract_call() {
         .await
         .expect("failed to call contract");
     assert_eq!(
-        FieldElement::from_hex_be("0x2b191c2f3ecf685a91af7cf72a43e7b90e2e41220175de5c4f7498981b10053").unwrap(),
+        FieldElement::from_hex_be(
+            "0x2b191c2f3ecf685a91af7cf72a43e7b90e2e41220175de5c4f7498981b10053"
+        )
+        .unwrap(),
         call_result[0]
     )
 }
