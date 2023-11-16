@@ -78,28 +78,34 @@ async fn test_contract_call_problem_2() {
 }
 
 // #[tokio::test]
-// async fn test_contract_call_problem() {
+// async fn test_contract_call() {
 //     let runner = KatanaRunner::new(
 //         KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()),
 //     );
 //     let (signing_key, address) = get_key_and_address();
 
-//     let provider = KatanaClientProvider::from(&runner);
-//     let _result = deploy_contract(provider, signing_key.clone(), address)
-//         .await
-//         .unwrap();
+//     //     let provider = KatanaClientProvider::from(&runner);
+//     //     let _result = deploy_contract(provider, signing_key.clone(), address)
+//     //         .await
+//     //         .unwrap();
 
 //     let call_result = provider
 //         .get_client()
 //         .call(
 //             FunctionCall {
 //                 contract_address: address,
-//                 entry_point_selector: selector!("getZero"),
+//                 entry_point_selector: selector!("getPublicKey"),
 //                 calldata: vec![],
 //             },
 //             BlockId::Tag(BlockTag::Latest),
 //         )
 //         .await
 //         .expect("failed to call contract");
-//     assert_eq!(FieldElement::ZERO, call_result[0])
+//     assert_eq!(
+//         FieldElement::from_hex_be(
+//             "0x2b191c2f3ecf685a91af7cf72a43e7b90e2e41220175de5c4f7498981b10053"
+//         )
+//         .unwrap(),
+//         call_result[0]
+//     )
 // }
