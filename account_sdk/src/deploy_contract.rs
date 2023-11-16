@@ -5,18 +5,16 @@ use starknet::{
     accounts::{Account, ExecutionEncoding, SingleOwnerAccount},
     core::types::{
         contract::{CompiledClass, SierraClass},
-        BlockId, BlockTag, DeclareTransactionResult, FieldElement,
+        DeclareTransactionResult, FieldElement, BlockId, BlockTag,
     },
     providers::{JsonRpcClient, Provider},
     signers::{LocalWallet, SigningKey},
 };
 
-const SIERRA_STR: &str = include_str!(
-    "../../cartridge_account/target/dev/cartridge_account_Account.contract_class.json"
-);
-const CASM_STR: &str = include_str!(
-    "../../cartridge_account/target/dev/cartridge_account_Account.compiled_contract_class.json"
-);
+const SIERRA_STR: &str =
+    include_str!("../../cartridge_account/target/dev/cartridge_account_Account.contract_class.json");
+const CASM_STR: &str =
+    include_str!("../../cartridge_account/target/dev/cartridge_account_Account.compiled_contract_class.json");
 
 pub async fn deploy_contract<T>(
     rpc_provider: impl RpcClientProvider<T>,
