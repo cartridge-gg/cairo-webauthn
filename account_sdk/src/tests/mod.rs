@@ -11,7 +11,8 @@ pub fn find_free_port() -> u16 {
         .port()
 }
 
-#[macro_export] macro_rules! field_elem {
+#[macro_export]
+macro_rules! field_elem {
     ($a:tt) => {
         starknet::core::types::FieldElement::from_hex_be($a).unwrap()
     };

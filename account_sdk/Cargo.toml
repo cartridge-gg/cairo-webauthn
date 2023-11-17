@@ -16,6 +16,11 @@ url = "2.4.1"
 toml = "0.5"
 tokio = { version = "1.0", features = ["macros"] }
 wasm-bindgen = "0.2.88"
+thiserror = "1.0.32"
+futures = "0.3.28"
+async-trait = "0.1.68"
+anyhow = "1.0.75"
+cairo-lang-starknet = "2.3.1"
 
 
 

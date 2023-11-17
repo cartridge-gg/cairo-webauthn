@@ -3,6 +3,7 @@ use starknet::{
     core::types::FieldElement,
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
 };
+use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc;
 use std::thread;
@@ -13,8 +14,6 @@ use std::{
 };
 use std::{fs::File, process::ChildStdout, sync::mpsc::Sender};
 use url::Url;
-use std::path::{Path, PathBuf};
-
 
 use crate::rpc_provider::RpcClientProvider;
 
@@ -40,7 +39,7 @@ impl KatanaRunnerConfig {
         let path = Path::new(file_path);
         let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
         let extension = path.extension().and_then(|s| s.to_str()).unwrap_or("");
-    
+
         let new_file_name = if extension.is_empty() {
             format!("{}_{}", stem, port)
         } else {
