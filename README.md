@@ -27,6 +27,7 @@ cd ..
 After the contract is compiled run the tests using `cargo`:
 ```bash
 cd account_sdk
+mkdir log
 cargo test
 ```
 The scarb builds the contract and saves the compiled code in the `cartridge_account/target` folder. The tests then fetch (at compile time) the comipled code and deploy it to the local network. Note that obviously the contract needs to be recompiled for any changes to be applied in the compiled code.
