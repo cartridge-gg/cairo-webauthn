@@ -29,10 +29,10 @@ pub fn prefounded_key_and_address() -> (SigningKey, FieldElement) {
 
 pub fn get_key_and_address_devnet() -> (SigningKey, FieldElement) {
     let signing_key = SigningKey::from_secret_scalar(
-        FieldElement::from_hex_be("0x8312c39a05dcf8b76256cc4f5aa509e5").unwrap(),
+        FieldElement::from_hex_be("0x71d7bb07b9a64f6f78ac4c816aff4da9").unwrap(),
     );
     let address = FieldElement::from_hex_be(
-        "0x61cf6064a6a227c43e2ce50ef5586c5317140b3a386c2cd920d474609682cb9",
+        "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
     )
     .unwrap();
     (signing_key, address)

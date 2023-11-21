@@ -116,6 +116,12 @@ pub struct KatanaClientProvider {
 // todo!("Implement starknet::providers::Provider");
 // impl Provider for KatanaClientProvider {}
 
+impl From<&u16> for KatanaClientProvider {
+    fn from(value: &u16) -> Self {
+        KatanaClientProvider { port: *value }
+    }
+}
+
 impl From<&KatanaRunner> for KatanaClientProvider {
     fn from(value: &KatanaRunner) -> Self {
         KatanaClientProvider { port: value.port }
