@@ -86,7 +86,10 @@ pub trait Declarable {
 
         match account
             .provider()
-            .get_class(BlockId::Tag(BlockTag::Pending), flattened_class.class_hash())
+            .get_class(
+                BlockId::Tag(BlockTag::Pending),
+                flattened_class.class_hash(),
+            )
             .await
         {
             Err(ProviderError::StarknetError(StarknetErrorWithMessage {
@@ -100,18 +103,26 @@ pub trait Declarable {
 
         let mut txn = account.declare(Arc::new(flattened_class), casm_class_hash);
 
-        if let TxConfig { fee_estimate_multiplier: Some(multiplier) } = txn_config {
+        if let TxConfig {
+            fee_estimate_multiplier: Some(multiplier),
+        } = txn_config
+        {
             txn = txn.fee_estimate_multiplier(multiplier);
         }
 
-        let DeclareTransactionResult { transaction_hash, class_hash } =
-            txn.send().await.map_err(MigrationError::Migrator)?;
+        let DeclareTransactionResult {
+            transaction_hash,
+            class_hash,
+        } = txn.send().await.map_err(MigrationError::Migrator)?;
 
         TransactionWaiter::new(transaction_hash, account.provider())
             .await
             .map_err(MigrationError::WaitingError)?;
 
-        return Ok(DeclareOutput { transaction_hash, class_hash });
+        return Ok(DeclareOutput {
+            transaction_hash,
+            class_hash,
+        });
     }
 
     fn artifact_str(&self) -> &str;
@@ -182,7 +193,10 @@ pub trait Deployable: Declarable + Sync {
 
         let mut txn = account.execute(vec![call]);
 
-        if let TxConfig { fee_estimate_multiplier: Some(multiplier) } = txn_config {
+        if let TxConfig {
+            fee_estimate_multiplier: Some(multiplier),
+        } = txn_config
+        {
             txn = txn.fee_estimate_multiplier(multiplier);
         }
 
@@ -191,7 +205,11 @@ pub trait Deployable: Declarable + Sync {
 
         TransactionWaiter::new(transaction_hash, account.provider()).await?;
 
-        Ok(DeployOutput { transaction_hash, contract_address, declare })
+        Ok(DeployOutput {
+            transaction_hash,
+            contract_address,
+            declare,
+        })
     }
 
     async fn deploy<P, S>(
@@ -233,7 +251,8 @@ pub trait Deployable: Declarable + Sync {
         account
             .provider()
             .get_class_hash_at(BlockId::Tag(BlockTag::Pending), contract_address)
-            .await.unwrap();
+            .await
+            .unwrap();
         // {
         //     Err(ProviderError::StarknetError(StarknetErrorWithMessage {
         //         code: MaybeUnknownErrorCode::Known(StarknetError::ContractNotFound),
@@ -251,7 +270,10 @@ pub trait Deployable: Declarable + Sync {
             to: felt!("0x41a78e741e5af2fec34b695679bc6891742439f7afb8484ecd7766661ad02bf"),
         }]);
 
-        if let TxConfig { fee_estimate_multiplier: Some(multiplier) } = txn_config {
+        if let TxConfig {
+            fee_estimate_multiplier: Some(multiplier),
+        } = txn_config
+        {
             txn = txn.fee_estimate_multiplier(multiplier);
         }
 
@@ -260,7 +282,11 @@ pub trait Deployable: Declarable + Sync {
 
         TransactionWaiter::new(transaction_hash, account.provider()).await?;
 
-        Ok(DeployOutput { transaction_hash, contract_address, declare })
+        Ok(DeployOutput {
+            transaction_hash,
+            contract_address,
+            declare,
+        })
     }
 
     fn salt(&self) -> FieldElement;
@@ -272,9 +298,8 @@ fn prepare_contract_declaration_params(
     let flattened_class = read_class(artifact_str)?
         .flatten()
         .map_err(|e| anyhow!("error flattening the contract class: {e}"))?;
-    let compiled_class_hash = get_compiled_class_hash(artifact_str).map_err(|e| {
-        anyhow!("error computing compiled class hash {e}")
-    })?;
+    let compiled_class_hash = get_compiled_class_hash(artifact_str)
+        .map_err(|e| anyhow!("error computing compiled class hash {e}"))?;
     Ok((flattened_class, compiled_class_hash))
 }
 

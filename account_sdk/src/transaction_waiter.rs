@@ -105,11 +105,17 @@ where
 
     pub fn with_interval(self, milisecond: u64) -> Self {
         let interval = Duration::from_millis(milisecond);
-        Self { interval: tokio::time::interval_at(Instant::now() + interval, interval), ..self }
+        Self {
+            interval: tokio::time::interval_at(Instant::now() + interval, interval),
+            ..self
+        }
     }
 
     pub fn with_finality(self, status: TransactionFinalityStatus) -> Self {
-        Self { finality_status: Some(status), ..self }
+        Self {
+            finality_status: Some(status),
+            ..self
+        }
     }
 
     pub fn with_timeout(self, timeout: Duration) -> Self {
@@ -205,8 +211,9 @@ where
             }
 
             if this.interval.poll_tick(cx).is_ready() {
-                this.receipt_request_fut =
-                    Some(Box::pin(this.provider.get_transaction_receipt(this.tx_hash)));
+                this.receipt_request_fut = Some(Box::pin(
+                    this.provider.get_transaction_receipt(this.tx_hash),
+                ));
             } else {
                 break;
             }
