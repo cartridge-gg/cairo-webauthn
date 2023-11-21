@@ -101,7 +101,7 @@ async fn test_transfer() {
         .execute(vec![Call {
             to: devnet.fee_token().address,
             selector: selector!("transfer"),
-            calldata: vec![new_account, felt!("0x10")],
+            calldata: vec![new_account, felt!("0x10"), felt!("0x0")],
         }])
         .send()
         .await
