@@ -1,5 +1,5 @@
 use starknet::{
-    accounts::{Account, OpenZeppelinAccountFactory},
+    accounts::{Account, OpenZeppelinAccountFactory, AccountFactory},
     core::types::{BlockId, BlockTag, FieldElement},
     macros::selector,
     providers::Provider,
@@ -8,10 +8,10 @@ use starknet::{
 
 use crate::{
     account_factory::AnyAccountFactory,
-    deploy_contract::get_account,
+    deploy_contract::{get_account, declare_contract, CustomContract},
     katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
     rpc_provider::RpcClientProvider,
-    tests::find_free_port,
+    tests::{find_free_port, get_key_and_address}, deployer::{Declarable, TxConfig},
 };
 
 use starknet::accounts::Call;
@@ -24,17 +24,6 @@ const DEFAULT_UDC_ADDRESS: FieldElement = FieldElement::from_mont([
     121672436446604875,
 ]);
 
-fn get_key_and_address() -> (SigningKey, FieldElement) {
-    let signing_key = SigningKey::from_secret_scalar(
-        FieldElement::from_hex_be("0x1800000000300000180000000000030000000000003006001800006600")
-            .unwrap(),
-    );
-    let address = FieldElement::from_hex_be(
-        "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973",
-    )
-    .unwrap();
-    (signing_key, address)
-}
 
 #[tokio::test]
 async fn test_contract_call_problem_2() {
@@ -44,21 +33,21 @@ async fn test_contract_call_problem_2() {
     let (signing_key, address) = get_key_and_address();
     let signer = LocalWallet::from_signing_key(signing_key.clone());
 
+
     let provider = KatanaClientProvider::from(&runner);
     let public_key = signing_key.verifying_key().scalar();
     let account = get_account(provider, signing_key.clone(), address);
-    let class_hash = provider
-        .get_client()
-        .get_class_hash_at(BlockId::Tag(BlockTag::Pending), address)
-        .await
-        .unwrap();
+
+    let declare_result = CustomContract.declare(&account, TxConfig::default()).await.unwrap();
+    
+    let class_hash = declare_result.class_hash;
     dbg!(class_hash);
 
     let mut factory = OpenZeppelinAccountFactory::new(
         class_hash,
         starknet::core::chain_id::TESTNET,
         signer,
-        provider.clone(),
+        provider.get_client(),
     )
     .await
     .unwrap();
@@ -68,21 +57,21 @@ async fn test_contract_call_problem_2() {
 
     // https://github.com/xJonathanLEI/starkli/blob/master/src/subcommands/account/deploy.rs
     // todo!("Implement starknet::providers::Provider for KatanaClientProvider");
-    // let account_deployment = factory.deploy(FieldElement::ZERO);
-    // let target_deployment_address = account.deploy_account_address()?;
+    let account_deployment = factory.deploy(FieldElement::ZERO);
+    let target_deployment_address = account_deployment.address();
 
-    // dbg!(target_deployment_address);
+    dbg!(target_deployment_address);
 
-    let account = get_account(provider, signing_key, address);
-    // let _call_result = account
-    //     .execute(vec![Call {
-    //         to: target_deployment_address,
-    //         selector: selector!("getPublicKey"),
-    //         calldata: vec![],
-    //     }])
-    //     .send()
-    //     .await
-    //     .unwrap();
+    let account = dbg!(get_account(provider, signing_key, address));
+    let _call_result = dbg!(account
+        .execute(vec![Call {
+            to: target_deployment_address,
+            selector: selector!("getPublicKey"),
+            calldata: vec![],
+        }])
+        .send()
+        .await
+        .unwrap());
 }
 
 // #[tokio::test]
