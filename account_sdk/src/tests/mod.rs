@@ -27,6 +27,17 @@ pub fn get_key_and_address() -> (SigningKey, FieldElement) {
     (signing_key, address)
 }
 
+pub fn get_key_and_address_devnet() -> (SigningKey, FieldElement) {
+    let signing_key = SigningKey::from_secret_scalar(
+        FieldElement::from_hex_be("0x8312c39a05dcf8b76256cc4f5aa509e5").unwrap(),
+    );
+    let address = FieldElement::from_hex_be(
+        "0x61cf6064a6a227c43e2ce50ef5586c5317140b3a386c2cd920d474609682cb9",
+    )
+    .unwrap();
+    (signing_key, address)
+}
+
 #[macro_export]
 macro_rules! field_elem {
     ($a:tt) => {

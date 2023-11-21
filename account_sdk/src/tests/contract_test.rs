@@ -11,7 +11,7 @@ use crate::{
     deployer::{Declarable, TxConfig},
     katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
     rpc_provider::RpcClientProvider,
-    tests::{find_free_port, get_key_and_address},
+    tests::{find_free_port, get_key_and_address, get_key_and_address_devnet},
 };
 
 use starknet::accounts::Call;
@@ -30,7 +30,7 @@ async fn test_contract_call_problem_2() {
     let runner = KatanaRunner::new(
         KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()),
     );
-    let (signing_key, address) = get_key_and_address();
+    let (signing_key, address) = get_key_and_address_devnet();
     let signer = LocalWallet::from_signing_key(signing_key.clone());
 
     let provider = KatanaClientProvider::from(&runner);
