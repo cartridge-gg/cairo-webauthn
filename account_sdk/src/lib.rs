@@ -1,3 +1,4 @@
+mod account_factory;
 pub mod deploy_contract;
 mod rpc_provider;
 mod transaction_waiter;
