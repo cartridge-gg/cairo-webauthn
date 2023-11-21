@@ -27,15 +27,16 @@ const DEFAULT_UDC_ADDRESS: FieldElement = FieldElement::from_mont([
 
 #[tokio::test]
 async fn test_contract_call_problem_2() {
-    let runner = KatanaRunner::new(
-        KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()),
-    );
+    // let runner = KatanaRunner::new(
+    //     KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()),
+    // );
+    // Instead: [mateo@visoft-workhorse starknet-devnet-rs]$ cargo run -- --seed 0
+
     let (signing_key, address) = get_key_and_address_devnet();
     let signer = LocalWallet::from_signing_key(signing_key.clone());
 
-    let provider = KatanaClientProvider::from(&runner);
-    let _public_key = signing_key.verifying_key().scalar();
-    let account = get_account(provider, signing_key.clone(), address);
+    let provider = KatanaClientProvider::from(&5050);
+    let account = get_account(provider, signing_key.clone(), address).await;
 
     let declare_result = CustomContract
         .declare(&account, TxConfig::default())
@@ -64,7 +65,7 @@ async fn test_contract_call_problem_2() {
 
     dbg!(target_deployment_address);
 
-    let account = dbg!(get_account(provider, signing_key, address));
+    let account = dbg!(get_account(provider, signing_key, address).await);
     let _call_result = dbg!(account
         .execute(vec![Call {
             to: target_deployment_address,

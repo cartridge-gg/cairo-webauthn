@@ -5,6 +5,7 @@ use starknet::{core::types::FieldElement, signers::SigningKey};
 mod contract_test;
 mod katana_test;
 mod new_deploy_test;
+mod one_file_all;
 mod simple_deploy_test;
 
 pub fn find_free_port() -> u16 {

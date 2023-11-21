@@ -6,7 +6,7 @@ use starknet::{
     },
     core::types::{
         contract::{CompiledClass, SierraClass},
-        BlockId, BlockTag, FieldElement,
+        BlockId, BlockTag, DeclareTransactionResult, FieldElement,
     },
     macros::selector,
     providers::Provider,
@@ -19,7 +19,7 @@ use crate::{
     deployer::{Declarable, TxConfig},
     katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
     rpc_provider::RpcClientProvider,
-    tests::{find_free_port, get_key_and_address, get_key_and_address_devnet},
+    tests::{find_free_port, get_key_and_address_devnet},
 };
 
 use starknet::accounts::Call;
@@ -69,7 +69,7 @@ async fn test_contract_call_problem_2() {
 
     let declaration = prefunded.declare(Arc::new(flattened_class), casm_class_hash);
 
-    let res = declaration.send().await.unwrap();
+    let DeclareTransactionResult { class_hash, .. } = declaration.send().await.unwrap();
 
     // let class_hash = declare_result.class_hash;
     // dbg!(class_hash);

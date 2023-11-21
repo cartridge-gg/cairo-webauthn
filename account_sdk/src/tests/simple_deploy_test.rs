@@ -51,7 +51,7 @@ async fn test_simple() {
 
     let prf_data = KatanaAccountData::new();
 
-    let prf_account = get_account(provider, prf_data.private.clone(), prf_data.address);
+    let prf_account = get_account(provider, prf_data.private.clone(), prf_data.address).await;
 
     let (custom_declare, _) = declare_contract(provider, prf_data.private, prf_data.address)
         .await
