@@ -66,6 +66,7 @@ async fn test_contract_call_problem_2() {
 
     let factory = AnyAccountFactory::OpenZeppelin(factory);
 
+    // https://github.com/xJonathanLEI/starkli/blob/master/src/subcommands/account/deploy.rs
     // todo!("Implement starknet::providers::Provider for KatanaClientProvider");
     // let account_deployment = factory.deploy(FieldElement::ZERO);
     // let target_deployment_address = account.deploy_account_address()?;
