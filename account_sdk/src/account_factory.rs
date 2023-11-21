@@ -8,6 +8,7 @@ use starknet::{
     signers::Signer,
 };
 
+#[allow(dead_code)]
 pub enum AnyAccountFactory<S, P> {
     OpenZeppelin(OpenZeppelinAccountFactory<S, P>),
     Argent(ArgentAccountFactory<S, P>),

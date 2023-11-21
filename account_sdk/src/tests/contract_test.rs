@@ -1,21 +1,22 @@
 use starknet::{
-    accounts::{Account, OpenZeppelinAccountFactory, AccountFactory},
+    accounts::{Account, AccountFactory, OpenZeppelinAccountFactory},
     core::types::{BlockId, BlockTag, FieldElement},
     macros::selector,
-    providers::Provider,
-    signers::{LocalWallet, SigningKey},
+    signers::LocalWallet,
 };
 
 use crate::{
     account_factory::AnyAccountFactory,
-    deploy_contract::{get_account, declare_contract, CustomContract},
+    deploy_contract::{get_account, CustomContract},
+    deployer::{Declarable, TxConfig},
     katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
     rpc_provider::RpcClientProvider,
-    tests::{find_free_port, get_key_and_address}, deployer::{Declarable, TxConfig},
+    tests::{find_free_port, get_key_and_address},
 };
 
 use starknet::accounts::Call;
 
+#[allow(dead_code)]
 /// The default UDC address: 0x041a78e741e5af2fec34b695679bc6891742439f7afb8484ecd7766661ad02bf.
 const DEFAULT_UDC_ADDRESS: FieldElement = FieldElement::from_mont([
     15144800532519055890,
@@ -23,7 +24,6 @@ const DEFAULT_UDC_ADDRESS: FieldElement = FieldElement::from_mont([
     9333317513348225193,
     121672436446604875,
 ]);
-
 
 #[tokio::test]
 async fn test_contract_call_problem_2() {
@@ -33,13 +33,15 @@ async fn test_contract_call_problem_2() {
     let (signing_key, address) = get_key_and_address();
     let signer = LocalWallet::from_signing_key(signing_key.clone());
 
-
     let provider = KatanaClientProvider::from(&runner);
-    let public_key = signing_key.verifying_key().scalar();
+    let _public_key = signing_key.verifying_key().scalar();
     let account = get_account(provider, signing_key.clone(), address);
 
-    let declare_result = CustomContract.declare(&account, TxConfig::default()).await.unwrap();
-    
+    let declare_result = CustomContract
+        .declare(&account, TxConfig::default())
+        .await
+        .unwrap();
+
     let class_hash = declare_result.class_hash;
     dbg!(class_hash);
 

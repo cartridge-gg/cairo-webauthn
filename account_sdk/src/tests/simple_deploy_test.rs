@@ -1,22 +1,21 @@
 use starknet::{
-    accounts::{Account, ConnectedAccount},
+    accounts::ConnectedAccount,
     contract::ContractFactory,
     core::types::FieldElement,
-    macros::selector,
     signers::{LocalWallet, SigningKey},
 };
 
 use crate::{
-    deploy_contract::{get_account, CustomContract, declare_contract},
-    deployer::{Declarable, TxConfig},
+    deploy_contract::{declare_contract, get_account},
     katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
-    tests::{find_free_port, get_key_and_address}, transaction_waiter::TransactionWaiter,
+    tests::{find_free_port, get_key_and_address},
+    transaction_waiter::TransactionWaiter,
 };
 
-use starknet::accounts::Call;
+
 
 /// The default UDC address: 0x041a78e741e5af2fec34b695679bc6891742439f7afb8484ecd7766661ad02bf.
-const DEFAULT_UDC_ADDRESS: FieldElement = FieldElement::from_mont([
+const _DEFAULT_UDC_ADDRESS: FieldElement = FieldElement::from_mont([
     15144800532519055890,
     15685625669053253235,
     9333317513348225193,
@@ -27,7 +26,7 @@ struct KatanaAccountData {
     pub private: SigningKey,
     pub public: FieldElement,
     pub address: FieldElement,
-    pub signer: LocalWallet,
+    pub _signer: LocalWallet,
 }
 
 impl KatanaAccountData {
@@ -39,7 +38,7 @@ impl KatanaAccountData {
             private,
             public,
             address,
-            signer,
+            _signer: signer,
         }
     }
 }
@@ -56,17 +55,23 @@ async fn test_simple() {
 
     let prf_account = get_account(provider, prf_data.private.clone(), prf_data.address);
 
-    let (custom_declare, _) = declare_contract(provider, prf_data.private, prf_data.address).await.unwrap();
+    let (custom_declare, _) = declare_contract(provider, prf_data.private, prf_data.address)
+        .await
+        .unwrap();
     dbg!(&custom_declare);
-    dbg!(TransactionWaiter::new(custom_declare.transaction_hash, prf_account.provider()).await.unwrap());
+    dbg!(
+        TransactionWaiter::new(custom_declare.transaction_hash, prf_account.provider())
+            .await
+            .unwrap()
+    );
 
     let factory = ContractFactory::new(custom_declare.class_hash, &prf_account);
 
     // https://github.com/xJonathanLEI/starkli/blob/master/src/subcommands/account/deploy.rs
     // todo!("Implement starknet::providers::Provider for KatanaClientProvider");
     let deployment = factory.deploy(vec![prf_data.public], FieldElement::ZERO, true);
-    let deployed_address = deployment.deployed_address();
-    let result = deployment.simulate(false, false).await.unwrap();
+    let _deployed_address = deployment.deployed_address();
+    let _result = deployment.simulate(false, false).await.unwrap();
     // dbg!(TransactionWaiter::new(result.transaction_hash, prf_account.provider()).await.unwrap());
 
     // dbg!(deployed_address);

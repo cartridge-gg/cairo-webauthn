@@ -37,6 +37,7 @@ pub struct RegisterOutput {
     pub declare_output: Vec<DeclareOutput>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum MigrationError<S> {
     #[error("Compiling contract.")]
@@ -53,17 +54,6 @@ pub enum MigrationError<S> {
     Provider(#[from] ProviderError),
     #[error(transparent)]
     WaitingError(#[from] TransactionWaitingError),
-}
-
-/// Represents the type of migration that should be performed.
-#[derive(Debug)]
-pub enum MigrationType {
-    /// When the remote class/contract already exists and has
-    /// to be updated to match the local state.
-    Update,
-    /// When the class/contract does not exist on the remote state or
-    /// when a new World is to be deployed.
-    New,
 }
 
 pub trait StateDiff {

@@ -79,6 +79,7 @@ pub struct TransactionWaiter<'a, P: Provider> {
     started_at: Option<Instant>,
 }
 
+#[allow(dead_code)]
 impl<'a, P> TransactionWaiter<'a, P>
 where
     P: Provider + Send,
@@ -249,6 +250,7 @@ fn finality_status_from_receipt(receipt: &TransactionReceipt) -> TransactionFina
 }
 
 #[inline]
+#[allow(dead_code)]
 pub fn block_number_from_receipt(receipt: &TransactionReceipt) -> u64 {
     match receipt {
         TransactionReceipt::Invoke(tx) => tx.block_number,
