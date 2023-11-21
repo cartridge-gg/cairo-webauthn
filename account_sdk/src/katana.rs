@@ -1,7 +1,9 @@
 use serde::Deserialize;
 use starknet::{
     core::types::FieldElement,
+    macros::felt,
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
+    signers::SigningKey,
 };
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
@@ -61,7 +63,7 @@ impl KatanaRunner {
     pub fn new(config: KatanaRunnerConfig) -> Self {
         let mut child = Command::new(config.katana_path)
             .args(["-p", &config.port.to_string()])
-            .args(["--disable-fee", "--no-mining", "--json-log"])
+            .args(["--json-log"])
             .stdout(Stdio::piped())
             .spawn()
             .expect("failed to start subprocess");
@@ -140,5 +142,59 @@ impl Drop for KatanaRunner {
         if let Err(e) = self.child.wait() {
             eprintln!("Failed to wait for katana subprocess: {}", e);
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct StarknetDevnet {
+    pub port: u16,
+}
+
+impl StarknetDevnet {
+    // cargo run -- --port 1234 --seed 0
+    pub fn prefounded_account(&self) -> PredeployedAccount {
+        PredeployedAccount {
+            account_address: felt!(
+                "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691"
+            ),
+            private_key: felt!("0x71d7bb07b9a64f6f78ac4c816aff4da9"),
+            public_key: felt!("0x39d9e6ce352ad4530a0ef5d5a18fd3303c3606a7fa6ac5b620020ad681cc33b"),
+        }
+    }
+
+    pub fn fee_token(&self) -> PredeployedContract {
+        PredeployedContract {
+            address: felt!("0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7"),
+            class_hash: felt!("0x6A22BF63C7BC07EFFA39A25DFBD21523D211DB0100A0AFD054D172B81840EAF"),
+        }
+    }
+}
+
+pub struct PredeployedAccount {
+    pub account_address: FieldElement,
+    pub private_key: FieldElement,
+    pub public_key: FieldElement,
+}
+
+impl PredeployedAccount {
+    pub fn signing_key(&self) -> SigningKey {
+        SigningKey::from_secret_scalar(self.private_key)
+    }
+}
+
+pub struct PredeployedContract {
+    pub address: FieldElement,
+    pub class_hash: FieldElement,
+}
+
+impl RpcClientProvider<HttpTransport> for StarknetDevnet {
+    fn get_client(&self) -> JsonRpcClient<HttpTransport> {
+        JsonRpcClient::new(HttpTransport::new(
+            Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
+        ))
+    }
+
+    fn chain_id(&self) -> FieldElement {
+        FieldElement::from_byte_slice_be(&"TESTNET".as_bytes()[..]).unwrap()
     }
 }

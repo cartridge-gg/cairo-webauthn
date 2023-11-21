@@ -11,7 +11,7 @@ use crate::{
     deployer::{Declarable, TxConfig},
     katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
     rpc_provider::RpcClientProvider,
-    tests::{find_free_port, get_key_and_address, get_key_and_address_devnet},
+    tests::{find_free_port, get_key_and_address_devnet},
 };
 
 use starknet::accounts::Call;

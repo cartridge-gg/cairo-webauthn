@@ -8,7 +8,7 @@ use starknet::{
 use crate::{
     deploy_contract::{declare_contract, get_account},
     katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
-    tests::{find_free_port, get_key_and_address},
+    tests::{find_free_port, prefounded_key_and_address},
     transaction_waiter::TransactionWaiter,
 };
 
@@ -29,7 +29,7 @@ struct KatanaAccountData {
 
 impl KatanaAccountData {
     pub fn new() -> Self {
-        let (private, address) = get_key_and_address();
+        let (private, address) = prefounded_key_and_address();
         let signer = LocalWallet::from_signing_key(private.clone());
         let public = private.verifying_key().scalar();
         KatanaAccountData {

@@ -15,7 +15,7 @@ pub fn find_free_port() -> u16 {
         .port()
 }
 
-pub fn get_key_and_address() -> (SigningKey, FieldElement) {
+pub fn prefounded_key_and_address() -> (SigningKey, FieldElement) {
     let signing_key = SigningKey::from_secret_scalar(
         FieldElement::from_hex_be("0x1800000000300000180000000000030000000000003006001800006600")
             .unwrap(),
