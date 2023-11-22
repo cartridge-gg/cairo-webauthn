@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use starknet::providers::JsonRpcClient;
 use starknet::{
     accounts::SingleOwnerAccount,
     core::types::FieldElement,
@@ -17,8 +18,6 @@ use std::{
 };
 use std::{fs::File, process::ChildStdout, sync::mpsc::Sender};
 use url::Url;
-
-use crate::rpc_provider::RpcClientProvider;
 
 use lazy_static::lazy_static;
 
@@ -47,6 +46,10 @@ lazy_static! {
         )
         .unwrap()
     );
+}
+
+pub trait RpcClientProvider<T> {
+    fn get_client(&self) -> JsonRpcClient<T>;
 }
 
 pub trait PredeployedProvider

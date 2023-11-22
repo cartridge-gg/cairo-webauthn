@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     deployer::{Declarable, Deployable},
-    rpc_provider::RpcClientProvider,
+    providers::RpcClientProvider,
 };
 use starknet::{
     accounts::{Account, Call, ExecutionEncoding, SingleOwnerAccount},

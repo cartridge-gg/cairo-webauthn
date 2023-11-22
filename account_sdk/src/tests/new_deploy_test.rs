@@ -12,7 +12,7 @@ use crate::{
         DevnetProvider, KatanaClientProvider, KatanaProvider, KatanaRunner, KatanaRunnerConfig,
         PredeployedProvider, StarknetDevnet,
     },
-    rpc_provider::RpcClientProvider,
+    providers::RpcClientProvider,
     tests::{find_free_port, prefounded_key_and_address},
 };
 

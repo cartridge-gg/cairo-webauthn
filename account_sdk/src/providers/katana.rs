@@ -4,7 +4,7 @@ use starknet::{
 };
 use url::Url;
 
-use crate::rpc_provider::RpcClientProvider;
+use super::RpcClientProvider;
 
 use super::{KatanaRunner, PredeployedAccount, PredeployedContract, PredeployedProvider};
 
