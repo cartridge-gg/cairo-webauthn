@@ -71,7 +71,7 @@ pub struct PredeployedContract {
     pub class_hash: FieldElement,
 }
 
-pub async fn prefounded<T>(
+pub async fn prefunded<T>(
     provider: &T,
 ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>
 where

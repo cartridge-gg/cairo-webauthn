@@ -8,7 +8,7 @@ use starknet::{
 use crate::{
     deploy_contract::declare_and_deploy_contract,
     providers::{
-        katana::KatanaProvider, katana_runner::KatanaRunner, prefounded, PredeployedClientProvider,
+        katana::KatanaProvider, katana_runner::KatanaRunner, prefunded, PredeployedClientProvider,
         PrefoundedClientProvider, RpcClientProvider,
     },
 };
@@ -36,7 +36,7 @@ async fn test_new_deploy() {
 async fn test_balance_of() {
     let runner = KatanaRunner::load();
     let network = KatanaProvider::from(&runner);
-    let account = prefounded(&network).await;
+    let account = prefunded(&network).await;
 
     let call_result: Vec<starknet::core::types::FieldElement> = network
         .get_client()
@@ -58,7 +58,7 @@ async fn test_balance_of() {
 async fn test_balance_of_account() {
     let runner = KatanaRunner::load();
     let network = KatanaProvider::from(&runner);
-    let account = prefounded(&network).await;
+    let account = prefunded(&network).await;
 
     let call_result = account
         .execute(vec![Call {
@@ -78,7 +78,7 @@ async fn test_transfer() {
     let runner = KatanaRunner::load();
     let network = KatanaProvider::from(&runner);
     let new_account = felt!("0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1");
-    let account = prefounded(&network).await;
+    let account = prefunded(&network).await;
 
     let call_result = account
         .execute(vec![Call {

@@ -2,9 +2,10 @@ use std::sync::Arc;
 
 use starknet::{
     accounts::Account,
+    contract::ContractFactory,
     core::types::{
         contract::{CompiledClass, SierraClass},
-        DeclareTransactionResult, FieldElement,
+        DeclareTransactionResult,
     },
     macros::{felt, selector},
 };
@@ -12,33 +13,23 @@ use starknet::{
 use crate::{
     deploy_contract::{CASM_STR, SIERRA_STR},
     providers::{
-        katana::KatanaProvider, katana_runner::KatanaRunner, prefounded, PredeployedClientProvider,
-        PrefoundedClientProvider,
+        katana::KatanaProvider, katana_runner::KatanaRunner, prefunded, PredeployedClientProvider,
     },
 };
 
 use starknet::accounts::Call;
 
-#[cfg(test)]
-const DEFAULT_UDC_ADDRESS: FieldElement = FieldElement::from_mont([
-    15144800532519055890,
-    15685625669053253235,
-    9333317513348225193,
-    121672436446604875,
-]);
-
 #[tokio::test]
-async fn test_contract_call_problem_2() {
+async fn test_flow() {
     let runner = KatanaRunner::load();
     let network = KatanaProvider::from(&runner);
-    let prefunded = prefounded(&network).await;
+    let factory = prefunded(&network).await; // Same as account
+    let prefunded = prefunded(&network).await;
 
     // Contract
     let contract_artifact: SierraClass = serde_json::from_str(SIERRA_STR)
         .map_err(|e| e.to_string())
         .unwrap();
-
-    // Class hash of the compiled CASM class from the `starknet-sierra-compile` command
     let compiled_class: CompiledClass = serde_json::from_str(CASM_STR)
         .map_err(|e| e.to_string())
         .unwrap();
@@ -47,54 +38,33 @@ async fn test_contract_call_problem_2() {
         .map_err(|e| e.to_string())
         .unwrap();
 
-    // We need to flatten the ABI into a string first
     let flattened_class = contract_artifact
         .flatten()
         .map_err(|e| e.to_string())
         .unwrap();
 
+    // Declare
     let declaration = prefunded.declare(Arc::new(flattened_class), casm_class_hash);
-
     let DeclareTransactionResult { class_hash, .. } = declaration.send().await.unwrap();
 
-    let target_deployment_address = class_hash;
+    // Deploy
+    let contract_factory =
+        ContractFactory::new_with_udc(class_hash, factory, network.predeployed_udc().address);
 
+    let deployment = contract_factory.deploy(
+        // vec![network.prefounded_account().public_key],
+        vec![felt!("2137")],
+        felt!("2137"),
+        false,
+    );
+    let deployed_address = deployment.deployed_address();
+    deployment.send().await.expect("Unable to deploy contract");
+
+    // Use
     prefunded
         .execute(vec![Call {
-            to: network.predeployed_udc().address,
-            selector: selector!("transfer"),
-            calldata: vec![target_deployment_address, felt!("0x10"), felt!("0x0")],
-        }])
-        .send()
-        .await
-        .unwrap();
-
-    let constructor_calldata = vec![network.prefounded_account().public_key];
-    let calldata = [
-        vec![
-            class_hash,
-            FieldElement::ZERO, // salt
-            FieldElement::ZERO, // unique
-            FieldElement::from(constructor_calldata.len()),
-        ],
-        constructor_calldata,
-    ]
-    .concat();
-
-    prefunded
-        .execute(vec![Call {
-            calldata,
-            selector: selector!("deployContract"),
-            to: DEFAULT_UDC_ADDRESS,
-        }])
-        .send()
-        .await
-        .unwrap();
-
-    prefunded
-        .execute(vec![Call {
-            to: target_deployment_address,
-            selector: selector!("getPublicKey"),
+            to: deployed_address,
+            selector: selector!("getZero"),
             calldata: vec![],
         }])
         .send()
