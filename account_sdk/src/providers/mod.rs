@@ -2,7 +2,6 @@ use serde::Deserialize;
 use starknet::{
     accounts::SingleOwnerAccount,
     core::types::FieldElement,
-    macros::felt,
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
     signers::{LocalWallet, SigningKey},
 };
@@ -16,7 +15,6 @@ use std::{
     io::{BufRead, BufReader, Write},
 };
 use std::{fs::File, process::ChildStdout, sync::mpsc::Sender};
-use url::Url;
 
 use crate::rpc_provider::RpcClientProvider;
 
@@ -177,75 +175,7 @@ impl Drop for KatanaRunner {
     }
 }
 
-impl KatanaClientProvider {
-    pub fn prefounded_account(&self) -> PredeployedAccount {
-        PredeployedAccount {
-            account_address: felt!(
-                "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973"
-            ),
-            private_key: felt!("0x1800000000300000180000000000030000000000003006001800006600"),
-            public_key: felt!("0x2b191c2f3ecf685a91af7cf72a43e7b90e2e41220175de5c4f7498981b10053"),
-        }
-    }
-
-    pub fn fee_token(&self) -> PredeployedContract {
-        PredeployedContract {
-            address: felt!("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"),
-            class_hash: felt!("0x02a8846878b6ad1f54f6ba46f5f40e11cee755c677f130b2c4b60566c9003f1f"),
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct StarknetDevnet {
     pub port: u16,
-}
-
-impl StarknetDevnet {
-    // cargo run -- --port 1234 --seed 0
-    pub fn prefounded_account(&self) -> PredeployedAccount {
-        PredeployedAccount {
-            account_address: felt!(
-                "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691"
-            ),
-            private_key: felt!("0x71d7bb07b9a64f6f78ac4c816aff4da9"),
-            public_key: felt!("0x39d9e6ce352ad4530a0ef5d5a18fd3303c3606a7fa6ac5b620020ad681cc33b"),
-        }
-    }
-
-    pub fn fee_token(&self) -> PredeployedContract {
-        PredeployedContract {
-            address: felt!("0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7"),
-            class_hash: felt!("0x6A22BF63C7BC07EFFA39A25DFBD21523D211DB0100A0AFD054D172B81840EAF"),
-        }
-    }
-}
-
-pub struct PredeployedAccount {
-    pub account_address: FieldElement,
-    pub private_key: FieldElement,
-    pub public_key: FieldElement,
-}
-
-impl PredeployedAccount {
-    pub fn signing_key(&self) -> SigningKey {
-        SigningKey::from_secret_scalar(self.private_key)
-    }
-}
-
-pub struct PredeployedContract {
-    pub address: FieldElement,
-    pub class_hash: FieldElement,
-}
-
-impl RpcClientProvider<HttpTransport> for StarknetDevnet {
-    fn get_client(&self) -> JsonRpcClient<HttpTransport> {
-        JsonRpcClient::new(HttpTransport::new(
-            Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
-        ))
-    }
-
-    fn chain_id(&self) -> FieldElement {
-        FieldElement::from_byte_slice_be(&"TESTNET".as_bytes()[..]).unwrap()
-    }
 }
