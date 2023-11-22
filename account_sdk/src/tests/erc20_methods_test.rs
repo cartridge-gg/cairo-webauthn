@@ -1,43 +1,14 @@
 use starknet::{
     accounts::{Account, Call},
-    core::types::{BlockId, BlockTag, DeclareTransactionResult, FieldElement, FunctionCall},
+    core::types::{BlockId, BlockTag, FunctionCall},
     macros::{felt, selector},
     providers::Provider,
 };
 
-use crate::{
-    deploy_contract::{CustomAccountDeclaration, CustomAccountDeployment},
-    providers::{
-        katana::KatanaProvider, katana_runner::KatanaRunner, PredeployedClientProvider,
-        PrefoundedClientProvider, RpcClientProvider,
-    },
+use crate::providers::{
+    katana::KatanaProvider, katana_runner::KatanaRunner, PredeployedClientProvider,
+    PrefoundedClientProvider, RpcClientProvider,
 };
-
-#[tokio::test]
-async fn test_new_deploy() {
-    let runner = KatanaRunner::load();
-    let provider = KatanaProvider::from(&runner);
-    let account = provider.prefounded_single_owner().await;
-    let DeclareTransactionResult { class_hash, .. } =
-        CustomAccountDeclaration::cartridge_account(&provider)
-            .declare(&account)
-            .await
-            .unwrap()
-            .wait_for_completion()
-            .await;
-
-    CustomAccountDeployment::new(provider)
-        .deploy(
-            vec![felt!("12345")],
-            FieldElement::ZERO,
-            account,
-            class_hash,
-        )
-        .await
-        .unwrap()
-        .wait_for_completion()
-        .await;
-}
 
 // Starknet devnet
 // cargo run -- --port 1234 --seed 0

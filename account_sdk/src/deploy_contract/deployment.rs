@@ -36,7 +36,7 @@ impl<Q> CustomAccountDeployment<Q> {
         &self,
         constructor_calldata: Vec<FieldElement>,
         salt: FieldElement,
-        account: SingleOwnerAccount<P, S>,
+        account: &SingleOwnerAccount<P, S>,
         class_hash: FieldElement,
     ) -> Result<PendingDeployment<T>, String>
     where
