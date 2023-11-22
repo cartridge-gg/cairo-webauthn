@@ -7,7 +7,7 @@ use starknet::{
 
 use crate::{
     deploy_contract::{declare_contract, get_account},
-    providers::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
+    providers::{KatanaProvider, KatanaRunner, KatanaRunnerConfig},
     tests::{find_free_port, prefounded_key_and_address},
     transaction_waiter::TransactionWaiter,
 };
@@ -47,7 +47,7 @@ async fn test_simple() {
         KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()),
     );
 
-    let provider = KatanaClientProvider::from(&runner);
+    let provider = KatanaProvider::from(&runner);
 
     let prf_data = KatanaAccountData::new();
 

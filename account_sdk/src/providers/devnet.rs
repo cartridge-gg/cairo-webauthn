@@ -1,4 +1,8 @@
-use starknet::{macros::felt, providers::{jsonrpc::HttpTransport, JsonRpcClient}, core::types::FieldElement};
+use starknet::{
+    core::types::FieldElement,
+    macros::felt,
+    providers::{jsonrpc::HttpTransport, JsonRpcClient},
+};
 use url::Url;
 
 use crate::rpc_provider::RpcClientProvider;
@@ -6,12 +10,11 @@ use crate::rpc_provider::RpcClientProvider;
 use super::{PredeployedAccount, PredeployedContract, PredeployedProvider};
 
 #[derive(Debug, Clone)]
-pub struct StarknetDevnet {
+pub struct DevnetProvider {
     pub port: u16,
 }
 
-
-impl PredeployedProvider for StarknetDevnet {
+impl PredeployedProvider for DevnetProvider {
     // cargo run -- --port 1234 --seed 0
     fn prefounded_account(&self) -> PredeployedAccount {
         PredeployedAccount {
@@ -38,8 +41,7 @@ impl PredeployedProvider for StarknetDevnet {
     }
 }
 
-
-impl RpcClientProvider<HttpTransport> for StarknetDevnet {
+impl RpcClientProvider<HttpTransport> for DevnetProvider {
     fn get_client(&self) -> JsonRpcClient<HttpTransport> {
         JsonRpcClient::new(HttpTransport::new(
             Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),

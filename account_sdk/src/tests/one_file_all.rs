@@ -15,7 +15,7 @@ use crate::{
     account_factory::AnyAccountFactory,
     deploy_contract::{get_account, CustomContract, CASM_STR, SIERRA_STR},
     deployer::{Declarable, TxConfig},
-    providers::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
+    providers::{KatanaProvider, KatanaRunner, KatanaRunnerConfig, PREFUNDED},
     rpc_provider::RpcClientProvider,
     tests::find_free_port,
 };
@@ -36,7 +36,7 @@ async fn test_contract_call_problem_2() {
         KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()),
     );
     let (signing_key, address) = PREFUNDED.clone();
-    let provider = KatanaClientProvider::from(&runner).get_client();
+    let provider = RpcClientProvider::from(runner).get_client();
 
     let signer = LocalWallet::from(signing_key);
     let chain_id = provider.chain_id().await.unwrap();

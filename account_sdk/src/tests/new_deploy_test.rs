@@ -9,7 +9,8 @@ use starknet::{
 use crate::{
     deploy_contract::declare_and_deploy_contract,
     providers::{
-        KatanaClientProvider, KatanaRunner, KatanaRunnerConfig, PredeployedProvider, StarknetDevnet,
+        DevnetProvider, KatanaClientProvider, KatanaProvider, KatanaRunner, KatanaRunnerConfig,
+        PredeployedProvider, StarknetDevnet,
     },
     rpc_provider::RpcClientProvider,
     tests::{find_free_port, prefounded_key_and_address},
@@ -22,7 +23,7 @@ async fn test_new_deploy() {
     );
     let (signing_key, address) = prefounded_key_and_address();
 
-    let provider = KatanaClientProvider::from(&runner);
+    let provider = KatanaProvider::from(&runner);
     let public_key = signing_key.verifying_key().scalar();
     declare_and_deploy_contract(provider, signing_key, address, vec![public_key])
         .await
@@ -34,7 +35,7 @@ async fn test_new_deploy() {
 
 #[tokio::test]
 async fn test_balance_of() {
-    let devnet = StarknetDevnet { port: 1234 };
+    let devnet = DevnetProvider { port: 1234 };
     let predpld_acc = devnet.prefounded_account();
     let call_result = devnet
         .get_client()
@@ -54,7 +55,7 @@ async fn test_balance_of() {
 
 #[tokio::test]
 async fn test_balance_of_account() {
-    let devnet = StarknetDevnet { port: 1234 };
+    let devnet = DevnetProvider { port: 1234 };
     let predpld_acc = devnet.prefounded_account();
     let account = SingleOwnerAccount::new(
         devnet.get_client(),
