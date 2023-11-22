@@ -18,7 +18,7 @@ use starknet::accounts::Call;
 
 #[allow(dead_code)]
 /// The default UDC address: 0x041a78e741e5af2fec34b695679bc6891742439f7afb8484ecd7766661ad02bf.
-const DEFAULT_UDC_ADDRESS: FieldElement = FieldElement::from_mont([
+pub const DEFAULT_UDC_ADDRESS: FieldElement = FieldElement::from_mont([
     15144800532519055890,
     15685625669053253235,
     9333317513348225193,

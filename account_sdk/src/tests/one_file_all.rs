@@ -13,6 +13,9 @@ use starknet::{
 
 use crate::{
     deploy_contract::{account_for_address, CASM_STR, SIERRA_STR},
+    katana::{
+        KatanaClientProvider, KatanaRunner, KatanaRunnerConfig, FEE_TOKEN_ADDRESS, PREFUNDED,
+    },
     providers::RpcClientProvider,
     providers::{KatanaProvider, KatanaRunner, KatanaRunnerConfig},
     tests::find_free_port,
