@@ -25,7 +25,7 @@ async fn test_new_deploy() {
 
     let provider = KatanaProvider::from(&runner);
     let public_key = signing_key.verifying_key().scalar();
-    declare_and_deploy_contract(provider, signing_key, address, vec![public_key])
+    declare_and_deploy_contract(&provider, signing_key, address, vec![public_key])
         .await
         .unwrap();
 }

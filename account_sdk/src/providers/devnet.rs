@@ -4,7 +4,7 @@ use starknet::{
 };
 use url::Url;
 
-use super::RpcClientProvider;
+use super::{RpcClientProvider, PrefoundedClientProvider};
 
 use super::{PredeployedAccount, PredeployedContract, PredeployedClientProvider};
 
@@ -13,8 +13,7 @@ pub struct DevnetProvider {
     pub port: u16,
 }
 
-impl PredeployedClientProvider for DevnetProvider {
-    // cargo run -- --port 1234 --seed 0
+impl PrefoundedClientProvider for DevnetProvider {
     fn prefounded_account(&self) -> PredeployedAccount {
         PredeployedAccount {
             account_address: felt!(
@@ -24,7 +23,10 @@ impl PredeployedClientProvider for DevnetProvider {
             public_key: felt!("0x39d9e6ce352ad4530a0ef5d5a18fd3303c3606a7fa6ac5b620020ad681cc33b"),
         }
     }
+}
 
+impl PredeployedClientProvider for DevnetProvider {
+    // cargo run -- --port 1234 --seed 0
     fn predeployed_fee_token(&self) -> PredeployedContract {
         PredeployedContract {
             address: felt!("0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7"),

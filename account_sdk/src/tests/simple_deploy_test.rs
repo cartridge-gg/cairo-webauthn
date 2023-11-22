@@ -6,7 +6,7 @@ use starknet::{
 };
 
 use crate::{
-    deploy_contract::{declare_contract, get_account},
+    deploy_contract::{declare_contract, account_for_address},
     providers::{KatanaProvider, KatanaRunner, KatanaRunnerConfig},
     tests::{find_free_port, prefounded_key_and_address},
     transaction_waiter::TransactionWaiter,
@@ -51,9 +51,9 @@ async fn test_simple() {
 
     let prf_data = KatanaAccountData::new();
 
-    let prf_account = get_account(provider, prf_data.private.clone(), prf_data.address).await;
+    let prf_account = account_for_address(&provider, prf_data.private.clone(), prf_data.address).await;
 
-    let (custom_declare, _) = declare_contract(provider, prf_data.private, prf_data.address)
+    let (custom_declare, _) = declare_contract(&provider, prf_data.private, prf_data.address)
         .await
         .unwrap();
     dbg!(&custom_declare);

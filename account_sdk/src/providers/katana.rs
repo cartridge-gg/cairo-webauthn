@@ -4,7 +4,7 @@ use starknet::{
 };
 use url::Url;
 
-use super::RpcClientProvider;
+use super::{RpcClientProvider, PrefoundedClientProvider};
 
 use super::{KatanaRunner, PredeployedAccount, PredeployedContract, PredeployedClientProvider};
 
@@ -13,8 +13,7 @@ pub struct KatanaProvider {
     port: u16,
 }
 
-impl PredeployedClientProvider for KatanaProvider {
-    // cargo run -- --port 1234 --seed 0
+impl PrefoundedClientProvider for KatanaProvider {
     fn prefounded_account(&self) -> PredeployedAccount {
         PredeployedAccount {
             account_address: felt!(
@@ -24,7 +23,10 @@ impl PredeployedClientProvider for KatanaProvider {
             public_key: felt!("0x2b191c2f3ecf685a91af7cf72a43e7b90e2e41220175de5c4f7498981b10053"),
         }
     }
+}
 
+impl PredeployedClientProvider for KatanaProvider {
+    // cargo run -- --port 1234 --seed 0
     fn predeployed_fee_token(&self) -> PredeployedContract {
         todo!("Look up the fields in the dojo sourcecode")
     }
