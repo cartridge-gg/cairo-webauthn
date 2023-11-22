@@ -1,12 +1,12 @@
 use starknet::{
-    core::types::FieldElement,
-    providers::{jsonrpc::HttpTransport, JsonRpcClient}, macros::felt,
+    macros::felt,
+    providers::{jsonrpc::HttpTransport, JsonRpcClient},
 };
 use url::Url;
 
 use crate::rpc_provider::RpcClientProvider;
 
-use super::{KatanaRunner, PredeployedContract, PredeployedAccount, PredeployedProvider};
+use super::{KatanaRunner, PredeployedAccount, PredeployedContract, PredeployedProvider};
 
 #[derive(Debug, Clone, Copy)]
 pub struct KatanaProvider {
@@ -51,10 +51,5 @@ impl RpcClientProvider<HttpTransport> for KatanaProvider {
         JsonRpcClient::new(HttpTransport::new(
             Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
         ))
-    }
-
-    //TODO: this is probably wrong but can be read from self.get_client().chain_id().await.unwrap()
-    fn chain_id(&self) -> FieldElement {
-        FieldElement::from_byte_slice_be(&"KATANA".as_bytes()[..]).unwrap()
     }
 }

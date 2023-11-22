@@ -12,7 +12,6 @@ use starknet::{
 };
 
 use crate::{
-    account_factory::AnyAccountFactory,
     deploy_contract::{get_account, CustomContract, CASM_STR, SIERRA_STR},
     deployer::{Declarable, TxConfig},
     providers::{KatanaProvider, KatanaRunner, KatanaRunnerConfig, PREFUNDED},

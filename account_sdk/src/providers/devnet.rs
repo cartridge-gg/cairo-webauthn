@@ -1,5 +1,4 @@
 use starknet::{
-    core::types::FieldElement,
     macros::felt,
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
 };
@@ -46,10 +45,5 @@ impl RpcClientProvider<HttpTransport> for DevnetProvider {
         JsonRpcClient::new(HttpTransport::new(
             Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
         ))
-    }
-
-    //TODO: this is probably wrong but can be read from self.get_client().chain_id().await.unwrap()
-    fn chain_id(&self) -> FieldElement {
-        FieldElement::from_byte_slice_be(&"TESTNET".as_bytes()[..]).unwrap()
     }
 }

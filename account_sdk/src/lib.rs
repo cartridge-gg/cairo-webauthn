@@ -1,4 +1,3 @@
-mod account_factory;
 pub mod deploy_contract;
 pub mod deployer;
 mod rpc_provider;
