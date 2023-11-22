@@ -13,7 +13,8 @@ use crate::{
         DevnetProvider, KatanaClientProvider, KatanaProvider, KatanaRunner, KatanaRunnerConfig,
         PredeployedProvider, StarknetDevnet,
     },
-    tests::{find_free_port, prefounded_key_and_address},
+    providers::{PrefoundedClientProvider, RpcClientProvider},
+    tests::find_free_port,
 };
 
 #[tokio::test]
@@ -21,13 +22,16 @@ async fn test_new_deploy() {
     let runner = KatanaRunner::new(
         KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()),
     );
-    let (signing_key, address) = prefounded_key_and_address();
-
     let provider = KatanaProvider::from(&runner);
-    let public_key = signing_key.verifying_key().scalar();
-    declare_and_deploy_contract(&provider, signing_key, address, vec![public_key])
-        .await
-        .unwrap();
+    let prfd_account = provider.prefounded_account();
+    declare_and_deploy_contract(
+        &provider,
+        prfd_account.signing_key(),
+        prfd_account.account_address,
+        vec![prfd_account.public_key],
+    )
+    .await
+    .unwrap();
 }
 
 // Starknet devnet
