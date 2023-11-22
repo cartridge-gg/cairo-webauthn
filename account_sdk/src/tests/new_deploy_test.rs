@@ -8,7 +8,9 @@ use starknet::{
 
 use crate::{
     deploy_contract::declare_and_deploy_contract,
-    katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig, StarknetDevnet},
+    katana::{
+        KatanaClientProvider, KatanaRunner, KatanaRunnerConfig, StarknetDevnet, FEE_TOKEN_ADDRESS,
+    },
     rpc_provider::RpcClientProvider,
     tests::{find_free_port, prefounded_key_and_address},
 };
@@ -76,8 +78,10 @@ async fn test_balance_of_account() {
 
 #[tokio::test]
 async fn test_transfer() {
-    // let devnet = StarknetDevnet { port: 5050 };
-    let devnet = KatanaClientProvider::from(5050);
+    let runner = KatanaRunner::new(
+        KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()),
+    );
+    let devnet = KatanaClientProvider::from(&runner);
     let predpld_acc = devnet.prefounded_account();
     let new_account = felt!("0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1");
     let mut account = SingleOwnerAccount::new(
@@ -91,7 +95,7 @@ async fn test_transfer() {
 
     let call_result = account
         .execute(vec![Call {
-            to: devnet.fee_token().address,
+            to: *FEE_TOKEN_ADDRESS,
             selector: selector!("balanceOf"),
             calldata: vec![new_account],
         }])
@@ -102,7 +106,7 @@ async fn test_transfer() {
 
     let call_result = account
         .execute(vec![Call {
-            to: devnet.fee_token().address,
+            to: *FEE_TOKEN_ADDRESS,
             selector: selector!("transfer"),
             calldata: vec![new_account, felt!("0x10"), felt!("0x0")],
         }])
