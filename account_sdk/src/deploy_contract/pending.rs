@@ -5,6 +5,8 @@ use starknet::{
 
 use crate::transaction_waiter::TransactionWaiter;
 
+use super::deployment::DeployResult;
+
 pub struct PendingTransaction<P, T>
 where
     P: Provider,
@@ -44,6 +46,19 @@ where
     JsonRpcClient<T>: Provider,
 {
     fn from((result, provider): (DeclareTransactionResult, JsonRpcClient<T>)) -> Self {
+        let transaction_hash = result.transaction_hash;
+        Self::new(result, transaction_hash, provider)
+    }
+}
+
+pub type PendingDeployment<T> = PendingTransaction<JsonRpcClient<T>, DeployResult>;
+
+impl<T> From<(DeployResult, JsonRpcClient<T>)> for PendingDeployment<T>
+where
+    T: Send + Sync,
+    JsonRpcClient<T>: Provider,
+{
+    fn from((result, provider): (DeployResult, JsonRpcClient<T>)) -> Self {
         let transaction_hash = result.transaction_hash;
         Self::new(result, transaction_hash, provider)
     }

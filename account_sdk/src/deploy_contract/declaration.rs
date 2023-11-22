@@ -56,9 +56,9 @@ impl<'a, Q> CustomAccountDeclaration<'a, Q> {
 }
 
 impl<'a, Q> CustomAccountDeclaration<'a, Q> {
-    pub async fn declare_contract<T, P, S>(
+    pub async fn declare<T, P, S>(
         &self,
-        account: SingleOwnerAccount<P, S>,
+        account: &SingleOwnerAccount<P, S>,
     ) -> Result<PendingDeclaration<T>, String>
     where
         T: Send + Sync,

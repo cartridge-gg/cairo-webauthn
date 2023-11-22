@@ -6,7 +6,7 @@ use starknet::{
 };
 
 use crate::{
-    deploy_contract::{deploy_contract, CustomAccountDeclaration},
+    deploy_contract::{CustomAccountDeclaration, CustomAccountDeployment},
     providers::{
         katana::KatanaProvider, katana_runner::KatanaRunner, PredeployedClientProvider,
         PrefoundedClientProvider, RpcClientProvider,
@@ -17,25 +17,26 @@ use crate::{
 async fn test_new_deploy() {
     let runner = KatanaRunner::load();
     let provider = KatanaProvider::from(&runner);
-    let prefounded = provider.prefounded_single_owner().await;
+    let account = provider.prefounded_single_owner().await;
     let DeclareTransactionResult { class_hash, .. } =
         CustomAccountDeclaration::cartridge_account(&provider)
-            .declare_contract(prefounded)
+            .declare(&account)
             .await
             .unwrap()
             .wait_for_completion()
             .await;
 
-    let factory = provider.prefounded_single_owner().await;
-    deploy_contract(
-        &provider,
-        vec![felt!("1234")],
-        FieldElement::ZERO,
-        factory,
-        class_hash,
-    )
-    .await
-    .unwrap();
+    CustomAccountDeployment::new(provider)
+        .deploy(
+            vec![felt!("12345")],
+            FieldElement::ZERO,
+            account,
+            class_hash,
+        )
+        .await
+        .unwrap()
+        .wait_for_completion()
+        .await;
 }
 
 // Starknet devnet
