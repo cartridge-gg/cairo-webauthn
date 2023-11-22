@@ -15,7 +15,7 @@ use crate::{
     deploy_contract::{account_for_address, CASM_STR, SIERRA_STR},
     providers::RpcClientProvider,
     providers::{KatanaProvider, KatanaRunner, KatanaRunnerConfig},
-    tests::{find_free_port},
+    tests::find_free_port,
 };
 
 use starknet::accounts::Call;

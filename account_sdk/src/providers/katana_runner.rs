@@ -99,8 +99,35 @@ impl KatanaRunner {
         }
     }
 
-    pub fn port(&self) -> u16 {
-        self.port
+#[derive(Debug, Clone, Copy)]
+pub struct KatanaClientProvider {
+    port: u16,
+}
+
+// todo!("Implement starknet::providers::Provider");
+// impl Provider for KatanaClientProvider {}
+
+impl From<u16> for KatanaClientProvider {
+    fn from(value: u16) -> Self {
+        KatanaClientProvider { port: value }
+    }
+}
+
+impl From<&KatanaRunner> for KatanaClientProvider {
+    fn from(value: &KatanaRunner) -> Self {
+        KatanaClientProvider { port: value.port }
+    }
+}
+
+impl RpcClientProvider<HttpTransport> for KatanaClientProvider {
+    fn get_client(&self) -> JsonRpcClient<HttpTransport> {
+        JsonRpcClient::new(HttpTransport::new(
+            Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
+        ))
+    }
+
+    fn chain_id(&self) -> FieldElement {
+        FieldElement::from_byte_slice_be(&"KATANA".as_bytes()[..]).unwrap()
     }
 }
 
