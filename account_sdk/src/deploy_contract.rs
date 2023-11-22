@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use crate::{
-    deployer::{Declarable, Deployable},
-    providers::{RpcClientProvider, PredeployedClientProvider}, transaction_waiter::TransactionWaiter,
+    providers::{PredeployedClientProvider, RpcClientProvider},
+    transaction_waiter::TransactionWaiter,
 };
 use starknet::{
     accounts::{Account, Call, ExecutionEncoding, SingleOwnerAccount},
@@ -22,20 +22,6 @@ pub const CASM_STR: &str = include_str!(
     "../../cartridge_account/target/dev/cartridge_account_Account.compiled_contract_class.json"
 );
 
-pub struct CustomContract;
-
-impl Declarable for CustomContract {
-    fn artifact_str(&self) -> &str {
-        SIERRA_STR
-    }
-}
-
-impl Deployable for CustomContract {
-    fn salt(&self) -> FieldElement {
-        FieldElement::default()
-    }
-}
-
 pub async fn declare_and_deploy_contract<T>(
     rpc_provider: &(impl RpcClientProvider<T> + PredeployedClientProvider),
     signing_key: SigningKey,
@@ -49,7 +35,13 @@ where
     let (result, account) = declare_contract(rpc_provider, signing_key, address)
         .await
         .unwrap();
-    deploy_contract(rpc_provider, constructor_calldata, account, result.class_hash).await
+    deploy_contract(
+        rpc_provider,
+        constructor_calldata,
+        account,
+        result.class_hash,
+    )
+    .await
 }
 
 pub async fn declare_contract<T>(
@@ -81,9 +73,18 @@ where
     // We need to flatten the ABI into a string first
     let flattened_class = contract_artifact.flatten().map_err(|e| e.to_string())?;
 
-    let declaration_result = account.declare(Arc::new(flattened_class), casm_class_hash).send().await.unwrap();
+    let declaration_result = account
+        .declare(Arc::new(flattened_class), casm_class_hash)
+        .send()
+        .await
+        .unwrap();
 
-    TransactionWaiter::new(declaration_result.transaction_hash, &rpc_provider.get_client()).await.unwrap();
+    TransactionWaiter::new(
+        declaration_result.transaction_hash,
+        &rpc_provider.get_client(),
+    )
+    .await
+    .unwrap();
 
     Ok((declaration_result, account))
 }
@@ -118,9 +119,12 @@ where
             to: client_provider.predeployed_udc().address,
         }])
         .send()
-        .await.map_err(|e| e.to_string())?;
+        .await
+        .map_err(|e| e.to_string())?;
 
-    TransactionWaiter::new(result.transaction_hash, &client_provider.get_client()).await.unwrap();
+    TransactionWaiter::new(result.transaction_hash, &client_provider.get_client())
+        .await
+        .unwrap();
 
     Ok(result)
 }

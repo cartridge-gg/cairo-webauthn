@@ -4,9 +4,9 @@ use starknet::{
 };
 use url::Url;
 
-use super::{RpcClientProvider, PrefoundedClientProvider};
+use super::{PrefoundedClientProvider, RpcClientProvider};
 
-use super::{KatanaRunner, PredeployedAccount, PredeployedContract, PredeployedClientProvider};
+use super::{KatanaRunner, PredeployedAccount, PredeployedClientProvider, PredeployedContract};
 
 #[derive(Debug, Clone, Copy)]
 pub struct KatanaProvider {
@@ -26,7 +26,6 @@ impl PrefoundedClientProvider for KatanaProvider {
 }
 
 impl PredeployedClientProvider for KatanaProvider {
-    // cargo run -- --port 1234 --seed 0
     fn predeployed_fee_token(&self) -> PredeployedContract {
         todo!("Look up the fields in the dojo sourcecode")
     }

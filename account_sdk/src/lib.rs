@@ -1,5 +1,4 @@
 pub mod deploy_contract;
-pub mod deployer;
 mod rpc_provider;
 mod transaction_waiter;
 

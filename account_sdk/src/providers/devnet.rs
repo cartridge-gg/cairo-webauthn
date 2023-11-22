@@ -4,9 +4,9 @@ use starknet::{
 };
 use url::Url;
 
-use super::{RpcClientProvider, PrefoundedClientProvider};
+use super::{PrefoundedClientProvider, RpcClientProvider};
 
-use super::{PredeployedAccount, PredeployedContract, PredeployedClientProvider};
+use super::{PredeployedAccount, PredeployedClientProvider, PredeployedContract};
 
 #[derive(Debug, Clone)]
 pub struct DevnetProvider {
