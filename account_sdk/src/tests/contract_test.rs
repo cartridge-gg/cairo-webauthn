@@ -9,7 +9,7 @@ use crate::{
     account_factory::AnyAccountFactory,
     deploy_contract::{get_account, CustomContract},
     deployer::{Declarable, TxConfig},
-    katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
+    providers::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
     rpc_provider::RpcClientProvider,
     tests::{find_free_port, get_key_and_address_devnet},
 };

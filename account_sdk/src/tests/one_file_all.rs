@@ -12,10 +12,10 @@ use starknet::{
 };
 
 use crate::{
-    deploy_contract::{CASM_STR, SIERRA_STR},
-    katana::{
-        KatanaClientProvider, KatanaRunner, KatanaRunnerConfig, FEE_TOKEN_ADDRESS, PREFUNDED,
-    },
+    account_factory::AnyAccountFactory,
+    deploy_contract::{get_account, CustomContract, CASM_STR, SIERRA_STR},
+    deployer::{Declarable, TxConfig},
+    providers::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
     rpc_provider::RpcClientProvider,
     tests::find_free_port,
 };

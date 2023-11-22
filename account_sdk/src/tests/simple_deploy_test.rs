@@ -7,7 +7,7 @@ use starknet::{
 
 use crate::{
     deploy_contract::{declare_contract, get_account},
-    katana::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
+    providers::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig},
     tests::{find_free_port, prefounded_key_and_address},
     transaction_waiter::TransactionWaiter,
 };

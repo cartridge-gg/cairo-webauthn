@@ -5,7 +5,7 @@ mod rpc_provider;
 mod transaction_waiter;
 
 #[cfg(not(target_arch = "wasm32"))]
-pub mod katana;
+pub mod providers;
 
 #[cfg(test)]
 mod tests;

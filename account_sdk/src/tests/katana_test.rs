@@ -1,4 +1,4 @@
-use crate::katana::{KatanaRunner, KatanaRunnerConfig};
+use crate::providers::{KatanaRunner, KatanaRunnerConfig};
 
 use super::find_free_port;
 
