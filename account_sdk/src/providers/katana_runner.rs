@@ -1,12 +1,11 @@
 use serde::Deserialize;
 use starknet::{
-    accounts::SingleOwnerAccount,
     core::types::FieldElement,
     macros::felt,
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
-    signers::{LocalWallet, SigningKey},
+    signers::SigningKey,
 };
-use std::path::{Path, PathBuf};
+use std::{path::{Path, PathBuf}, net::TcpListener};
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc;
 use std::thread;
@@ -16,8 +15,18 @@ use std::{
     io::{BufRead, BufReader, Write},
 };
 use std::{fs::File, process::ChildStdout, sync::mpsc::Sender};
+use url::Url;
 
 use lazy_static::lazy_static;
+
+pub fn find_free_port() -> u16 {
+    TcpListener::bind("127.0.0.1:0")
+        .unwrap()
+        .local_addr()
+        .unwrap()
+        .port()
+}
+use super::RpcClientProvider;
 
 lazy_static! {
     pub static ref UDC_ADDRESS: FieldElement =
@@ -55,11 +64,13 @@ impl KatanaRunnerConfig {
 
         toml::from_str(&config_string).expect("Failed to parse config file")
     }
+
     pub fn port(mut self, port: u16) -> Self {
         self.port = port;
         self.log_file_path = KatanaRunnerConfig::add_port_to_filename(&self.log_file_path, port);
         self
     }
+
     fn add_port_to_filename(file_path: &str, port: u16) -> String {
         let path = Path::new(file_path);
         let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
@@ -112,6 +123,10 @@ impl KatanaRunner {
         }
     }
 
+    pub fn load() -> Self {
+        KatanaRunner::new(KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()))
+    }
+
     fn wait_for_server_started_and_signal(
         log_file_path: &str,
         stdout: ChildStdout,
@@ -130,13 +145,21 @@ impl KatanaRunner {
         }
     }
 
+    pub fn port(&self) -> u16 {
+        self.port
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct KatanaClientProvider {
     port: u16,
 }
 
-// todo!("Implement starknet::providers::Provider");
-// impl Provider for KatanaClientProvider {}
+impl KatanaClientProvider {
+    pub fn port(&self) -> u16 {
+        self.port
+    }
+}
 
 impl From<u16> for KatanaClientProvider {
     fn from(value: u16) -> Self {
@@ -155,10 +178,6 @@ impl RpcClientProvider<HttpTransport> for KatanaClientProvider {
         JsonRpcClient::new(HttpTransport::new(
             Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
         ))
-    }
-
-    fn chain_id(&self) -> FieldElement {
-        FieldElement::from_byte_slice_be(&"KATANA".as_bytes()[..]).unwrap()
     }
 }
 

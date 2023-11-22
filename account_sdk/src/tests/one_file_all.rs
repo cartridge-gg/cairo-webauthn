@@ -1,24 +1,20 @@
 use std::sync::Arc;
 
 use starknet::{
-    accounts::{Account, ExecutionEncoding, SingleOwnerAccount},
+    accounts::Account,
     core::types::{
         contract::{CompiledClass, SierraClass},
-        BlockId, BlockTag, DeclareTransactionResult, FieldElement,
+        DeclareTransactionResult, FieldElement,
     },
     macros::{felt, selector},
-    providers::Provider,
-    signers::LocalWallet,
 };
 
 use crate::{
-    deploy_contract::{account_for_address, CASM_STR, SIERRA_STR},
-    katana::{
-        KatanaClientProvider, KatanaRunner, KatanaRunnerConfig, FEE_TOKEN_ADDRESS, PREFUNDED,
+    deploy_contract::{CASM_STR, SIERRA_STR},
+    providers::{
+        katana::KatanaProvider, katana_runner::KatanaRunner, prefounded, PredeployedClientProvider,
+        PrefoundedClientProvider,
     },
-    providers::RpcClientProvider,
-    providers::{KatanaProvider, KatanaRunner, KatanaRunnerConfig},
-    tests::find_free_port,
 };
 
 use starknet::accounts::Call;
@@ -33,20 +29,10 @@ const DEFAULT_UDC_ADDRESS: FieldElement = FieldElement::from_mont([
 
 #[tokio::test]
 async fn test_contract_call_problem_2() {
-    let runner = KatanaRunner::new(
-        KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()),
-    );
-    let (signing_key, address) = PREFUNDED.clone();
-    let provider = RpcClientProvider::from(runner).get_client();
+    let runner = KatanaRunner::load();
+    let network = KatanaProvider::from(&runner);
+    let prefunded = prefounded(&network).await;
 
-    let signer = LocalWallet::from(signing_key);
-    let chain_id = provider.chain_id().await.unwrap();
-    dbg!(chain_id);
-    let mut prefunded: SingleOwnerAccount<
-        starknet::providers::JsonRpcClient<starknet::providers::jsonrpc::HttpTransport>,
-        LocalWallet,
-    > = SingleOwnerAccount::new(provider, signer, address, chain_id, ExecutionEncoding::New);
-    prefunded.set_block_id(BlockId::Tag(BlockTag::Pending));
     // Contract
     let contract_artifact: SierraClass = serde_json::from_str(SIERRA_STR)
         .map_err(|e| e.to_string())
@@ -75,7 +61,7 @@ async fn test_contract_call_problem_2() {
 
     prefunded
         .execute(vec![Call {
-            to: *FEE_TOKEN_ADDRESS,
+            to: network.predeployed_udc().address,
             selector: selector!("transfer"),
             calldata: vec![target_deployment_address, felt!("0x10"), felt!("0x0")],
         }])
@@ -83,7 +69,7 @@ async fn test_contract_call_problem_2() {
         .await
         .unwrap();
 
-    let constructor_calldata = vec![PREFUNDED.0.verifying_key().scalar()];
+    let constructor_calldata = vec![network.prefounded_account().public_key];
     let calldata = [
         vec![
             class_hash,

@@ -4,9 +4,9 @@ use starknet::{
 };
 use url::Url;
 
-use super::{PrefoundedClientProvider, RpcClientProvider};
+use super::{katana_runner::KatanaRunner, PrefoundedClientProvider, RpcClientProvider};
 
-use super::{KatanaRunner, PredeployedAccount, PredeployedClientProvider, PredeployedContract};
+use super::{PredeployedAccount, PredeployedClientProvider, PredeployedContract};
 
 #[derive(Debug, Clone, Copy)]
 pub struct KatanaProvider {
@@ -26,12 +26,19 @@ impl PrefoundedClientProvider for KatanaProvider {
 }
 
 impl PredeployedClientProvider for KatanaProvider {
+    // cargo run -- --port 1234 --seed 0
     fn predeployed_fee_token(&self) -> PredeployedContract {
-        todo!("Look up the fields in the dojo sourcecode")
+        PredeployedContract {
+            address: felt!("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"),
+            class_hash: felt!("0x02a8846878b6ad1f54f6ba46f5f40e11cee755c677f130b2c4b60566c9003f1f"),
+        }
     }
 
     fn predeployed_udc(&self) -> PredeployedContract {
-        todo!("Look up the fields in the dojo sourcecode")
+        PredeployedContract {
+            address: felt!("0x041a78e741e5af2fec34b695679bc6891742439f7afb8484ecd7766661ad02bf"),
+            class_hash: felt!("0x07b3e05f48f0c69e4a65ce5e076a66271a527aff2c34ce1083ec6e1526997a69"),
+        }
     }
 }
 

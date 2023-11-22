@@ -1,15 +1,6 @@
-use std::net::TcpListener;
-
 mod katana_test;
 mod new_deploy_test;
-
-pub fn find_free_port() -> u16 {
-    TcpListener::bind("127.0.0.1:0")
-        .unwrap()
-        .local_addr()
-        .unwrap()
-        .port()
-}
+mod one_file_all;
 
 #[macro_export]
 macro_rules! field_elem {

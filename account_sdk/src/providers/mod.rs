@@ -1,29 +1,16 @@
-use serde::Deserialize;
-use starknet::providers::JsonRpcClient;
+use starknet::accounts::{ExecutionEncoding, SingleOwnerAccount};
+use starknet::core::types::{BlockId, BlockTag};
+use starknet::providers::{JsonRpcClient, Provider};
+use starknet::signers::LocalWallet;
 use starknet::{
-    accounts::SingleOwnerAccount,
-    core::types::FieldElement,
-    macros::felt,
-    providers::{jsonrpc::HttpTransport, JsonRpcClient},
-    signers::{LocalWallet, SigningKey},
+    core::types::FieldElement, macros::felt, providers::jsonrpc::HttpTransport, signers::SigningKey,
 };
-use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
-use std::sync::mpsc;
-use std::thread;
-use std::time::Duration;
-use std::{
-    fs,
-    io::{BufRead, BufReader, Write},
-};
-use std::{fs::File, process::ChildStdout, sync::mpsc::Sender};
-use url::Url;
 
 use lazy_static::lazy_static;
 
-mod devnet;
-mod katana;
-mod katana_runner;
+pub mod devnet;
+pub mod katana;
+pub mod katana_runner;
 
 lazy_static! {
     pub static ref UDC_ADDRESS: FieldElement =
@@ -82,4 +69,27 @@ impl PredeployedAccount {
 pub struct PredeployedContract {
     pub address: FieldElement,
     pub class_hash: FieldElement,
+}
+
+pub async fn prefounded<T>(
+    provider: &T,
+) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>
+where
+    T: PrefoundedClientProvider,
+    T: RpcClientProvider<HttpTransport>,
+{
+    let predeployed = provider.prefounded_account();
+    let network = provider.get_client();
+    let chain_id = network.chain_id().await.unwrap();
+
+    let mut account = SingleOwnerAccount::new(
+        network,
+        LocalWallet::from(predeployed.signing_key()),
+        predeployed.account_address,
+        chain_id,
+        ExecutionEncoding::Legacy,
+    );
+
+    account.set_block_id(BlockId::Tag(BlockTag::Pending)); // For fetching valid nonce
+    account
 }
