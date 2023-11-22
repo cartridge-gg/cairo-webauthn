@@ -5,7 +5,6 @@ use starknet::{
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
     signers::SigningKey,
 };
-use std::{path::{Path, PathBuf}, net::TcpListener};
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc;
 use std::thread;
@@ -15,6 +14,10 @@ use std::{
     io::{BufRead, BufReader, Write},
 };
 use std::{fs::File, process::ChildStdout, sync::mpsc::Sender};
+use std::{
+    net::TcpListener,
+    path::{Path, PathBuf},
+};
 use url::Url;
 
 use lazy_static::lazy_static;

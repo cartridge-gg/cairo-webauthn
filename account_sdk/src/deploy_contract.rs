@@ -5,14 +5,14 @@ use crate::{
     transaction_waiter::TransactionWaiter,
 };
 use starknet::{
-    accounts::{Account, ExecutionEncoding, SingleOwnerAccount},
+    accounts::{Account, SingleOwnerAccount},
     contract::ContractFactory,
     core::types::{
         contract::{CompiledClass, SierraClass},
-        BlockId, BlockTag, DeclareTransactionResult, FieldElement, InvokeTransactionResult,
+        DeclareTransactionResult, FieldElement, InvokeTransactionResult,
     },
     providers::{JsonRpcClient, Provider},
-    signers::{LocalWallet, Signer, SigningKey},
+    signers::Signer,
 };
 
 pub const SIERRA_STR: &str = include_str!(
@@ -21,30 +21,6 @@ pub const SIERRA_STR: &str = include_str!(
 pub const CASM_STR: &str = include_str!(
     "../../cartridge_account/target/dev/cartridge_account_Account.compiled_contract_class.json"
 );
-
-// pub async fn declare_and_deploy_contract<T, P, S>(
-//     rpc_provider: &(impl RpcClientProvider<T> + PredeployedClientProvider),
-//     account: SingleOwnerAccount<P, S>,
-//     constructor_calldata: Vec<FieldElement>,
-//     salt: FieldElement,
-// ) -> Result<DeployResult, String>
-// where
-//     JsonRpcClient<T>: Provider,
-//     T: Send + Sync,
-//     P: Provider + Send + Sync,
-//     S: Signer + Send + Sync,
-// {
-//     let DeclareTransactionResult { class_hash, .. } =
-//         declare_contract(rpc_provider, account.clone()).await.unwrap();
-//     deploy_contract(
-//         rpc_provider,
-//         constructor_calldata,
-//         salt,
-//         account,
-//         class_hash,
-//     )
-//     .await
-// }
 
 pub async fn declare_contract<T, P, S>(
     rpc_provider: &impl RpcClientProvider<T>,
@@ -122,30 +98,4 @@ where
         deployed_address,
         transaction_hash,
     })
-}
-
-pub async fn account_for_address<T>(
-    rpc_provider: &impl RpcClientProvider<T>,
-    signing_key: SigningKey,
-    address: FieldElement,
-) -> SingleOwnerAccount<JsonRpcClient<T>, LocalWallet>
-where
-    JsonRpcClient<T>: Provider,
-    T: Send + Sync,
-{
-    let client = rpc_provider.get_client();
-    let signer = LocalWallet::from(signing_key);
-    let chain_id = rpc_provider
-        .get_client()
-        .chain_id()
-        .await
-        .expect("No connection");
-
-    let mut account =
-        SingleOwnerAccount::new(client, signer, address, chain_id, ExecutionEncoding::New);
-
-    // `SingleOwnerAccount` defaults to checking nonce and estimating fees against the latest
-    // block. Optionally change the target block to pending with the following line:
-    account.set_block_id(BlockId::Tag(BlockTag::Latest));
-    account
 }

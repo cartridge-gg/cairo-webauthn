@@ -52,17 +52,16 @@ where
 pub trait PrefoundedClientProvider
 where
     Self: RpcClientProvider<HttpTransport>,
-    Self: PredeployedClientProvider
+    Self: PredeployedClientProvider,
 {
     fn prefounded_account(&self) -> PredeployedAccount;
     async fn prefounded_single_owner(
-        &self
-    ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>
-    {
+        &self,
+    ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> {
         let predeployed = self.prefounded_account();
         let network = self.get_client();
         let chain_id = network.chain_id().await.unwrap();
-    
+
         let mut account = SingleOwnerAccount::new(
             network,
             LocalWallet::from(predeployed.signing_key()),
@@ -70,7 +69,7 @@ where
             chain_id,
             ExecutionEncoding::Legacy,
         );
-    
+
         account.set_block_id(BlockId::Tag(BlockTag::Pending)); // For fetching valid nonce
         account
     }
@@ -92,5 +91,3 @@ pub struct PredeployedContract {
     pub address: FieldElement,
     pub class_hash: FieldElement,
 }
-
-
