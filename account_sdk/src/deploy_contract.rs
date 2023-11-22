@@ -5,12 +5,12 @@ use crate::{
     transaction_waiter::TransactionWaiter,
 };
 use starknet::{
-    accounts::{Account, Call, ExecutionEncoding, SingleOwnerAccount},
+    accounts::{Account, ExecutionEncoding, SingleOwnerAccount},
+    contract::ContractFactory,
     core::types::{
         contract::{CompiledClass, SierraClass},
         BlockId, BlockTag, DeclareTransactionResult, FieldElement, InvokeTransactionResult,
     },
-    macros::selector,
     providers::{JsonRpcClient, Provider},
     signers::{LocalWallet, Signer, SigningKey},
 };
@@ -22,42 +22,39 @@ pub const CASM_STR: &str = include_str!(
     "../../cartridge_account/target/dev/cartridge_account_Account.compiled_contract_class.json"
 );
 
-pub async fn declare_and_deploy_contract<T>(
-    rpc_provider: &(impl RpcClientProvider<T> + PredeployedClientProvider),
-    signing_key: SigningKey,
-    address: FieldElement,
-    constructor_calldata: Vec<FieldElement>,
-) -> Result<InvokeTransactionResult, String>
-where
-    JsonRpcClient<T>: Provider,
-    T: Send + Sync,
-{
-    let (result, account) = declare_contract(rpc_provider, signing_key, address)
-        .await
-        .unwrap();
-    deploy_contract(
-        rpc_provider,
-        constructor_calldata,
-        account,
-        result.class_hash,
-    )
-    .await
-}
+// pub async fn declare_and_deploy_contract<T, P, S>(
+//     rpc_provider: &(impl RpcClientProvider<T> + PredeployedClientProvider),
+//     account: SingleOwnerAccount<P, S>,
+//     constructor_calldata: Vec<FieldElement>,
+//     salt: FieldElement,
+// ) -> Result<DeployResult, String>
+// where
+//     JsonRpcClient<T>: Provider,
+//     T: Send + Sync,
+//     P: Provider + Send + Sync,
+//     S: Signer + Send + Sync,
+// {
+//     let DeclareTransactionResult { class_hash, .. } =
+//         declare_contract(rpc_provider, account.clone()).await.unwrap();
+//     deploy_contract(
+//         rpc_provider,
+//         constructor_calldata,
+//         salt,
+//         account,
+//         class_hash,
+//     )
+//     .await
+// }
 
-pub async fn declare_contract<T>(
+pub async fn declare_contract<T, P, S>(
     rpc_provider: &impl RpcClientProvider<T>,
-    signing_key: SigningKey,
-    address: FieldElement,
-) -> Result<
-    (
-        DeclareTransactionResult,
-        SingleOwnerAccount<JsonRpcClient<T>, LocalWallet>,
-    ),
-    String,
->
+    account: SingleOwnerAccount<P, S>,
+) -> Result<DeclareTransactionResult, String>
 where
     JsonRpcClient<T>: Provider,
     T: Send + Sync,
+    P: Provider + Send + Sync,
+    S: Signer + Send + Sync,
 {
     // Sierra class artifact. Output of the `starknet-compile` command
     let contract_artifact: SierraClass =
@@ -67,8 +64,6 @@ where
     let compiled_class: CompiledClass =
         serde_json::from_str(CASM_STR).map_err(|e| e.to_string())?;
     let casm_class_hash = compiled_class.class_hash().map_err(|e| e.to_string())?;
-
-    let account = account_for_address(rpc_provider, signing_key, address).await;
 
     // We need to flatten the ABI into a string first
     let flattened_class = contract_artifact.flatten().map_err(|e| e.to_string())?;
@@ -86,47 +81,47 @@ where
     .await
     .unwrap();
 
-    Ok((declaration_result, account))
+    Ok(declaration_result)
+}
+
+#[derive(Debug, Clone)]
+pub struct DeployResult {
+    pub deployed_address: FieldElement,
+    pub transaction_hash: FieldElement,
 }
 
 pub async fn deploy_contract<T, P, S>(
     client_provider: &(impl RpcClientProvider<T> + PredeployedClientProvider),
     constructor_calldata: Vec<FieldElement>,
+    salt: FieldElement,
     account: SingleOwnerAccount<P, S>,
     class_hash: FieldElement,
-) -> Result<InvokeTransactionResult, String>
+) -> Result<DeployResult, String>
 where
     P: Provider + Send + Sync,
     S: Signer + Send + Sync,
     JsonRpcClient<T>: Provider,
     T: Send + Sync,
 {
-    let calldata = [
-        vec![
-            class_hash,
-            FieldElement::ZERO, // salt
-            FieldElement::ZERO, // unique
-            FieldElement::from(constructor_calldata.len()),
-        ],
-        constructor_calldata,
-    ]
-    .concat();
+    let contract_factory = ContractFactory::new_with_udc(
+        class_hash,
+        account,
+        client_provider.predeployed_udc().address,
+    );
 
-    let result = account
-        .execute(vec![Call {
-            calldata,
-            selector: selector!("deployContract"),
-            to: client_provider.predeployed_udc().address,
-        }])
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
+    let deployment = contract_factory.deploy(constructor_calldata, salt, false);
+    let deployed_address = deployment.deployed_address();
+    let InvokeTransactionResult { transaction_hash } =
+        deployment.send().await.expect("Unable to deploy contract");
 
-    TransactionWaiter::new(result.transaction_hash, &client_provider.get_client())
+    TransactionWaiter::new(transaction_hash, &client_provider.get_client())
         .await
         .unwrap();
 
-    Ok(result)
+    Ok(DeployResult {
+        deployed_address,
+        transaction_hash,
+    })
 }
 
 pub async fn account_for_address<T>(

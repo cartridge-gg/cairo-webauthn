@@ -13,7 +13,7 @@ use starknet::{
 use crate::{
     deploy_contract::{CASM_STR, SIERRA_STR},
     providers::{
-        katana::KatanaProvider, katana_runner::KatanaRunner, prefunded, PredeployedClientProvider,
+        katana::KatanaProvider, katana_runner::KatanaRunner, PredeployedClientProvider, PrefoundedClientProvider,
     },
 };
 
@@ -23,8 +23,8 @@ use starknet::accounts::Call;
 async fn test_flow() {
     let runner = KatanaRunner::load();
     let network = KatanaProvider::from(&runner);
-    let factory = prefunded(&network).await; // Same as account
-    let prefunded = prefunded(&network).await;
+    let factory = network.prefounded_single_owner().await; // Same as account
+    let prefunded = network.prefounded_single_owner().await;
 
     // Contract
     let contract_artifact: SierraClass = serde_json::from_str(SIERRA_STR)

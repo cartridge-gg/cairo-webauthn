@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use starknet::accounts::{ExecutionEncoding, SingleOwnerAccount};
 use starknet::core::types::{BlockId, BlockTag};
 use starknet::providers::{JsonRpcClient, Provider};
@@ -47,11 +48,32 @@ where
     fn predeployed_udc(&self) -> PredeployedContract;
 }
 
+#[async_trait]
 pub trait PrefoundedClientProvider
 where
     Self: RpcClientProvider<HttpTransport>,
+    Self: PredeployedClientProvider
 {
     fn prefounded_account(&self) -> PredeployedAccount;
+    async fn prefounded_single_owner(
+        &self
+    ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>
+    {
+        let predeployed = self.prefounded_account();
+        let network = self.get_client();
+        let chain_id = network.chain_id().await.unwrap();
+    
+        let mut account = SingleOwnerAccount::new(
+            network,
+            LocalWallet::from(predeployed.signing_key()),
+            predeployed.account_address,
+            chain_id,
+            ExecutionEncoding::Legacy,
+        );
+    
+        account.set_block_id(BlockId::Tag(BlockTag::Pending)); // For fetching valid nonce
+        account
+    }
 }
 
 pub struct PredeployedAccount {
@@ -71,25 +93,4 @@ pub struct PredeployedContract {
     pub class_hash: FieldElement,
 }
 
-pub async fn prefunded<T>(
-    provider: &T,
-) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>
-where
-    T: PrefoundedClientProvider,
-    T: RpcClientProvider<HttpTransport>,
-{
-    let predeployed = provider.prefounded_account();
-    let network = provider.get_client();
-    let chain_id = network.chain_id().await.unwrap();
 
-    let mut account = SingleOwnerAccount::new(
-        network,
-        LocalWallet::from(predeployed.signing_key()),
-        predeployed.account_address,
-        chain_id,
-        ExecutionEncoding::Legacy,
-    );
-
-    account.set_block_id(BlockId::Tag(BlockTag::Pending)); // For fetching valid nonce
-    account
-}

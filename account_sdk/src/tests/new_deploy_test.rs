@@ -1,29 +1,32 @@
 use starknet::{
     accounts::{Account, Call},
-    core::types::{BlockId, BlockTag, FunctionCall},
+    core::types::{BlockId, BlockTag, DeclareTransactionResult, FieldElement, FunctionCall},
     macros::{felt, selector},
     providers::Provider,
 };
 
 use crate::{
-    deploy_contract::declare_and_deploy_contract,
+    deploy_contract::{declare_contract, deploy_contract},
     providers::{
-        katana::KatanaProvider, katana_runner::KatanaRunner, prefunded, PredeployedClientProvider,
+        katana::KatanaProvider, katana_runner::KatanaRunner, PredeployedClientProvider,
         PrefoundedClientProvider, RpcClientProvider,
     },
 };
 
 #[tokio::test]
-#[ignore = "not ready yet"]
 async fn test_new_deploy() {
     let runner = KatanaRunner::load();
     let provider = KatanaProvider::from(&runner);
-    let prfd_account = provider.prefounded_account();
-    declare_and_deploy_contract(
+    let prefounded = provider.prefounded_single_owner().await;
+    let DeclareTransactionResult { class_hash, .. } =
+        declare_contract(&provider, prefounded).await.unwrap();
+    let factory = provider.prefounded_single_owner().await;
+    deploy_contract(
         &provider,
-        prfd_account.signing_key(),
-        prfd_account.account_address,
-        vec![prfd_account.public_key],
+        vec![felt!("1234")],
+        FieldElement::ZERO,
+        factory,
+        class_hash,
     )
     .await
     .unwrap();
@@ -36,7 +39,7 @@ async fn test_new_deploy() {
 async fn test_balance_of() {
     let runner = KatanaRunner::load();
     let network = KatanaProvider::from(&runner);
-    let account = prefunded(&network).await;
+    let account = network.prefounded_single_owner().await;
 
     let call_result: Vec<starknet::core::types::FieldElement> = network
         .get_client()
@@ -58,7 +61,7 @@ async fn test_balance_of() {
 async fn test_balance_of_account() {
     let runner = KatanaRunner::load();
     let network = KatanaProvider::from(&runner);
-    let account = prefunded(&network).await;
+    let account = network.prefounded_single_owner().await;
 
     let call_result = account
         .execute(vec![Call {
@@ -78,7 +81,7 @@ async fn test_transfer() {
     let runner = KatanaRunner::load();
     let network = KatanaProvider::from(&runner);
     let new_account = felt!("0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1");
-    let account = prefunded(&network).await;
+    let account = network.prefounded_single_owner().await;
 
     let call_result = account
         .execute(vec![Call {
