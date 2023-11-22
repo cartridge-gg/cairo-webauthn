@@ -136,6 +136,7 @@ impl KatanaRunner {
         sender: Sender<()>,
     ) {
         let reader = BufReader::new(stdout);
+        KatanaRunner::create_folder_if_nonexistent(log_file_path);
         let mut log_writer = File::create(log_file_path).expect("failed to create log file");
 
         for line in reader.lines() {
@@ -150,6 +151,16 @@ impl KatanaRunner {
 
     pub fn port(&self) -> u16 {
         self.port
+    }
+
+    fn create_folder_if_nonexistent(log_file_path: &str) {
+        let path = Path::new(log_file_path);
+
+        if let Some(dir_path) = path.parent() {
+            if !dir_path.exists() {
+                fs::create_dir_all(dir_path).unwrap();
+            }
+        }
     }
 }
 
