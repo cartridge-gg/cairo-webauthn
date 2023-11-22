@@ -11,7 +11,7 @@ use starknet::{
 };
 
 use crate::{
-    deploy_contract::{CASM_STR, SIERRA_STR},
+    deploy_contract::declaration::{CASM_STR, SIERRA_STR},
     providers::{
         katana::KatanaProvider, katana_runner::KatanaRunner, PredeployedClientProvider,
         PrefoundedClientProvider,
