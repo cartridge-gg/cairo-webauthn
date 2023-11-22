@@ -81,14 +81,14 @@ async fn test_transfer() {
     let runner = KatanaRunner::new(
         KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()),
     );
-    let devnet = KatanaClientProvider::from(&runner);
-    let predpld_acc = devnet.prefounded_account();
+    let network = KatanaClientProvider::from(&runner);
+    let predeployed = network.prefounded_account();
     let new_account = felt!("0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1");
     let mut account = SingleOwnerAccount::new(
-        devnet.get_client(),
-        LocalWallet::from(predpld_acc.signing_key()),
-        predpld_acc.account_address,
-        devnet.get_client().chain_id().await.unwrap(),
+        network.get_client(),
+        LocalWallet::from(predeployed.signing_key()),
+        predeployed.account_address,
+        network.get_client().chain_id().await.unwrap(),
         ExecutionEncoding::Legacy,
     );
     account.set_block_id(BlockId::Tag(BlockTag::Pending)); // Fetching valid nonce
