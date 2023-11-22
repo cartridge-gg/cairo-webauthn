@@ -6,14 +6,14 @@ use url::Url;
 
 use super::RpcClientProvider;
 
-use super::{KatanaRunner, PredeployedAccount, PredeployedContract, PredeployedProvider};
+use super::{KatanaRunner, PredeployedAccount, PredeployedContract, PredeployedClientProvider};
 
 #[derive(Debug, Clone, Copy)]
 pub struct KatanaProvider {
     port: u16,
 }
 
-impl PredeployedProvider for KatanaProvider {
+impl PredeployedClientProvider for KatanaProvider {
     // cargo run -- --port 1234 --seed 0
     fn prefounded_account(&self) -> PredeployedAccount {
         PredeployedAccount {

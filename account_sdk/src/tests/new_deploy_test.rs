@@ -8,11 +8,11 @@ use starknet::{
 
 use crate::{
     deploy_contract::declare_and_deploy_contract,
+    providers::RpcClientProvider,
     providers::{
         DevnetProvider, KatanaClientProvider, KatanaProvider, KatanaRunner, KatanaRunnerConfig,
         PredeployedProvider, StarknetDevnet,
     },
-    providers::RpcClientProvider,
     tests::{find_free_port, prefounded_key_and_address},
 };
 

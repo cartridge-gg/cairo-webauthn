@@ -6,14 +6,14 @@ use url::Url;
 
 use super::RpcClientProvider;
 
-use super::{PredeployedAccount, PredeployedContract, PredeployedProvider};
+use super::{PredeployedAccount, PredeployedContract, PredeployedClientProvider};
 
 #[derive(Debug, Clone)]
 pub struct DevnetProvider {
     pub port: u16,
 }
 
-impl PredeployedProvider for DevnetProvider {
+impl PredeployedClientProvider for DevnetProvider {
     // cargo run -- --port 1234 --seed 0
     fn prefounded_account(&self) -> PredeployedAccount {
         PredeployedAccount {
