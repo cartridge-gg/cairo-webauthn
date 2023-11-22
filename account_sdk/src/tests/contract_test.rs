@@ -35,7 +35,7 @@ async fn test_contract_call_problem_2() {
     let (signing_key, address) = get_key_and_address_devnet();
     let signer = LocalWallet::from_signing_key(signing_key.clone());
 
-    let provider = KatanaClientProvider::from(&5050);
+    let provider = KatanaClientProvider::from(5050);
     let account = get_account(provider, signing_key.clone(), address).await;
 
     let declare_result = CustomContract

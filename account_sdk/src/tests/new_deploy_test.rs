@@ -76,16 +76,19 @@ async fn test_balance_of_account() {
 
 #[tokio::test]
 async fn test_transfer() {
-    let devnet = StarknetDevnet { port: 1234 };
+    // let devnet = StarknetDevnet { port: 5050 };
+    let devnet = KatanaClientProvider::from(5050);
     let predpld_acc = devnet.prefounded_account();
     let new_account = felt!("0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1");
-    let account = SingleOwnerAccount::new(
+    let mut account = SingleOwnerAccount::new(
         devnet.get_client(),
         LocalWallet::from(predpld_acc.signing_key()),
         predpld_acc.account_address,
         devnet.get_client().chain_id().await.unwrap(),
         ExecutionEncoding::Legacy,
     );
+    account.set_block_id(BlockId::Tag(BlockTag::Pending)); // Fetching valid nonce
+
     let call_result = account
         .execute(vec![Call {
             to: devnet.fee_token().address,

@@ -39,7 +39,7 @@ async fn test_contract_call_problem_2() {
     //     KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()),
     // );
     let (signing_key, address) = get_key_and_address_devnet();
-    let provider = KatanaClientProvider::from(&5050).get_client();
+    let provider = KatanaClientProvider::from(5050).get_client();
 
     let signer = LocalWallet::from(signing_key);
     let chain_id = provider.chain_id().await.unwrap();

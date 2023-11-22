@@ -116,9 +116,9 @@ pub struct KatanaClientProvider {
 // todo!("Implement starknet::providers::Provider");
 // impl Provider for KatanaClientProvider {}
 
-impl From<&u16> for KatanaClientProvider {
-    fn from(value: &u16) -> Self {
-        KatanaClientProvider { port: *value }
+impl From<u16> for KatanaClientProvider {
+    fn from(value: u16) -> Self {
+        KatanaClientProvider { port: value }
     }
 }
 
@@ -147,6 +147,25 @@ impl Drop for KatanaRunner {
         }
         if let Err(e) = self.child.wait() {
             eprintln!("Failed to wait for katana subprocess: {}", e);
+        }
+    }
+}
+
+impl KatanaClientProvider {
+    pub fn prefounded_account(&self) -> PredeployedAccount {
+        PredeployedAccount {
+            account_address: felt!(
+                "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973"
+            ),
+            private_key: felt!("0x1800000000300000180000000000030000000000003006001800006600"),
+            public_key: felt!("0x2b191c2f3ecf685a91af7cf72a43e7b90e2e41220175de5c4f7498981b10053"),
+        }
+    }
+
+    pub fn fee_token(&self) -> PredeployedContract {
+        PredeployedContract {
+            address: felt!("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"),
+            class_hash: felt!("0x02a8846878b6ad1f54f6ba46f5f40e11cee755c677f130b2c4b60566c9003f1f"),
         }
     }
 }
