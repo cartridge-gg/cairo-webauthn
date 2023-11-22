@@ -1,5 +1,4 @@
 pub mod deploy_contract;
-mod rpc_provider;
 mod transaction_waiter;
 
 #[cfg(not(target_arch = "wasm32"))]
