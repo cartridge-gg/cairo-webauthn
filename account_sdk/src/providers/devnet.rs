@@ -3,7 +3,7 @@ use url::Url;
 
 use crate::rpc_provider::RpcClientProvider;
 
-use super::{PredeployedAccount, PredeployedContract};
+use super::{PredeployedAccount, PredeployedContract, PredeployedProvider};
 
 #[derive(Debug, Clone)]
 pub struct StarknetDevnet {
@@ -11,9 +11,9 @@ pub struct StarknetDevnet {
 }
 
 
-impl StarknetDevnet {
+impl PredeployedProvider for StarknetDevnet {
     // cargo run -- --port 1234 --seed 0
-    pub fn prefounded_account(&self) -> PredeployedAccount {
+    fn prefounded_account(&self) -> PredeployedAccount {
         PredeployedAccount {
             account_address: felt!(
                 "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691"
@@ -23,10 +23,17 @@ impl StarknetDevnet {
         }
     }
 
-    pub fn fee_token(&self) -> PredeployedContract {
+    fn predeployed_fee_token(&self) -> PredeployedContract {
         PredeployedContract {
             address: felt!("0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7"),
             class_hash: felt!("0x6A22BF63C7BC07EFFA39A25DFBD21523D211DB0100A0AFD054D172B81840EAF"),
+        }
+    }
+
+    fn predeployed_udc(&self) -> PredeployedContract {
+        PredeployedContract {
+            address: felt!("0x41A78E741E5AF2FEC34B695679BC6891742439F7AFB8484ECD7766661AD02BF"),
+            class_hash: felt!("0x7B3E05F48F0C69E4A65CE5E076A66271A527AFF2C34CE1083EC6E1526997A69"),
         }
     }
 }

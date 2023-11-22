@@ -8,7 +8,9 @@ use starknet::{
 
 use crate::{
     deploy_contract::declare_and_deploy_contract,
-    providers::{KatanaClientProvider, KatanaRunner, KatanaRunnerConfig, StarknetDevnet},
+    providers::{
+        KatanaClientProvider, KatanaRunner, KatanaRunnerConfig, PredeployedProvider, StarknetDevnet,
+    },
     rpc_provider::RpcClientProvider,
     tests::{find_free_port, prefounded_key_and_address},
 };
@@ -38,7 +40,7 @@ async fn test_balance_of() {
         .get_client()
         .call(
             FunctionCall {
-                contract_address: devnet.fee_token().address,
+                contract_address: devnet.predeployed_fee_token().address,
                 entry_point_selector: selector!("balanceOf"),
                 calldata: vec![predpld_acc.account_address],
             },
@@ -63,7 +65,7 @@ async fn test_balance_of_account() {
     );
     let call_result = account
         .execute(vec![Call {
-            to: devnet.fee_token().address,
+            to: devnet.predeployed_fee_token().address,
             selector: selector!("balanceOf"),
             calldata: vec![predpld_acc.account_address],
         }])
@@ -93,7 +95,7 @@ async fn test_transfer() {
 
     let call_result = account
         .execute(vec![Call {
-            to: *FEE_TOKEN_ADDRESS,
+            to: network.predeployed_fee_token().address,
             selector: selector!("balanceOf"),
             calldata: vec![new_account],
         }])
@@ -104,7 +106,7 @@ async fn test_transfer() {
 
     let call_result = account
         .execute(vec![Call {
-            to: *FEE_TOKEN_ADDRESS,
+            to: network.predeployed_fee_token().address,
             selector: selector!("transfer"),
             calldata: vec![new_account, felt!("0x10"), felt!("0x0")],
         }])

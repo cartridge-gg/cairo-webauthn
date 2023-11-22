@@ -2,6 +2,7 @@ use serde::Deserialize;
 use starknet::{
     accounts::SingleOwnerAccount,
     core::types::FieldElement,
+    macros::felt,
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
     signers::{LocalWallet, SigningKey},
 };
@@ -15,10 +16,13 @@ use std::{
     io::{BufRead, BufReader, Write},
 };
 use std::{fs::File, process::ChildStdout, sync::mpsc::Sender};
+use url::Url;
 
 use crate::rpc_provider::RpcClientProvider;
 
 use lazy_static::lazy_static;
+
+mod devnet;
 
 lazy_static! {
     pub static ref UDC_ADDRESS: FieldElement =
@@ -41,6 +45,34 @@ lazy_static! {
         )
         .unwrap()
     );
+}
+
+pub use devnet::StarknetDevnet;
+
+pub trait PredeployedProvider
+where
+    Self: RpcClientProvider<HttpTransport>,
+{
+    fn prefounded_account(&self) -> PredeployedAccount;
+    fn predeployed_fee_token(&self) -> PredeployedContract;
+    fn predeployed_udc(&self) -> PredeployedContract;
+}
+
+pub struct PredeployedAccount {
+    pub account_address: FieldElement,
+    pub private_key: FieldElement,
+    pub public_key: FieldElement,
+}
+
+impl PredeployedAccount {
+    pub fn signing_key(&self) -> SigningKey {
+        SigningKey::from_secret_scalar(self.private_key)
+    }
+}
+
+pub struct PredeployedContract {
+    pub address: FieldElement,
+    pub class_hash: FieldElement,
 }
 
 #[derive(Debug, Clone, Deserialize)]
