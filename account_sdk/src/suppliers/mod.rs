@@ -51,7 +51,6 @@ where
 #[async_trait]
 pub trait PrefoundedClientSupplier
 where
-    Self: RpcClientSupplier<HttpTransport>,
     Self: PredeployedClientSupplier,
 {
     fn prefounded_account(&self) -> AccountData;
