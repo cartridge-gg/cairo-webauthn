@@ -8,6 +8,8 @@ use super::{PrefundedClientSupplier, RpcClientSupplier};
 
 use super::{AccountData, PredeployedClientSupplier, PredeployedContract};
 
+// starknet-devnet-rs
+// cargo run -- --port <port> --seed 0
 #[derive(Debug, Clone)]
 pub struct DevnetSupplier {
     pub port: u16,
@@ -26,7 +28,7 @@ impl PrefundedClientSupplier for DevnetSupplier {
 }
 
 impl PredeployedClientSupplier for DevnetSupplier {
-    // cargo run -- --port 1234 --seed 0
+    
     fn predeployed_fee_token(&self) -> PredeployedContract {
         PredeployedContract {
             address: felt!("0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7"),
