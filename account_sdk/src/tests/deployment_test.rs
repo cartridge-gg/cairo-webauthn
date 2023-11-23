@@ -7,15 +7,15 @@ use starknet::{
 use crate::deploy_contract::CustomAccountDeployment;
 use crate::{
     deploy_contract::{CustomAccountDeclaration, DeployResult},
-    providers::{katana::KatanaProvider, katana_runner::KatanaRunner, PrefoundedClientProvider},
+    suppliers::{katana::KatanaSupplier, katana_runner::KatanaRunner, PrefoundedClientSupplier},
 };
 
 #[tokio::test]
 async fn test_declare() {
     let runner = KatanaRunner::load();
-    let provider = KatanaProvider::from(&runner);
-    let account = provider.prefounded_single_owner().await;
-    CustomAccountDeclaration::cartridge_account(&provider)
+    let supplier = KatanaSupplier::from(&runner);
+    let account = supplier.prefounded_single_owner().await;
+    CustomAccountDeclaration::cartridge_account(&supplier)
         .declare(&account)
         .await
         .unwrap()
@@ -26,17 +26,17 @@ async fn test_declare() {
 #[tokio::test]
 async fn test_deploy() {
     let runner = KatanaRunner::load();
-    let provider = KatanaProvider::from(&runner);
-    let account = provider.prefounded_single_owner().await;
+    let supplier = KatanaSupplier::from(&runner);
+    let account = supplier.prefounded_single_owner().await;
     let DeclareTransactionResult { class_hash, .. } =
-        CustomAccountDeclaration::cartridge_account(&provider)
+        CustomAccountDeclaration::cartridge_account(&supplier)
             .declare(&account)
             .await
             .unwrap()
             .wait_for_completion()
             .await;
 
-    CustomAccountDeployment::new(&provider)
+    CustomAccountDeployment::new(&supplier)
         .deploy(
             vec![felt!("12345")],
             FieldElement::ZERO,
@@ -52,10 +52,10 @@ async fn test_deploy() {
 #[tokio::test]
 async fn test_deploy_and_call() {
     let runner = KatanaRunner::load();
-    let provider = KatanaProvider::from(&runner);
-    let account = provider.prefounded_single_owner().await;
+    let supplier = KatanaSupplier::from(&runner);
+    let account = supplier.prefounded_single_owner().await;
     let DeclareTransactionResult { class_hash, .. } =
-        CustomAccountDeclaration::cartridge_account(&provider)
+        CustomAccountDeclaration::cartridge_account(&supplier)
             .declare(&account)
             .await
             .unwrap()
@@ -64,7 +64,7 @@ async fn test_deploy_and_call() {
 
     let DeployResult {
         deployed_address, ..
-    } = CustomAccountDeployment::new(&provider)
+    } = CustomAccountDeployment::new(&supplier)
         .deploy(
             vec![felt!("12345")],
             FieldElement::ZERO,

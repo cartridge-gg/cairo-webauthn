@@ -7,7 +7,7 @@ use starknet::{
     signers::Signer,
 };
 
-use crate::providers::RpcClientProvider;
+use crate::suppliers::RpcClientSupplier;
 
 use super::pending::PendingDeclaration;
 
@@ -21,37 +21,37 @@ pub const CASM_STR: &str = include_str!(
 pub struct CustomAccountDeclaration<'a, Q> {
     contract_artifact: SierraClass,
     compiled_class: CompiledClass,
-    rpc_provider: &'a Q,
+    supplier: &'a Q,
 }
 
 impl<'a, Q> CustomAccountDeclaration<'a, Q> {
     pub fn new<T>(
         contract_artifact: SierraClass,
         compiled_class: CompiledClass,
-        rpc_provider: &'a Q,
+        client_supplier: &'a Q,
     ) -> Self
     where
         T: Send + Sync,
         JsonRpcClient<T>: Provider,
-        Q: RpcClientProvider<T>,
+        Q: RpcClientSupplier<T>,
     {
         Self {
             contract_artifact,
             compiled_class,
-            rpc_provider,
+            supplier: client_supplier,
         }
     }
-    pub fn cartridge_account<T>(rpc_provider: &'a Q) -> Self
+    pub fn cartridge_account<T>(client_supplier: &'a Q) -> Self
     where
         T: Send + Sync,
         JsonRpcClient<T>: Provider,
-        Q: RpcClientProvider<T>,
+        Q: RpcClientSupplier<T>,
     {
-        Self {
-            contract_artifact: serde_json::from_str(SIERRA_STR).unwrap(),
-            compiled_class: serde_json::from_str(CASM_STR).unwrap(),
-            rpc_provider,
-        }
+        Self::new(
+            serde_json::from_str(SIERRA_STR).unwrap(),
+            serde_json::from_str(CASM_STR).unwrap(),
+            client_supplier,
+        )
     }
 }
 
@@ -63,7 +63,7 @@ impl<'a, Q> CustomAccountDeclaration<'a, Q> {
     where
         T: Send + Sync,
         JsonRpcClient<T>: Provider,
-        Q: RpcClientProvider<T>,
+        Q: RpcClientSupplier<T>,
         P: Provider + Send + Sync,
         S: Signer + Send + Sync,
     {
@@ -87,7 +87,7 @@ impl<'a, Q> CustomAccountDeclaration<'a, Q> {
 
         Ok(PendingDeclaration::from((
             declaration_result,
-            self.rpc_provider.get_client(),
+            self.supplier.client(),
         )))
     }
 }

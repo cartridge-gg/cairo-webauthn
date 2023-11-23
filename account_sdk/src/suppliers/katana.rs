@@ -4,16 +4,16 @@ use starknet::{
 };
 use url::Url;
 
-use super::{katana_runner::KatanaRunner, PrefoundedClientProvider, RpcClientProvider};
+use super::{katana_runner::KatanaRunner, PrefoundedClientSupplier, RpcClientSupplier};
 
-use super::{PredeployedAccount, PredeployedClientProvider, PredeployedContract};
+use super::{PredeployedAccount, PredeployedClientSupplier, PredeployedContract};
 
 #[derive(Debug, Clone, Copy)]
-pub struct KatanaProvider {
+pub struct KatanaSupplier {
     port: u16,
 }
 
-impl PrefoundedClientProvider for KatanaProvider {
+impl PrefoundedClientSupplier for KatanaSupplier {
     fn prefounded_account(&self) -> PredeployedAccount {
         PredeployedAccount {
             account_address: felt!(
@@ -25,7 +25,7 @@ impl PrefoundedClientProvider for KatanaProvider {
     }
 }
 
-impl PredeployedClientProvider for KatanaProvider {
+impl PredeployedClientSupplier for KatanaSupplier {
     // cargo run -- --port 1234 --seed 0
     fn predeployed_fee_token(&self) -> PredeployedContract {
         PredeployedContract {
@@ -42,20 +42,20 @@ impl PredeployedClientProvider for KatanaProvider {
     }
 }
 
-impl From<&u16> for KatanaProvider {
+impl From<&u16> for KatanaSupplier {
     fn from(value: &u16) -> Self {
-        KatanaProvider { port: *value }
+        KatanaSupplier { port: *value }
     }
 }
 
-impl From<&KatanaRunner> for KatanaProvider {
+impl From<&KatanaRunner> for KatanaSupplier {
     fn from(value: &KatanaRunner) -> Self {
-        KatanaProvider { port: value.port() }
+        KatanaSupplier { port: value.port() }
     }
 }
 
-impl RpcClientProvider<HttpTransport> for KatanaProvider {
-    fn get_client(&self) -> JsonRpcClient<HttpTransport> {
+impl RpcClientSupplier<HttpTransport> for KatanaSupplier {
+    fn client(&self) -> JsonRpcClient<HttpTransport> {
         JsonRpcClient::new(HttpTransport::new(
             Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
         ))

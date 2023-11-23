@@ -4,16 +4,16 @@ use starknet::{
 };
 use url::Url;
 
-use super::{PrefoundedClientProvider, RpcClientProvider};
+use super::{PrefoundedClientSupplier, RpcClientSupplier};
 
-use super::{PredeployedAccount, PredeployedClientProvider, PredeployedContract};
+use super::{PredeployedAccount, PredeployedClientSupplier, PredeployedContract};
 
 #[derive(Debug, Clone)]
-pub struct DevnetProvider {
+pub struct DevnetSupplier {
     pub port: u16,
 }
 
-impl PrefoundedClientProvider for DevnetProvider {
+impl PrefoundedClientSupplier for DevnetSupplier {
     fn prefounded_account(&self) -> PredeployedAccount {
         PredeployedAccount {
             account_address: felt!(
@@ -25,7 +25,7 @@ impl PrefoundedClientProvider for DevnetProvider {
     }
 }
 
-impl PredeployedClientProvider for DevnetProvider {
+impl PredeployedClientSupplier for DevnetSupplier {
     // cargo run -- --port 1234 --seed 0
     fn predeployed_fee_token(&self) -> PredeployedContract {
         PredeployedContract {
@@ -42,8 +42,8 @@ impl PredeployedClientProvider for DevnetProvider {
     }
 }
 
-impl RpcClientProvider<HttpTransport> for DevnetProvider {
-    fn get_client(&self) -> JsonRpcClient<HttpTransport> {
+impl RpcClientSupplier<HttpTransport> for DevnetSupplier {
+    fn client(&self) -> JsonRpcClient<HttpTransport> {
         JsonRpcClient::new(HttpTransport::new(
             Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
         ))

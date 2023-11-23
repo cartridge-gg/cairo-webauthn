@@ -6,22 +6,24 @@ use starknet::{
     signers::Signer,
 };
 
-use crate::providers::{PredeployedClientProvider, RpcClientProvider};
+use crate::suppliers::{PredeployedClientSupplier, RpcClientSupplier};
 
 use super::pending::PendingDeployment;
 
 pub struct CustomAccountDeployment<'a, Q> {
-    client_provider: &'a Q,
+    supplier: &'a Q,
 }
 
 impl<'a, Q> CustomAccountDeployment<'a, Q> {
-    pub fn new<T>(client_provider: &'a Q) -> Self
+    pub fn new<T>(client_supplier: &'a Q) -> Self
     where
-        Q: RpcClientProvider<T> + PredeployedClientProvider,
+        Q: RpcClientSupplier<T> + PredeployedClientSupplier,
         JsonRpcClient<T>: Provider,
         T: Send + Sync,
     {
-        CustomAccountDeployment { client_provider: &client_provider }
+        CustomAccountDeployment {
+            supplier: &client_supplier,
+        }
     }
 }
 
@@ -40,7 +42,7 @@ impl<'a, Q> CustomAccountDeployment<'a, Q> {
         class_hash: FieldElement,
     ) -> Result<PendingDeployment<T>, String>
     where
-        Q: RpcClientProvider<T> + PredeployedClientProvider,
+        Q: RpcClientSupplier<T> + PredeployedClientSupplier,
         P: Provider + Send + Sync,
         S: Signer + Send + Sync,
         JsonRpcClient<T>: Provider,
@@ -49,7 +51,7 @@ impl<'a, Q> CustomAccountDeployment<'a, Q> {
         let contract_factory = ContractFactory::new_with_udc(
             class_hash,
             account,
-            self.client_provider.predeployed_udc().address,
+            self.supplier.predeployed_udc().address,
         );
 
         let deployment = contract_factory.deploy(constructor_calldata, salt, false);
@@ -62,9 +64,6 @@ impl<'a, Q> CustomAccountDeployment<'a, Q> {
             transaction_hash,
         };
 
-        Ok(PendingDeployment::from((
-            result,
-            self.client_provider.get_client(),
-        )))
+        Ok(PendingDeployment::from((result, self.supplier.client())))
     }
 }

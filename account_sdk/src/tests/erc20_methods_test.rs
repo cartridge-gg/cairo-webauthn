@@ -5,9 +5,9 @@ use starknet::{
     providers::Provider,
 };
 
-use crate::providers::{
-    katana::KatanaProvider, katana_runner::KatanaRunner, PredeployedClientProvider,
-    PrefoundedClientProvider, RpcClientProvider,
+use crate::suppliers::{
+    katana::KatanaSupplier, katana_runner::KatanaRunner, PredeployedClientSupplier,
+    PrefoundedClientSupplier, RpcClientSupplier,
 };
 
 // Starknet devnet
@@ -16,11 +16,11 @@ use crate::providers::{
 #[tokio::test]
 async fn test_balance_of() {
     let runner = KatanaRunner::load();
-    let network = KatanaProvider::from(&runner);
+    let network = KatanaSupplier::from(&runner);
     let account = network.prefounded_single_owner().await;
 
     let call_result: Vec<starknet::core::types::FieldElement> = network
-        .get_client()
+        .client()
         .call(
             FunctionCall {
                 contract_address: network.predeployed_fee_token().address,
@@ -38,7 +38,7 @@ async fn test_balance_of() {
 #[tokio::test]
 async fn test_balance_of_account() {
     let runner = KatanaRunner::load();
-    let network = KatanaProvider::from(&runner);
+    let network = KatanaSupplier::from(&runner);
     let account = network.prefounded_single_owner().await;
 
     let call_result = account
@@ -57,7 +57,7 @@ async fn test_balance_of_account() {
 #[tokio::test]
 async fn test_transfer() {
     let runner = KatanaRunner::load();
-    let network = KatanaProvider::from(&runner);
+    let network = KatanaSupplier::from(&runner);
     let new_account = felt!("0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1");
     let account = network.prefounded_single_owner().await;
 

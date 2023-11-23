@@ -36,30 +36,30 @@ lazy_static! {
     );
 }
 
-pub trait RpcClientProvider<T> {
-    fn get_client(&self) -> JsonRpcClient<T>;
+pub trait RpcClientSupplier<T> {
+    fn client(&self) -> JsonRpcClient<T>;
 }
 
-pub trait PredeployedClientProvider
+pub trait PredeployedClientSupplier
 where
-    Self: RpcClientProvider<HttpTransport>,
+    Self: RpcClientSupplier<HttpTransport>,
 {
     fn predeployed_fee_token(&self) -> PredeployedContract;
     fn predeployed_udc(&self) -> PredeployedContract;
 }
 
 #[async_trait]
-pub trait PrefoundedClientProvider
+pub trait PrefoundedClientSupplier
 where
-    Self: RpcClientProvider<HttpTransport>,
-    Self: PredeployedClientProvider,
+    Self: RpcClientSupplier<HttpTransport>,
+    Self: PredeployedClientSupplier,
 {
     fn prefounded_account(&self) -> PredeployedAccount;
     async fn prefounded_single_owner(
         &self,
     ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> {
         let predeployed = self.prefounded_account();
-        let network = self.get_client();
+        let network = self.client();
         let chain_id = network.chain_id().await.unwrap();
 
         let mut account = SingleOwnerAccount::new(

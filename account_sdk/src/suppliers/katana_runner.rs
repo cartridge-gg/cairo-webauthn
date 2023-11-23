@@ -1,10 +1,5 @@
 use serde::Deserialize;
-use starknet::{
-    core::types::FieldElement,
-    macros::felt,
-    providers::{jsonrpc::HttpTransport, JsonRpcClient},
-    signers::SigningKey,
-};
+use starknet::{core::types::FieldElement, macros::felt, signers::SigningKey};
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc;
 use std::thread;
@@ -18,7 +13,6 @@ use std::{
     net::TcpListener,
     path::{Path, PathBuf},
 };
-use url::Url;
 
 use lazy_static::lazy_static;
 
@@ -29,7 +23,6 @@ pub fn find_free_port() -> u16 {
         .unwrap()
         .port()
 }
-use super::RpcClientProvider;
 
 lazy_static! {
     pub static ref UDC_ADDRESS: FieldElement =
@@ -161,37 +154,6 @@ impl KatanaRunner {
                 fs::create_dir_all(dir_path).unwrap();
             }
         }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct KatanaClientProvider {
-    port: u16,
-}
-
-impl KatanaClientProvider {
-    pub fn port(&self) -> u16 {
-        self.port
-    }
-}
-
-impl From<u16> for KatanaClientProvider {
-    fn from(value: u16) -> Self {
-        KatanaClientProvider { port: value }
-    }
-}
-
-impl From<&KatanaRunner> for KatanaClientProvider {
-    fn from(value: &KatanaRunner) -> Self {
-        KatanaClientProvider { port: value.port }
-    }
-}
-
-impl RpcClientProvider<HttpTransport> for KatanaClientProvider {
-    fn get_client(&self) -> JsonRpcClient<HttpTransport> {
-        JsonRpcClient::new(HttpTransport::new(
-            Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
-        ))
     }
 }
 
