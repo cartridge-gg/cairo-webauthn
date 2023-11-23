@@ -9,7 +9,7 @@ use starknet::{
 use crate::{deploy_contract::CustomAccountDeployment, suppliers::PredeployedClientSupplier};
 use crate::{
     deploy_contract::{CustomAccountDeclaration, DeployResult},
-    suppliers::{katana::KatanaSupplier, katana_runner::KatanaRunner, PrefoundedClientSupplier},
+    suppliers::{katana::KatanaSupplier, katana_runner::KatanaRunner, PrefundedClientSupplier},
 };
 
 pub async fn declare_and_deploy(
@@ -40,7 +40,7 @@ pub async fn declare_and_deploy(
 async fn test_declare() {
     let runner = KatanaRunner::load();
     let supplier = KatanaSupplier::from(&runner);
-    let account = supplier.prefounded_single_owner_account().await;
+    let account = supplier.prefunded_single_owner_account().await;
     CustomAccountDeclaration::cartridge_account(&supplier)
         .declare(&account)
         .await
@@ -53,7 +53,7 @@ async fn test_declare() {
 async fn test_deploy() {
     let runner = KatanaRunner::load();
     let supplier = KatanaSupplier::from(&runner);
-    let account = supplier.prefounded_single_owner_account().await;
+    let account = supplier.prefunded_single_owner_account().await;
     declare_and_deploy(&supplier, &account, felt!("1337")).await;
 }
 
@@ -61,7 +61,7 @@ async fn test_deploy() {
 async fn test_deploy_and_call() {
     let runner = KatanaRunner::load();
     let supplier = KatanaSupplier::from(&runner);
-    let account = supplier.prefounded_single_owner_account().await;
+    let account = supplier.prefunded_single_owner_account().await;
     let deployed_address = declare_and_deploy(&supplier, &account, felt!("1939")).await;
 
     account

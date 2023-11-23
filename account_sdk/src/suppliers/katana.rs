@@ -4,7 +4,7 @@ use starknet::{
 };
 use url::Url;
 
-use super::{katana_runner::KatanaRunner, PrefoundedClientSupplier, RpcClientSupplier};
+use super::{katana_runner::KatanaRunner, PrefundedClientSupplier, RpcClientSupplier};
 
 use super::{AccountData, PredeployedClientSupplier, PredeployedContract};
 
@@ -13,8 +13,8 @@ pub struct KatanaSupplier {
     port: u16,
 }
 
-impl PrefoundedClientSupplier for KatanaSupplier {
-    fn prefounded_account(&self) -> AccountData {
+impl PrefundedClientSupplier for KatanaSupplier {
+    fn prefunded_account(&self) -> AccountData {
         AccountData {
             account_address: felt!(
                 "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973"

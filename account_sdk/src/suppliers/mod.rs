@@ -49,16 +49,16 @@ where
 }
 
 #[async_trait]
-pub trait PrefoundedClientSupplier
+pub trait PrefundedClientSupplier
 where
     Self: PredeployedClientSupplier,
 {
-    fn prefounded_account(&self) -> AccountData;
-    async fn prefounded_single_owner_account(
+    fn prefunded_account(&self) -> AccountData;
+    async fn prefunded_single_owner_account(
         &self,
     ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> {
         self._single_owner_account_with_encoding(
-            &self.prefounded_account(),
+            &self.prefunded_account(),
             ExecutionEncoding::Legacy,
         )
         .await

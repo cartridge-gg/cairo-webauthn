@@ -4,7 +4,7 @@ use starknet::{
 };
 use url::Url;
 
-use super::{PrefoundedClientSupplier, RpcClientSupplier};
+use super::{PrefundedClientSupplier, RpcClientSupplier};
 
 use super::{AccountData, PredeployedClientSupplier, PredeployedContract};
 
@@ -13,8 +13,8 @@ pub struct DevnetSupplier {
     pub port: u16,
 }
 
-impl PrefoundedClientSupplier for DevnetSupplier {
-    fn prefounded_account(&self) -> AccountData {
+impl PrefundedClientSupplier for DevnetSupplier {
+    fn prefunded_account(&self) -> AccountData {
         AccountData {
             account_address: felt!(
                 "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691"

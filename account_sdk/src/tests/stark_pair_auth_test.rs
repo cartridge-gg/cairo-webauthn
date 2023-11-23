@@ -7,14 +7,14 @@ use starknet::{
 use super::deployment_test::declare_and_deploy;
 use crate::suppliers::{
     katana::KatanaSupplier, katana_runner::KatanaRunner, AccountData, PredeployedClientSupplier,
-    PrefoundedClientSupplier,
+    PrefundedClientSupplier,
 };
 
 #[tokio::test]
 async fn test_authorize_execute() {
     let runner = KatanaRunner::load();
     let supplier = KatanaSupplier::from(&runner);
-    let prefunded = supplier.prefounded_single_owner_account().await;
+    let prefunded = supplier.prefunded_single_owner_account().await;
     let private_key = SigningKey::from_random();
     let deployed_address =
         declare_and_deploy(&supplier, &prefunded, private_key.verifying_key().scalar()).await;
