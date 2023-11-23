@@ -36,7 +36,7 @@ async fn test_deploy() {
             .wait_for_completion()
             .await;
 
-    CustomAccountDeployment::new(provider)
+    CustomAccountDeployment::new(&provider)
         .deploy(
             vec![felt!("12345")],
             FieldElement::ZERO,
@@ -64,7 +64,7 @@ async fn test_deploy_and_call() {
 
     let DeployResult {
         deployed_address, ..
-    } = CustomAccountDeployment::new(provider)
+    } = CustomAccountDeployment::new(&provider)
         .deploy(
             vec![felt!("12345")],
             FieldElement::ZERO,

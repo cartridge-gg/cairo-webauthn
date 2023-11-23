@@ -10,18 +10,18 @@ use crate::providers::{PredeployedClientProvider, RpcClientProvider};
 
 use super::pending::PendingDeployment;
 
-pub struct CustomAccountDeployment<Q> {
-    client_provider: Q,
+pub struct CustomAccountDeployment<'a, Q> {
+    client_provider: &'a Q,
 }
 
-impl<Q> CustomAccountDeployment<Q> {
-    pub fn new<T>(client_provider: Q) -> Self
+impl<'a, Q> CustomAccountDeployment<'a, Q> {
+    pub fn new<T>(client_provider: &'a Q) -> Self
     where
         Q: RpcClientProvider<T> + PredeployedClientProvider,
         JsonRpcClient<T>: Provider,
         T: Send + Sync,
     {
-        CustomAccountDeployment { client_provider }
+        CustomAccountDeployment { client_provider: &client_provider }
     }
 }
 
@@ -31,7 +31,7 @@ pub struct DeployResult {
     pub transaction_hash: FieldElement,
 }
 
-impl<Q> CustomAccountDeployment<Q> {
+impl<'a, Q> CustomAccountDeployment<'a, Q> {
     pub async fn deploy<T, P, S>(
         &self,
         constructor_calldata: Vec<FieldElement>,
