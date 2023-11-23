@@ -6,7 +6,7 @@ use url::Url;
 
 use super::{katana_runner::KatanaRunner, PrefoundedClientSupplier, RpcClientSupplier};
 
-use super::{PredeployedAccount, PredeployedClientSupplier, PredeployedContract};
+use super::{AccountData, PredeployedClientSupplier, PredeployedContract};
 
 #[derive(Debug, Clone, Copy)]
 pub struct KatanaSupplier {
@@ -14,8 +14,8 @@ pub struct KatanaSupplier {
 }
 
 impl PrefoundedClientSupplier for KatanaSupplier {
-    fn prefounded_account(&self) -> PredeployedAccount {
-        PredeployedAccount {
+    fn prefounded_account(&self) -> AccountData {
+        AccountData {
             account_address: felt!(
                 "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973"
             ),

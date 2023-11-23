@@ -6,7 +6,7 @@ use url::Url;
 
 use super::{PrefoundedClientSupplier, RpcClientSupplier};
 
-use super::{PredeployedAccount, PredeployedClientSupplier, PredeployedContract};
+use super::{AccountData, PredeployedClientSupplier, PredeployedContract};
 
 #[derive(Debug, Clone)]
 pub struct DevnetSupplier {
@@ -14,8 +14,8 @@ pub struct DevnetSupplier {
 }
 
 impl PrefoundedClientSupplier for DevnetSupplier {
-    fn prefounded_account(&self) -> PredeployedAccount {
-        PredeployedAccount {
+    fn prefounded_account(&self) -> AccountData {
+        AccountData {
             account_address: felt!(
                 "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691"
             ),

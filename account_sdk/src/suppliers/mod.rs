@@ -54,18 +54,23 @@ where
     Self: RpcClientSupplier<HttpTransport>,
     Self: PredeployedClientSupplier,
 {
-    fn prefounded_account(&self) -> PredeployedAccount;
+    fn prefounded_account(&self) -> AccountData;
     async fn prefounded_single_owner(
         &self,
     ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> {
-        let predeployed = self.prefounded_account();
+        self.single_owner_account(&self.prefounded_account()).await
+    }
+    async fn single_owner_account(
+        &self,
+        data: &AccountData,
+    ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> {
         let network = self.client();
         let chain_id = network.chain_id().await.unwrap();
 
         let mut account = SingleOwnerAccount::new(
             network,
-            LocalWallet::from(predeployed.signing_key()),
-            predeployed.account_address,
+            LocalWallet::from(data.signing_key()),
+            data.account_address,
             chain_id,
             ExecutionEncoding::Legacy,
         );
@@ -75,13 +80,23 @@ where
     }
 }
 
-pub struct PredeployedAccount {
+#[derive(Debug, Clone)]
+pub struct AccountData {
     pub account_address: FieldElement,
     pub private_key: FieldElement,
     pub public_key: FieldElement,
 }
 
-impl PredeployedAccount {
+impl AccountData {
+    pub fn new(account_address: FieldElement, private_key: FieldElement) -> AccountData {
+        AccountData {
+            account_address,
+            private_key,
+            public_key: SigningKey::from_secret_scalar(private_key)
+                .verifying_key()
+                .scalar(),
+        }
+    }
     pub fn signing_key(&self) -> SigningKey {
         SigningKey::from_secret_scalar(self.private_key)
     }
