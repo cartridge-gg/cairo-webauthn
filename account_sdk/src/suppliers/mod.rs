@@ -54,14 +54,26 @@ where
     Self: PredeployedClientSupplier,
 {
     fn prefounded_account(&self) -> AccountData;
-    async fn prefounded_single_owner(
+    async fn prefounded_single_owner_account(
         &self,
     ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> {
-        self.single_owner_account(&self.prefounded_account()).await
+        self._single_owner_account_with_encoding(
+            &self.prefounded_account(),
+            ExecutionEncoding::Legacy,
+        )
+        .await
     }
     async fn single_owner_account(
         &self,
         data: &AccountData,
+    ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> {
+        self._single_owner_account_with_encoding(data, ExecutionEncoding::New)
+            .await
+    }
+    async fn _single_owner_account_with_encoding(
+        &self,
+        data: &AccountData,
+        encoding: ExecutionEncoding,
     ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> {
         let network = self.client();
         let chain_id = network.chain_id().await.unwrap();
@@ -71,7 +83,7 @@ where
             LocalWallet::from(data.signing_key()),
             data.account_address,
             chain_id,
-            ExecutionEncoding::Legacy,
+            encoding,
         );
 
         account.set_block_id(BlockId::Tag(BlockTag::Pending)); // For fetching valid nonce

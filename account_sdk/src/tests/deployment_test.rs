@@ -1,7 +1,9 @@
 use starknet::{
     accounts::{Account, Call, SingleOwnerAccount},
     core::types::{DeclareTransactionResult, FieldElement},
-    macros::{felt, selector}, providers::{JsonRpcClient, jsonrpc::HttpTransport}, signers::LocalWallet,
+    macros::{felt, selector},
+    providers::{jsonrpc::HttpTransport, JsonRpcClient},
+    signers::LocalWallet,
 };
 
 use crate::{deploy_contract::CustomAccountDeployment, suppliers::PredeployedClientSupplier};
@@ -26,12 +28,7 @@ pub async fn declare_and_deploy(
     let DeployResult {
         deployed_address, ..
     } = CustomAccountDeployment::new(supplier)
-        .deploy(
-            vec![public_key],
-            FieldElement::ZERO,
-            &account,
-            class_hash,
-        )
+        .deploy(vec![public_key], FieldElement::ZERO, &account, class_hash)
         .await
         .unwrap()
         .wait_for_completion()
@@ -43,7 +40,7 @@ pub async fn declare_and_deploy(
 async fn test_declare() {
     let runner = KatanaRunner::load();
     let supplier = KatanaSupplier::from(&runner);
-    let account = supplier.prefounded_single_owner().await;
+    let account = supplier.prefounded_single_owner_account().await;
     CustomAccountDeclaration::cartridge_account(&supplier)
         .declare(&account)
         .await
@@ -56,7 +53,7 @@ async fn test_declare() {
 async fn test_deploy() {
     let runner = KatanaRunner::load();
     let supplier = KatanaSupplier::from(&runner);
-    let account = supplier.prefounded_single_owner().await;
+    let account = supplier.prefounded_single_owner_account().await;
     declare_and_deploy(&supplier, &account, felt!("1337")).await;
 }
 
@@ -64,7 +61,7 @@ async fn test_deploy() {
 async fn test_deploy_and_call() {
     let runner = KatanaRunner::load();
     let supplier = KatanaSupplier::from(&runner);
-    let account = supplier.prefounded_single_owner().await;
+    let account = supplier.prefounded_single_owner_account().await;
     let deployed_address = declare_and_deploy(&supplier, &account, felt!("1939")).await;
 
     account

@@ -17,7 +17,7 @@ use crate::suppliers::{
 async fn test_balance_of() {
     let runner = KatanaRunner::load();
     let network = KatanaSupplier::from(&runner);
-    let account = network.prefounded_single_owner().await;
+    let account = network.prefounded_single_owner_account().await;
 
     let call_result: Vec<starknet::core::types::FieldElement> = network
         .client()
@@ -39,7 +39,7 @@ async fn test_balance_of() {
 async fn test_balance_of_account() {
     let runner = KatanaRunner::load();
     let network = KatanaSupplier::from(&runner);
-    let account = network.prefounded_single_owner().await;
+    let account = network.prefounded_single_owner_account().await;
 
     let call_result = account
         .execute(vec![Call {
@@ -59,7 +59,7 @@ async fn test_transfer() {
     let runner = KatanaRunner::load();
     let network = KatanaSupplier::from(&runner);
     let new_account = felt!("0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1");
-    let account = network.prefounded_single_owner().await;
+    let account = network.prefounded_single_owner_account().await;
 
     let call_result = account
         .execute(vec![Call {
