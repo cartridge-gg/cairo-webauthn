@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "cairo_client",
+    "webauthn_sdk",
     "account_sdk"
 ]
 
