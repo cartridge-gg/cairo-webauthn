@@ -1,8 +1,8 @@
 pub(crate) mod declaration;
 mod deployment;
 mod pending;
-pub use declaration::CustomAccountDeclaration;
-pub use deployment::CustomAccountDeployment;
+pub use declaration::AccountDeclaration;
+pub use deployment::AccountDeployment;
 pub use deployment::DeployResult;
 use lazy_static::lazy_static;
 use starknet::accounts::{ExecutionEncoding, SingleOwnerAccount};

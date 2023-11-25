@@ -16,13 +16,13 @@ pub const CASM_STR: &str = include_str!(
     "../../../cartridge_account/target/dev/cartridge_account_Account.compiled_contract_class.json"
 );
 
-pub struct CustomAccountDeclaration<'a, T> {
+pub struct AccountDeclaration<'a, T> {
     contract_artifact: SierraClass,
     compiled_class: CompiledClass,
     client: &'a JsonRpcClient<T>,
 }
 
-impl<'a, T> CustomAccountDeclaration<'a, T> {
+impl<'a, T> AccountDeclaration<'a, T> {
     pub fn new(
         contract_artifact: SierraClass,
         compiled_class: CompiledClass,
@@ -51,7 +51,7 @@ impl<'a, T> CustomAccountDeclaration<'a, T> {
     }
 }
 
-impl<'a, T> CustomAccountDeclaration<'a, T> {
+impl<'a, T> AccountDeclaration<'a, T> {
     pub async fn declare<P, S>(
         self,
         account: &SingleOwnerAccount<P, S>,

@@ -7,15 +7,15 @@ use starknet::{
 };
 
 use super::katana_runner::KatanaRunner;
-use crate::deploy_contract::CustomAccountDeployment;
-use crate::deploy_contract::{CustomAccountDeclaration, DeployResult};
+use crate::deploy_contract::AccountDeployment;
+use crate::deploy_contract::{AccountDeclaration, DeployResult};
 
 pub async fn declare(
     client: &JsonRpcClient<HttpTransport>,
     account: &SingleOwnerAccount<&JsonRpcClient<HttpTransport>, LocalWallet>,
 ) -> FieldElement {
     let DeclareTransactionResult { class_hash, .. } =
-        CustomAccountDeclaration::cartridge_account(&client)
+        AccountDeclaration::cartridge_account(&client)
             .declare(&account)
             .await
             .unwrap()
@@ -33,7 +33,7 @@ pub async fn deploy(
 ) -> FieldElement {
     let DeployResult {
         deployed_address, ..
-    } = CustomAccountDeployment::new(&client)
+    } = AccountDeployment::new(&client)
         .deploy(vec![public_key], FieldElement::ZERO, &account, class_hash)
         .await
         .unwrap()

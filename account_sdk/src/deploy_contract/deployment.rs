@@ -8,17 +8,17 @@ use starknet::{
 
 use super::{pending::PendingDeployment, UDC_ADDRESS};
 
-pub struct CustomAccountDeployment<'a, T> {
+pub struct AccountDeployment<'a, T> {
     client: &'a JsonRpcClient<T>,
 }
 
-impl<'a, T> CustomAccountDeployment<'a, T> {
+impl<'a, T> AccountDeployment<'a, T> {
     pub fn new(client: &'a JsonRpcClient<T>) -> Self
     where
         &'a JsonRpcClient<T>: Provider,
         T: Send + Sync,
     {
-        CustomAccountDeployment { client }
+        AccountDeployment { client }
     }
 }
 
@@ -28,7 +28,7 @@ pub struct DeployResult {
     pub transaction_hash: FieldElement,
 }
 
-impl<'a, T> CustomAccountDeployment<'a, T> {
+impl<'a, T> AccountDeployment<'a, T> {
     pub async fn deploy<P, S>(
         self,
         constructor_calldata: Vec<FieldElement>,
