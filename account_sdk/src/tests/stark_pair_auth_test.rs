@@ -1,37 +1,33 @@
 use starknet::{
-    accounts::{Account, AccountError, Call},
+    accounts::{Account, Call},
     macros::{felt, selector},
-    providers::StarknetErrorWithMessage,
     signers::SigningKey,
 };
 
-use super::deployment_test::declare_and_deploy;
-use crate::suppliers::{
-    devnet::DevnetSupplier, katana::KatanaSupplier, katana_runner::KatanaRunner, AccountData,
-    PredeployedClientSupplier, PrefundedClientSupplier,
-};
-use starknet::core::types::StarknetError::InsufficientAccountBalance;
-use starknet::providers::MaybeUnknownErrorCode::Known;
-use starknet::providers::ProviderError::StarknetError;
+use super::katana_runner::KatanaRunner;
+use crate::deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS};
+
+use super::deployment_test::{declare, deploy};
 
 #[tokio::test]
 async fn test_authorize_execute() {
     let runner = KatanaRunner::load();
-    let supplier = KatanaSupplier::from(&runner);
-    let prefunded = supplier.prefunded_single_owner_account().await;
+    let prefunded = runner.prefunded_single_owner_account().await;
+    let class_hash = declare(runner.client(), &prefunded).await;
     let private_key = SigningKey::from_random();
-    let deployed_address =
-        declare_and_deploy(&supplier, &prefunded, private_key.verifying_key().scalar()).await;
-    let new_account = supplier
-        .single_owner_account(&AccountData::new(
-            deployed_address,
-            private_key.secret_scalar(),
-        ))
-        .await;
+    let deployed_address = deploy(
+        runner.client(),
+        &prefunded,
+        private_key.verifying_key().scalar(),
+        class_hash,
+    )
+    .await;
+
+    let new_account = single_owner_account(runner.client(), private_key, deployed_address).await;
 
     prefunded
         .execute(vec![Call {
-            to: supplier.predeployed_fee_token().address,
+            to: *FEE_TOKEN_ADDRESS,
             selector: selector!("transfer"),
             calldata: vec![new_account.address(), felt!("0x10000000"), felt!("0x0")],
         }])
@@ -48,79 +44,4 @@ async fn test_authorize_execute() {
         .send()
         .await
         .unwrap();
-}
-
-#[tokio::test]
-#[ignore = "This test requires a fresh instance of devnet running and exposed on port 1234"]
-async fn test_authorize_execute_devnet() {
-    let supplier = DevnetSupplier { port: 1234 };
-    let prefunded = supplier.prefunded_single_owner_account().await;
-    let private_key = SigningKey::from_random();
-    let deployed_address =
-        declare_and_deploy(&supplier, &prefunded, private_key.verifying_key().scalar()).await;
-    let new_account = supplier
-        .single_owner_account(&AccountData::new(
-            deployed_address,
-            private_key.secret_scalar(),
-        ))
-        .await;
-
-    prefunded
-        .execute(vec![Call {
-            to: supplier.predeployed_fee_token().address,
-            selector: selector!("transfer"),
-            calldata: vec![
-                new_account.address(),
-                felt!("10000000000000000"),
-                felt!("0x0"),
-            ],
-        }])
-        .send()
-        .await
-        .unwrap();
-
-    new_account
-        .execute(vec![Call {
-            to: prefunded.address(),
-            selector: selector!("getPublicKey"),
-            calldata: vec![],
-        }])
-        .send()
-        .await
-        .unwrap();
-}
-
-#[tokio::test]
-#[ignore = "This test requires a fresh instance of devnet running and exposed on port 1234"]
-async fn test_authorize_execute_devnet_should_fail() {
-    let supplier = DevnetSupplier { port: 1234 };
-    let prefunded = supplier.prefunded_single_owner_account().await;
-    let private_key = SigningKey::from_random();
-    let deployed_address =
-        declare_and_deploy(&supplier, &prefunded, private_key.verifying_key().scalar()).await;
-    let new_account = supplier
-        .single_owner_account(&AccountData::new(
-            deployed_address,
-            private_key.secret_scalar(),
-        ))
-        .await;
-
-    let result = new_account
-        .execute(vec![Call {
-            to: prefunded.address(),
-            selector: selector!("getPublicKey"),
-            calldata: vec![],
-        }])
-        .send()
-        .await;
-
-    assert!(matches!(
-        result,
-        Err(AccountError::Provider(StarknetError(
-            StarknetErrorWithMessage {
-                code: Known(InsufficientAccountBalance),
-                ..
-            }
-        )))
-    ));
 }

@@ -6,31 +6,34 @@ use starknet::{
     signers::LocalWallet,
 };
 
-use crate::{
-    deploy_contract::CustomAccountDeployment,
-    suppliers::{PredeployedClientSupplier, RpcClientSupplier},
-};
-use crate::{
-    deploy_contract::{CustomAccountDeclaration, DeployResult},
-    suppliers::{katana::KatanaSupplier, katana_runner::KatanaRunner, PrefundedClientSupplier},
-};
+use super::katana_runner::KatanaRunner;
+use crate::deploy_contract::CustomAccountDeployment;
+use crate::deploy_contract::{CustomAccountDeclaration, DeployResult};
 
-pub async fn declare_and_deploy(
-    supplier: &impl PredeployedClientSupplier,
+pub async fn declare(
+    client: JsonRpcClient<HttpTransport>,
     account: &SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
-    public_key: FieldElement,
 ) -> FieldElement {
     let DeclareTransactionResult { class_hash, .. } =
-        CustomAccountDeclaration::cartridge_account(supplier.client())
+        CustomAccountDeclaration::cartridge_account(client)
             .declare(&account)
             .await
             .unwrap()
             .wait_for_completion()
             .await;
 
+    class_hash
+}
+
+pub async fn deploy(
+    client: JsonRpcClient<HttpTransport>,
+    account: &SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
+    public_key: FieldElement,
+    class_hash: FieldElement,
+) -> FieldElement {
     let DeployResult {
         deployed_address, ..
-    } = CustomAccountDeployment::new(supplier.client())
+    } = CustomAccountDeployment::new(client)
         .deploy(vec![public_key], FieldElement::ZERO, &account, class_hash)
         .await
         .unwrap()
@@ -42,30 +45,24 @@ pub async fn declare_and_deploy(
 #[tokio::test]
 async fn test_declare() {
     let runner = KatanaRunner::load();
-    let supplier = KatanaSupplier::from(&runner);
-    let account = supplier.prefunded_single_owner_account().await;
-    CustomAccountDeclaration::cartridge_account(supplier.client())
-        .declare(&account)
-        .await
-        .unwrap()
-        .wait_for_completion()
-        .await;
+    let account = runner.prefunded_single_owner_account().await;
+    declare(runner.client(), &account).await;
 }
 
 #[tokio::test]
 async fn test_deploy() {
     let runner = KatanaRunner::load();
-    let supplier = KatanaSupplier::from(&runner);
-    let account = supplier.prefunded_single_owner_account().await;
-    declare_and_deploy(&supplier, &account, felt!("1337")).await;
+    let account = runner.prefunded_single_owner_account().await;
+    let class_hash = declare(runner.client(), &account).await;
+    deploy(runner.client(), &account, felt!("1337"), class_hash).await;
 }
 
 #[tokio::test]
 async fn test_deploy_and_call() {
     let runner = KatanaRunner::load();
-    let supplier = KatanaSupplier::from(&runner);
-    let account = supplier.prefunded_single_owner_account().await;
-    let deployed_address = declare_and_deploy(&supplier, &account, felt!("1939")).await;
+    let account = runner.prefunded_single_owner_account().await;
+    let class_hash = declare(runner.client(), &account).await;
+    let deployed_address = deploy(runner.client(), &account, felt!("1337"), class_hash).await;
 
     account
         .execute(vec![Call {

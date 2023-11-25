@@ -5,10 +5,8 @@ use starknet::{
     providers::Provider,
 };
 
-use crate::suppliers::{
-    katana::KatanaSupplier, katana_runner::KatanaRunner, PredeployedClientSupplier,
-    PrefundedClientSupplier, RpcClientSupplier,
-};
+use super::katana_runner::KatanaRunner;
+use crate::deploy_contract::FEE_TOKEN_ADDRESS;
 
 // Starknet devnet
 // cargo run -- --port 1234 --seed 0
@@ -16,14 +14,13 @@ use crate::suppliers::{
 #[tokio::test]
 async fn test_balance_of() {
     let runner = KatanaRunner::load();
-    let network = KatanaSupplier::from(&runner);
-    let account = network.prefunded_single_owner_account().await;
+    let account = runner.prefunded_single_owner_account().await;
 
-    let call_result: Vec<starknet::core::types::FieldElement> = network
+    let call_result: Vec<starknet::core::types::FieldElement> = runner
         .client()
         .call(
             FunctionCall {
-                contract_address: network.predeployed_fee_token().address,
+                contract_address: *FEE_TOKEN_ADDRESS,
                 entry_point_selector: selector!("balanceOf"),
                 calldata: vec![account.address()],
             },
@@ -38,12 +35,11 @@ async fn test_balance_of() {
 #[tokio::test]
 async fn test_balance_of_account() {
     let runner = KatanaRunner::load();
-    let network = KatanaSupplier::from(&runner);
-    let account = network.prefunded_single_owner_account().await;
+    let account = runner.prefunded_single_owner_account().await;
 
     let call_result = account
         .execute(vec![Call {
-            to: network.predeployed_fee_token().address,
+            to: *FEE_TOKEN_ADDRESS,
             selector: selector!("balanceOf"),
             calldata: vec![account.address()],
         }])
@@ -57,13 +53,12 @@ async fn test_balance_of_account() {
 #[tokio::test]
 async fn test_transfer() {
     let runner = KatanaRunner::load();
-    let network = KatanaSupplier::from(&runner);
     let new_account = felt!("0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1");
-    let account = network.prefunded_single_owner_account().await;
+    let account = runner.prefunded_single_owner_account().await;
 
     let call_result = account
         .execute(vec![Call {
-            to: network.predeployed_fee_token().address,
+            to: *FEE_TOKEN_ADDRESS,
             selector: selector!("balanceOf"),
             calldata: vec![new_account],
         }])
@@ -74,7 +69,7 @@ async fn test_transfer() {
 
     let call_result = account
         .execute(vec![Call {
-            to: network.predeployed_fee_token().address,
+            to: *FEE_TOKEN_ADDRESS,
             selector: selector!("transfer"),
             calldata: vec![new_account, felt!("0x10"), felt!("0x0")],
         }])

@@ -1,4 +1,8 @@
 use serde::Deserialize;
+use starknet::accounts::{ExecutionEncoding, SingleOwnerAccount};
+use starknet::providers::jsonrpc::HttpTransport;
+use starknet::providers::JsonRpcClient;
+use starknet::signers::LocalWallet;
 use starknet::{core::types::FieldElement, macros::felt, signers::SigningKey};
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc;
@@ -13,8 +17,25 @@ use std::{
     net::TcpListener,
     path::{Path, PathBuf},
 };
+use url::Url;
 
 use lazy_static::lazy_static;
+
+use crate::deploy_contract::single_owner_account_with_encoding;
+
+lazy_static! {
+    // Signing key and address of the katana prefunded account.
+    pub static ref PREFUNDED: (SigningKey, FieldElement) = (
+        SigningKey::from_secret_scalar(
+            felt!(
+                "0x1800000000300000180000000000030000000000003006001800006600"
+            ),
+        ),
+        felt!(
+            "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973"
+        )
+    );
+}
 
 pub fn find_free_port() -> u16 {
     TcpListener::bind("127.0.0.1:0")
@@ -22,29 +43,6 @@ pub fn find_free_port() -> u16 {
         .local_addr()
         .unwrap()
         .port()
-}
-
-lazy_static! {
-    pub static ref UDC_ADDRESS: FieldElement =
-        felt!("0x041a78e741e5af2fec34b695679bc6891742439f7afb8484ecd7766661ad02bf");
-    pub static ref FEE_TOKEN_ADDRESS: FieldElement =
-        felt!("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7");
-    pub static ref ERC20_CONTRACT_CLASS_HASH: FieldElement =
-        felt!("0x02a8846878b6ad1f54f6ba46f5f40e11cee755c677f130b2c4b60566c9003f1f");
-    pub static ref CHAIN_ID: FieldElement =
-        felt!("0x00000000000000000000000000000000000000000000000000004b4154414e41");
-    pub static ref PREFUNDED: (SigningKey, FieldElement) = (
-        SigningKey::from_secret_scalar(
-            FieldElement::from_hex_be(
-                "0x1800000000300000180000000000030000000000003006001800006600"
-            )
-            .unwrap(),
-        ),
-        FieldElement::from_hex_be(
-            "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973",
-        )
-        .unwrap()
-    );
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -119,6 +117,24 @@ impl KatanaRunner {
         }
     }
 
+    pub fn client(&self) -> JsonRpcClient<HttpTransport> {
+        JsonRpcClient::new(HttpTransport::new(
+            Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
+        ))
+    }
+
+    pub async fn prefunded_single_owner_account(
+        &self,
+    ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> {
+        single_owner_account_with_encoding(
+            self.client(),
+            PREFUNDED.0.clone(),
+            PREFUNDED.1,
+            ExecutionEncoding::Legacy,
+        )
+        .await
+    }
+
     pub fn load() -> Self {
         KatanaRunner::new(KatanaRunnerConfig::from_file("KatanaConfig.toml").port(find_free_port()))
     }
@@ -140,10 +156,6 @@ impl KatanaRunner {
                 sender.send(()).expect("failed to send start signal");
             }
         }
-    }
-
-    pub fn port(&self) -> u16 {
-        self.port
     }
 
     fn create_folder_if_nonexistent(log_file_path: &str) {

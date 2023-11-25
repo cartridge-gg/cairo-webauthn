@@ -5,9 +5,12 @@ pub use declaration::CustomAccountDeclaration;
 pub use deployment::CustomAccountDeployment;
 pub use deployment::DeployResult;
 use lazy_static::lazy_static;
-use starknet::core::types::FieldElement;
+use starknet::accounts::{ExecutionEncoding, SingleOwnerAccount};
+use starknet::core::types::{BlockId, BlockTag};
 use starknet::macros::felt;
-use starknet::signers::SigningKey;
+use starknet::providers::{JsonRpcClient, Provider};
+use starknet::signers::LocalWallet;
+use starknet::{core::types::FieldElement, signers::SigningKey};
 
 lazy_static! {
     pub static ref UDC_ADDRESS: FieldElement =
@@ -18,16 +21,40 @@ lazy_static! {
         felt!("0x02a8846878b6ad1f54f6ba46f5f40e11cee755c677f130b2c4b60566c9003f1f");
     pub static ref CHAIN_ID: FieldElement =
         felt!("0x00000000000000000000000000000000000000000000000000004b4154414e41");
-    pub static ref PREFUNDED: (SigningKey, FieldElement) = (
-        SigningKey::from_secret_scalar(
-            FieldElement::from_hex_be(
-                "0x1800000000300000180000000000030000000000003006001800006600"
-            )
-            .unwrap(),
-        ),
-        FieldElement::from_hex_be(
-            "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973",
-        )
-        .unwrap()
+}
+
+pub async fn single_owner_account<T>(
+    client: JsonRpcClient<T>,
+    signing_key: SigningKey,
+    account_address: FieldElement,
+) -> SingleOwnerAccount<JsonRpcClient<T>, LocalWallet>
+where
+    JsonRpcClient<T>: Provider,
+    T: Send + Sync,
+{
+    single_owner_account_with_encoding(client, signing_key, account_address, ExecutionEncoding::New)
+        .await
+}
+pub async fn single_owner_account_with_encoding<T>(
+    client: JsonRpcClient<T>,
+    signing_key: SigningKey,
+    account_address: FieldElement,
+    encoding: ExecutionEncoding,
+) -> SingleOwnerAccount<JsonRpcClient<T>, LocalWallet>
+where
+    JsonRpcClient<T>: Provider,
+    T: Send + Sync,
+{
+    let chain_id = client.chain_id().await.unwrap();
+
+    let mut account = SingleOwnerAccount::new(
+        client,
+        LocalWallet::from(signing_key),
+        account_address,
+        chain_id,
+        encoding,
     );
+
+    account.set_block_id(BlockId::Tag(BlockTag::Pending)); // For fetching valid nonce
+    account
 }
