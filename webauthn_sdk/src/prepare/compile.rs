@@ -26,7 +26,10 @@ impl DevCompiler<SingleFileParser> for ProjectCompiler {
         let config = Config::builder(manifest_path).build()?;
         let ws = ops::read_workspace(config.manifest_path(), &config)?;
         let packages = ws.members().map(|m| m.id).collect();
-        let opts = CompileOpts{include_targets: vec![TargetKind::LIB], exclude_targets: vec![]};
+        let opts = CompileOpts {
+            include_targets: vec![TargetKind::LIB],
+            exclude_targets: vec![],
+        };
         ops::compile(packages, opts, &ws)?;
         Ok(SingleFileParser::new(
             self.folder + "/target/dev/" + &self.package + ".sierra",

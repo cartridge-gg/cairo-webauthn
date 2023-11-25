@@ -8,9 +8,6 @@ use starknet::{
 use super::katana_runner::KatanaRunner;
 use crate::deploy_contract::FEE_TOKEN_ADDRESS;
 
-// Starknet devnet
-// cargo run -- --port 1234 --seed 0
-
 #[tokio::test]
 async fn test_balance_of() {
     let runner = KatanaRunner::load();
