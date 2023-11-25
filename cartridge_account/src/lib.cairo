@@ -17,12 +17,6 @@ trait IPublicKeyCamel<TState> {
     fn getPublicKey(self: @TState) -> felt252;
 }
 
-#[starknet::interface]
-trait ITestCamel<TState> {
-    fn getZero(self: @TState) -> felt252;
-}
-
-
 
 #[starknet::contract]
 mod Account {
@@ -157,13 +151,6 @@ mod Account {
 
         fn setPublicKey(ref self: ContractState, newPublicKey: felt252) {
             PublicKeyImpl::set_public_key(ref self, newPublicKey);
-        }
-    }
-
-    #[external(v0)]
-    impl TestCamelImpl of super::ITestCamel<ContractState> {
-        fn getZero(self: @ContractState) -> felt252 {
-            0
         }
     }
 

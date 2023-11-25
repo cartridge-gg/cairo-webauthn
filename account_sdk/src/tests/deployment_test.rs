@@ -68,7 +68,7 @@ async fn test_deploy_and_call() {
     account
         .execute(vec![Call {
             to: deployed_address,
-            selector: selector!("getZero"),
+            selector: selector!("getPublicKey"),
             calldata: vec![],
         }])
         .send()
