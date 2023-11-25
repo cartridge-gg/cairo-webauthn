@@ -6,7 +6,10 @@ use starknet::{
     signers::LocalWallet,
 };
 
-use crate::{deploy_contract::CustomAccountDeployment, suppliers::PredeployedClientSupplier};
+use crate::{
+    deploy_contract::CustomAccountDeployment,
+    suppliers::{PredeployedClientSupplier, RpcClientSupplier},
+};
 use crate::{
     deploy_contract::{CustomAccountDeclaration, DeployResult},
     suppliers::{katana::KatanaSupplier, katana_runner::KatanaRunner, PrefundedClientSupplier},
@@ -18,7 +21,7 @@ pub async fn declare_and_deploy(
     public_key: FieldElement,
 ) -> FieldElement {
     let DeclareTransactionResult { class_hash, .. } =
-        CustomAccountDeclaration::cartridge_account(supplier)
+        CustomAccountDeclaration::cartridge_account(supplier.client())
             .declare(&account)
             .await
             .unwrap()
@@ -41,7 +44,7 @@ async fn test_declare() {
     let runner = KatanaRunner::load();
     let supplier = KatanaSupplier::from(&runner);
     let account = supplier.prefunded_single_owner_account().await;
-    CustomAccountDeclaration::cartridge_account(&supplier)
+    CustomAccountDeclaration::cartridge_account(supplier.client())
         .declare(&account)
         .await
         .unwrap()

@@ -10,9 +10,9 @@ use crate::suppliers::{
     devnet::DevnetSupplier, katana::KatanaSupplier, katana_runner::KatanaRunner, AccountData,
     PredeployedClientSupplier, PrefundedClientSupplier,
 };
+use starknet::core::types::StarknetError::InsufficientAccountBalance;
 use starknet::providers::MaybeUnknownErrorCode::Known;
 use starknet::providers::ProviderError::StarknetError;
-use starknet::core::types::StarknetError::InsufficientAccountBalance;
 
 #[tokio::test]
 async fn test_authorize_execute() {

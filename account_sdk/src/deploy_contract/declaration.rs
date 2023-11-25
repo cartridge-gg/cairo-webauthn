@@ -7,8 +7,6 @@ use starknet::{
     signers::Signer,
 };
 
-use crate::suppliers::RpcClientSupplier;
-
 use super::pending::PendingDeclaration;
 
 pub const SIERRA_STR: &str = include_str!(
@@ -18,52 +16,49 @@ pub const CASM_STR: &str = include_str!(
     "../../../cartridge_account/target/dev/cartridge_account_Account.compiled_contract_class.json"
 );
 
-pub struct CustomAccountDeclaration<'a, Q> {
+pub struct CustomAccountDeclaration<T> {
     contract_artifact: SierraClass,
     compiled_class: CompiledClass,
-    supplier: &'a Q,
+    client: JsonRpcClient<T>,
 }
 
-impl<'a, Q> CustomAccountDeclaration<'a, Q> {
-    pub fn new<T>(
+impl<T> CustomAccountDeclaration<T> {
+    pub fn new(
         contract_artifact: SierraClass,
         compiled_class: CompiledClass,
-        client_supplier: &'a Q,
+        client: JsonRpcClient<T>,
     ) -> Self
     where
         T: Send + Sync,
         JsonRpcClient<T>: Provider,
-        Q: RpcClientSupplier<T>,
     {
         Self {
             contract_artifact,
             compiled_class,
-            supplier: client_supplier,
+            client,
         }
     }
-    pub fn cartridge_account<T>(client_supplier: &'a Q) -> Self
+    pub fn cartridge_account(client: JsonRpcClient<T>) -> Self
     where
         T: Send + Sync,
         JsonRpcClient<T>: Provider,
-        Q: RpcClientSupplier<T>,
     {
         Self::new(
             serde_json::from_str(SIERRA_STR).unwrap(),
             serde_json::from_str(CASM_STR).unwrap(),
-            client_supplier,
+            client,
         )
     }
 }
 
-impl<'a, Q> CustomAccountDeclaration<'a, Q> {
-    pub async fn declare<T, P, S>(
-        &self,
+impl<T> CustomAccountDeclaration<T> {
+    pub async fn declare<P, S>(
+        self,
         account: &SingleOwnerAccount<P, S>,
     ) -> Result<PendingDeclaration<T>, String>
     where
         T: Send + Sync,
         JsonRpcClient<T>: Provider,
-        Q: RpcClientSupplier<T>,
         P: Provider + Send + Sync,
         S: Signer + Send + Sync,
     {
@@ -85,9 +80,6 @@ impl<'a, Q> CustomAccountDeclaration<'a, Q> {
             .await
             .unwrap();
 
-        Ok(PendingDeclaration::from((
-            declaration_result,
-            self.supplier.client(),
-        )))
+        Ok(PendingDeclaration::from((declaration_result, self.client)))
     }
 }

@@ -28,7 +28,6 @@ impl PrefundedClientSupplier for DevnetSupplier {
 }
 
 impl PredeployedClientSupplier for DevnetSupplier {
-    
     fn predeployed_fee_token(&self) -> PredeployedContract {
         PredeployedContract {
             address: felt!("0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7"),
