@@ -11,8 +11,8 @@ use crate::deploy_contract::CustomAccountDeployment;
 use crate::deploy_contract::{CustomAccountDeclaration, DeployResult};
 
 pub async fn declare(
-    client: JsonRpcClient<HttpTransport>,
-    account: &SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
+    client: &JsonRpcClient<HttpTransport>,
+    account: &SingleOwnerAccount<&JsonRpcClient<HttpTransport>, LocalWallet>,
 ) -> FieldElement {
     let DeclareTransactionResult { class_hash, .. } =
         CustomAccountDeclaration::cartridge_account(&client)
@@ -26,8 +26,8 @@ pub async fn declare(
 }
 
 pub async fn deploy(
-    client: JsonRpcClient<HttpTransport>,
-    account: &SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
+    client: &JsonRpcClient<HttpTransport>,
+    account: &SingleOwnerAccount<&JsonRpcClient<HttpTransport>, LocalWallet>,
     public_key: FieldElement,
     class_hash: FieldElement,
 ) -> FieldElement {
@@ -61,8 +61,9 @@ async fn test_deploy() {
 async fn test_deploy_and_call() {
     let runner = KatanaRunner::load();
     let account = runner.prefunded_single_owner_account().await;
-    let class_hash = declare(runner.client(), &account).await;
-    let deployed_address = deploy(runner.client(), &account, felt!("1337"), class_hash).await;
+    let client = runner.client();
+    let class_hash = declare(client, &account).await;
+    let deployed_address = deploy(client, &account, felt!("1337"), class_hash).await;
 
     account
         .execute(vec![Call {

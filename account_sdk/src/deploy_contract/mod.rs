@@ -23,26 +23,26 @@ lazy_static! {
         felt!("0x00000000000000000000000000000000000000000000000000004b4154414e41");
 }
 
-pub async fn single_owner_account<T>(
-    client: JsonRpcClient<T>,
+pub async fn single_owner_account<'a, T>(
+    client: &'a JsonRpcClient<T>,
     signing_key: SigningKey,
     account_address: FieldElement,
-) -> SingleOwnerAccount<JsonRpcClient<T>, LocalWallet>
+) -> SingleOwnerAccount<&'a JsonRpcClient<T>, LocalWallet>
 where
-    JsonRpcClient<T>: Provider,
+    &'a JsonRpcClient<T>: Provider,
     T: Send + Sync,
 {
     single_owner_account_with_encoding(client, signing_key, account_address, ExecutionEncoding::New)
         .await
 }
-pub async fn single_owner_account_with_encoding<T>(
-    client: JsonRpcClient<T>,
+pub async fn single_owner_account_with_encoding<'a, T>(
+    client: &'a JsonRpcClient<T>,
     signing_key: SigningKey,
     account_address: FieldElement,
     encoding: ExecutionEncoding,
-) -> SingleOwnerAccount<JsonRpcClient<T>, LocalWallet>
+) -> SingleOwnerAccount<&'a JsonRpcClient<T>, LocalWallet>
 where
-    JsonRpcClient<T>: Provider,
+    &'a JsonRpcClient<T>: Provider,
     T: Send + Sync,
 {
     let chain_id = client.chain_id().await.unwrap();

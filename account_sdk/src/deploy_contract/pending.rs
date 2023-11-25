@@ -20,11 +20,11 @@ impl<'a, P, T> PendingTransaction<'a, P, T>
 where
     &'a P: Provider + Send,
 {
-    pub fn new(transaction_result: T, transaction_hash: FieldElement, provider: &'a P) -> Self {
+    pub fn new(transaction_result: T, transaction_hash: FieldElement, client: &'a P) -> Self {
         PendingTransaction {
             transaction_result,
             transaction_hash,
-            client: provider,
+            client,
         }
     }
     pub async fn wait_for_completion(self) -> T {
@@ -38,16 +38,17 @@ where
     }
 }
 
-pub type PendingDeclaration<'a, T> = PendingTransaction<'a, JsonRpcClient<T>, DeclareTransactionResult>;
+pub type PendingDeclaration<'a, T> =
+    PendingTransaction<'a, JsonRpcClient<T>, DeclareTransactionResult>;
 
 impl<'a, T> From<(DeclareTransactionResult, &'a JsonRpcClient<T>)> for PendingDeclaration<'a, T>
 where
     T: Send + Sync,
     &'a JsonRpcClient<T>: Provider,
 {
-    fn from((result, provider): (DeclareTransactionResult, &'a JsonRpcClient<T>)) -> Self {
+    fn from((result, client): (DeclareTransactionResult, &'a JsonRpcClient<T>)) -> Self {
         let transaction_hash = result.transaction_hash;
-        Self::new(result, transaction_hash, provider)
+        Self::new(result, transaction_hash, client)
     }
 }
 
@@ -58,8 +59,8 @@ where
     T: Send + Sync,
     &'a JsonRpcClient<T>: Provider,
 {
-    fn from((result, provider): (DeployResult, &'a JsonRpcClient<T>)) -> Self {
+    fn from((result, client): (DeployResult, &'a JsonRpcClient<T>)) -> Self {
         let transaction_hash = result.transaction_hash;
-        Self::new(result, transaction_hash, provider)
+        Self::new(result, transaction_hash, client)
     }
 }

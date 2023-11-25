@@ -84,7 +84,7 @@ impl KatanaRunnerConfig {
 #[derive(Debug)]
 pub struct KatanaRunner {
     child: Child,
-    port: u16,
+    client: JsonRpcClient<HttpTransport>,
 }
 
 impl KatanaRunner {
@@ -111,23 +111,25 @@ impl KatanaRunner {
             .recv_timeout(Duration::from_secs(5))
             .expect("timeout waiting for server to start");
 
+        let client = JsonRpcClient::new(HttpTransport::new(
+            Url::parse(&format!("http://0.0.0.0:{}/", config.port)).unwrap(),
+        ));
+
         KatanaRunner {
             child,
-            port: config.port,
+            client: client,
         }
     }
 
-    pub fn client(&self) -> JsonRpcClient<HttpTransport> {
-        JsonRpcClient::new(HttpTransport::new(
-            Url::parse(&format!("http://0.0.0.0:{}/", self.port)).unwrap(),
-        ))
+    pub fn client(&self) -> &JsonRpcClient<HttpTransport> {
+        &self.client
     }
 
     pub async fn prefunded_single_owner_account(
         &self,
-    ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> {
+    ) -> SingleOwnerAccount<&JsonRpcClient<HttpTransport>, LocalWallet> {
         single_owner_account_with_encoding(
-            self.client(),
+            &self.client,
             PREFUNDED.0.clone(),
             PREFUNDED.1,
             ExecutionEncoding::Legacy,
