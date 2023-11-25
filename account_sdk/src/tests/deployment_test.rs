@@ -15,7 +15,7 @@ pub async fn declare(
     account: &SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
 ) -> FieldElement {
     let DeclareTransactionResult { class_hash, .. } =
-        CustomAccountDeclaration::cartridge_account(client)
+        CustomAccountDeclaration::cartridge_account(&client)
             .declare(&account)
             .await
             .unwrap()
@@ -33,7 +33,7 @@ pub async fn deploy(
 ) -> FieldElement {
     let DeployResult {
         deployed_address, ..
-    } = CustomAccountDeployment::new(client)
+    } = CustomAccountDeployment::new(&client)
         .deploy(vec![public_key], FieldElement::ZERO, &account, class_hash)
         .await
         .unwrap()

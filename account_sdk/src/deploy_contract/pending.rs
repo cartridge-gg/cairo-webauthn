@@ -7,28 +7,28 @@ use crate::transaction_waiter::TransactionWaiter;
 
 use super::deployment::DeployResult;
 
-pub struct PendingTransaction<P, T>
+pub struct PendingTransaction<'a, P, T>
 where
-    P: Provider,
+    &'a P: Provider + Send,
 {
     transaction_result: T,
     transaction_hash: FieldElement,
-    provider: P,
+    client: &'a P,
 }
 
-impl<P, T> PendingTransaction<P, T>
+impl<'a, P, T> PendingTransaction<'a, P, T>
 where
-    P: Provider + Send,
+    &'a P: Provider + Send,
 {
-    pub fn new(transaction_result: T, transaction_hash: FieldElement, provider: P) -> Self {
+    pub fn new(transaction_result: T, transaction_hash: FieldElement, provider: &'a P) -> Self {
         PendingTransaction {
             transaction_result,
             transaction_hash,
-            provider,
+            client: provider,
         }
     }
     pub async fn wait_for_completion(self) -> T {
-        TransactionWaiter::new(self.transaction_hash, &self.provider)
+        TransactionWaiter::new(self.transaction_hash, &self.client)
             .await
             .unwrap();
         self.transaction_result
@@ -38,27 +38,27 @@ where
     }
 }
 
-pub type PendingDeclaration<T> = PendingTransaction<JsonRpcClient<T>, DeclareTransactionResult>;
+pub type PendingDeclaration<'a, T> = PendingTransaction<'a, JsonRpcClient<T>, DeclareTransactionResult>;
 
-impl<T> From<(DeclareTransactionResult, JsonRpcClient<T>)> for PendingDeclaration<T>
+impl<'a, T> From<(DeclareTransactionResult, &'a JsonRpcClient<T>)> for PendingDeclaration<'a, T>
 where
     T: Send + Sync,
-    JsonRpcClient<T>: Provider,
+    &'a JsonRpcClient<T>: Provider,
 {
-    fn from((result, provider): (DeclareTransactionResult, JsonRpcClient<T>)) -> Self {
+    fn from((result, provider): (DeclareTransactionResult, &'a JsonRpcClient<T>)) -> Self {
         let transaction_hash = result.transaction_hash;
         Self::new(result, transaction_hash, provider)
     }
 }
 
-pub type PendingDeployment<T> = PendingTransaction<JsonRpcClient<T>, DeployResult>;
+pub type PendingDeployment<'a, T> = PendingTransaction<'a, JsonRpcClient<T>, DeployResult>;
 
-impl<T> From<(DeployResult, JsonRpcClient<T>)> for PendingDeployment<T>
+impl<'a, T> From<(DeployResult, &'a JsonRpcClient<T>)> for PendingDeployment<'a, T>
 where
     T: Send + Sync,
-    JsonRpcClient<T>: Provider,
+    &'a JsonRpcClient<T>: Provider,
 {
-    fn from((result, provider): (DeployResult, JsonRpcClient<T>)) -> Self {
+    fn from((result, provider): (DeployResult, &'a JsonRpcClient<T>)) -> Self {
         let transaction_hash = result.transaction_hash;
         Self::new(result, transaction_hash, provider)
     }

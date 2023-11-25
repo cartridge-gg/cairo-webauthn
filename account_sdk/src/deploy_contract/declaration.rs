@@ -16,21 +16,21 @@ pub const CASM_STR: &str = include_str!(
     "../../../cartridge_account/target/dev/cartridge_account_Account.compiled_contract_class.json"
 );
 
-pub struct CustomAccountDeclaration<T> {
+pub struct CustomAccountDeclaration<'a, T> {
     contract_artifact: SierraClass,
     compiled_class: CompiledClass,
-    client: JsonRpcClient<T>,
+    client: &'a JsonRpcClient<T>,
 }
 
-impl<T> CustomAccountDeclaration<T> {
+impl<'a, T> CustomAccountDeclaration<'a, T> {
     pub fn new(
         contract_artifact: SierraClass,
         compiled_class: CompiledClass,
-        client: JsonRpcClient<T>,
+        client: &'a JsonRpcClient<T>,
     ) -> Self
     where
         T: Send + Sync,
-        JsonRpcClient<T>: Provider,
+        &'a JsonRpcClient<T>: Provider,
     {
         Self {
             contract_artifact,
@@ -38,10 +38,10 @@ impl<T> CustomAccountDeclaration<T> {
             client,
         }
     }
-    pub fn cartridge_account(client: JsonRpcClient<T>) -> Self
+    pub fn cartridge_account(client: &'a JsonRpcClient<T>) -> Self
     where
         T: Send + Sync,
-        JsonRpcClient<T>: Provider,
+        &'a JsonRpcClient<T>: Provider,
     {
         Self::new(
             serde_json::from_str(SIERRA_STR).unwrap(),
@@ -51,14 +51,14 @@ impl<T> CustomAccountDeclaration<T> {
     }
 }
 
-impl<T> CustomAccountDeclaration<T> {
+impl<'a, T> CustomAccountDeclaration<'a, T> {
     pub async fn declare<P, S>(
         self,
         account: &SingleOwnerAccount<P, S>,
-    ) -> Result<PendingDeclaration<T>, String>
+    ) -> Result<PendingDeclaration<'a, T>, String>
     where
         T: Send + Sync,
-        JsonRpcClient<T>: Provider,
+        &'a JsonRpcClient<T>: Provider,
         P: Provider + Send + Sync,
         S: Signer + Send + Sync,
     {
