@@ -6,24 +6,19 @@ use starknet::{
     signers::Signer,
 };
 
-use crate::suppliers::{PredeployedClientSupplier, RpcClientSupplier};
+use super::{pending::PendingDeployment, UDC_ADDRESS};
 
-use super::pending::PendingDeployment;
-
-pub struct CustomAccountDeployment<'a, Q> {
-    supplier: &'a Q,
+pub struct CustomAccountDeployment<T> {
+    client: JsonRpcClient<T>,
 }
 
-impl<'a, Q> CustomAccountDeployment<'a, Q> {
-    pub fn new<T>(client_supplier: &'a Q) -> Self
+impl<T> CustomAccountDeployment<T> {
+    pub fn new(client: JsonRpcClient<T>) -> Self
     where
-        Q: RpcClientSupplier<T> + PredeployedClientSupplier,
         JsonRpcClient<T>: Provider,
         T: Send + Sync,
     {
-        CustomAccountDeployment {
-            supplier: &client_supplier,
-        }
+        CustomAccountDeployment { client }
     }
 }
 
@@ -33,26 +28,21 @@ pub struct DeployResult {
     pub transaction_hash: FieldElement,
 }
 
-impl<'a, Q> CustomAccountDeployment<'a, Q> {
-    pub async fn deploy<T, P, S>(
-        &self,
+impl<T> CustomAccountDeployment<T> {
+    pub async fn deploy<P, S>(
+        self,
         constructor_calldata: Vec<FieldElement>,
         salt: FieldElement,
         account: &SingleOwnerAccount<P, S>,
         class_hash: FieldElement,
     ) -> Result<PendingDeployment<T>, String>
     where
-        Q: RpcClientSupplier<T> + PredeployedClientSupplier,
         P: Provider + Send + Sync,
         S: Signer + Send + Sync,
         JsonRpcClient<T>: Provider,
         T: Send + Sync,
     {
-        let contract_factory = ContractFactory::new_with_udc(
-            class_hash,
-            account,
-            self.supplier.predeployed_udc().address,
-        );
+        let contract_factory = ContractFactory::new_with_udc(class_hash, account, *UDC_ADDRESS);
 
         let deployment = contract_factory.deploy(constructor_calldata, salt, false);
         let deployed_address = deployment.deployed_address();
@@ -64,6 +54,6 @@ impl<'a, Q> CustomAccountDeployment<'a, Q> {
             transaction_hash,
         };
 
-        Ok(PendingDeployment::from((result, self.supplier.client())))
+        Ok(PendingDeployment::from((result, self.client)))
     }
 }

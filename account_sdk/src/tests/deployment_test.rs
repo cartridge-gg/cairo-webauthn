@@ -30,7 +30,7 @@ pub async fn declare_and_deploy(
 
     let DeployResult {
         deployed_address, ..
-    } = CustomAccountDeployment::new(supplier)
+    } = CustomAccountDeployment::new(supplier.client())
         .deploy(vec![public_key], FieldElement::ZERO, &account, class_hash)
         .await
         .unwrap()
