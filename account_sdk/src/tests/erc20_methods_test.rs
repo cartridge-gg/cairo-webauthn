@@ -13,7 +13,7 @@ async fn test_balance_of() {
     let runner = KatanaRunner::load();
     let account = runner.prefunded_single_owner_account().await;
 
-    let call_result: Vec<starknet::core::types::FieldElement> = runner
+    runner
         .client()
         .call(
             FunctionCall {
@@ -25,8 +25,6 @@ async fn test_balance_of() {
         )
         .await
         .expect("failed to call contract");
-
-    dbg!(call_result);
 }
 
 #[tokio::test]
@@ -34,7 +32,7 @@ async fn test_balance_of_account() {
     let runner = KatanaRunner::load();
     let account = runner.prefunded_single_owner_account().await;
 
-    let call_result = account
+    account
         .execute(vec![Call {
             to: *FEE_TOKEN_ADDRESS,
             selector: selector!("balanceOf"),
@@ -43,17 +41,15 @@ async fn test_balance_of_account() {
         .send()
         .await
         .unwrap();
-
-    dbg!(call_result);
 }
 
 #[tokio::test]
 async fn test_transfer() {
     let runner = KatanaRunner::load();
-    let new_account = felt!("0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1");
+    let new_account = felt!("0x18301129");
     let account = runner.prefunded_single_owner_account().await;
 
-    let call_result = account
+    account
         .execute(vec![Call {
             to: *FEE_TOKEN_ADDRESS,
             selector: selector!("balanceOf"),
@@ -62,9 +58,8 @@ async fn test_transfer() {
         .send()
         .await
         .unwrap();
-    dbg!(call_result);
 
-    let call_result = account
+    account
         .execute(vec![Call {
             to: *FEE_TOKEN_ADDRESS,
             selector: selector!("transfer"),
@@ -73,5 +68,4 @@ async fn test_transfer() {
         .send()
         .await
         .unwrap();
-    dbg!(call_result);
 }
