@@ -7,7 +7,7 @@ version = "0.1.0"
 [dependencies]
 snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry", tag = "v0.7.1" }
 starknet = "2.2.0"
-openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.7.0" }
+openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.8.0-beta.0" }
 
 [[target.starknet-contract]]
 build-external-contracts = ["openzeppelin::token::erc20::erc20::ERC20"]

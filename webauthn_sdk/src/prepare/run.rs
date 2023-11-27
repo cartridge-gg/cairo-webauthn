@@ -85,7 +85,9 @@ impl DevRunner<Vec<Felt252>> for SierraRunner {
                 return Err(DevRunnerError::FailedSettingUp(e.to_string()));
             }
         };
-        let Ok(function) = runner.find_function(name) else {return Err(DevRunnerError::FailedFindingFunction)};
+        let Ok(function) = runner.find_function(name) else {
+            return Err(DevRunnerError::FailedFindingFunction);
+        };
         let result = match runner.run_function_with_starknet_context(
             function,
             arguments,
