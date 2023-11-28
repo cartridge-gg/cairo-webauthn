@@ -1,7 +1,7 @@
 use std::env;
 
 use anyhow::{Ok, Result};
-use webauthn_sdk::{
+use cairo_client::{
     prepare::Preper,
     run::{
         functions::{
