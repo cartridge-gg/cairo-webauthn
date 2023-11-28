@@ -1,5 +1,5 @@
 [package]
-name = "webauthn-sdk"
+name = "cairo-client"
 edition.workspace = true
 version.workspace = true
 default-run = "main"
