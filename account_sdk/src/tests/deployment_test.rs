@@ -6,7 +6,7 @@ use starknet::{
     signers::LocalWallet,
 };
 
-use super::katana_runner::KatanaRunner;
+use super::runners::katana_runner::KatanaRunner;
 use crate::deploy_contract::AccountDeployment;
 use crate::deploy_contract::{AccountDeclaration, DeployResult};
 

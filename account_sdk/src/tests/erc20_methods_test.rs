@@ -5,7 +5,7 @@ use starknet::{
     providers::Provider,
 };
 
-use super::katana_runner::KatanaRunner;
+use super::runners::katana_runner::KatanaRunner;
 use crate::deploy_contract::FEE_TOKEN_ADDRESS;
 
 #[tokio::test]

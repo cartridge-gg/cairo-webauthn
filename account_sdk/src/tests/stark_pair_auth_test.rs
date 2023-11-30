@@ -4,7 +4,7 @@ use starknet::{
     signers::SigningKey,
 };
 
-use super::katana_runner::KatanaRunner;
+use super::runners::katana_runner::KatanaRunner;
 use crate::deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS};
 
 use super::deployment_test::{declare, deploy};
