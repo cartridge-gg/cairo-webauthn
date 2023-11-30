@@ -14,6 +14,7 @@ use starknet::{
 use self::waiter::OutputWaiter;
 use async_trait::async_trait;
 
+pub mod devnet_runner;
 pub mod katana_runner;
 pub mod waiter;
 
@@ -65,7 +66,7 @@ pub fn find_free_port() -> u16 {
 #[derive(Debug, Clone, Deserialize)]
 pub struct TestnetConfig {
     pub port: u16,
-    pub executable_path: String,
+    pub exec: String,
     pub execute_from_folder: String,
     pub log_file_path: String,
 }

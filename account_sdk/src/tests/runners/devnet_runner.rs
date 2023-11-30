@@ -14,57 +14,54 @@ use crate::deploy_contract::single_owner_account_with_encoding;
 use super::{find_free_port, SubprocessRunner, TestnetConfig, TestnetRunner};
 
 lazy_static! {
-    // Signing key and address of the katana prefunded account.
+    // Signing key and address of the devnet prefunded account.
     pub static ref PREFUNDED: (SigningKey, FieldElement) = (
-        SigningKey::from_secret_scalar(
-            felt!(
-                "0x1800000000300000180000000000030000000000003006001800006600"
-            ),
-        ),
-        felt!(
-            "0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973"
-        )
+        SigningKey::from_secret_scalar(felt!("0x71d7bb07b9a64f6f78ac4c816aff4da9"),),
+        felt!("0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691")
     );
 
     pub static ref CONFIG: TestnetConfig = TestnetConfig{
         port: 1234,
-        exec: "katana".to_string(),
-        execute_from_folder: ".".to_string(),
-        log_file_path: "log/katana.log".to_string(),
+        exec: "cargo".to_string(),
+        execute_from_folder: "/home/szymon/.devnet".to_string(),
+        log_file_path: "log/devnet.log".to_string(),
     };
 }
 
 #[derive(Debug)]
-pub struct KatanaRunner {
+pub struct DevnetRunner {
     testnet: SubprocessRunner,
     client: JsonRpcClient<HttpTransport>,
 }
 
-impl KatanaRunner {
+impl DevnetRunner {
     pub fn new(config: TestnetConfig) -> Self {
         let child = Command::new(config.exec)
-            .args(["-p", &config.port.to_string()])
-            .args(["--json-log"])
+            .current_dir(config.execute_from_folder)
+            .args(["run", "--"])
+            .args(["--port", &config.port.to_string()])
+            .args(["--seed", "0"])
             .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
             .spawn()
             .expect("failed to start subprocess");
 
         let testnet = SubprocessRunner::new(child, config.log_file_path, |l| {
-            l.contains(r#""target":"katana""#)
+            l.contains(r"Starknet Devnet listening on")
         });
 
         let client = JsonRpcClient::new(HttpTransport::new(
             Url::parse(&format!("http://0.0.0.0:{}/", config.port)).unwrap(),
         ));
 
-        KatanaRunner { testnet, client }
+        DevnetRunner { testnet, client }
     }
 }
 
 #[async_trait]
-impl TestnetRunner for KatanaRunner {
+impl TestnetRunner for DevnetRunner {
     fn load() -> Self {
-        KatanaRunner::new(CONFIG.clone().port(find_free_port()))
+        DevnetRunner::new(CONFIG.clone().port(find_free_port()))
     }
     fn client(&self) -> &JsonRpcClient<HttpTransport> {
         &self.client
@@ -82,7 +79,7 @@ impl TestnetRunner for KatanaRunner {
     }
 }
 
-impl Drop for KatanaRunner {
+impl Drop for DevnetRunner {
     fn drop(&mut self) {
         self.testnet.kill();
     }
