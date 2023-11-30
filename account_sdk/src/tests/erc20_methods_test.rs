@@ -6,7 +6,7 @@ use starknet::{
 };
 
 use super::runners::katana_runner::KatanaRunner;
-use crate::deploy_contract::FEE_TOKEN_ADDRESS;
+use crate::{deploy_contract::FEE_TOKEN_ADDRESS, tests::runners::TestnetRunner};
 
 #[tokio::test]
 async fn test_balance_of() {

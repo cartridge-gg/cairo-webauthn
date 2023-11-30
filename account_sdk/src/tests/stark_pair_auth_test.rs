@@ -5,7 +5,10 @@ use starknet::{
 };
 
 use super::runners::katana_runner::KatanaRunner;
-use crate::deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS};
+use crate::{
+    deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS},
+    tests::runners::TestnetRunner,
+};
 
 use super::deployment_test::{declare, deploy};
 
