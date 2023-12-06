@@ -54,7 +54,7 @@ async fn test_public_key_point() {
         .call(
             FunctionCall {
                 contract_address: new_account.address(),
-                entry_point_selector: selector!("verifyWebauthnSigner"),
+                entry_point_selector: selector!("createPoint"),
                 calldata,
             },
             BlockId::Tag(BlockTag::Latest),

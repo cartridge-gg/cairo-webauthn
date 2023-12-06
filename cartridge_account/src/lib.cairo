@@ -18,24 +18,6 @@ trait IPublicKeyCamel<TState> {
     fn getPublicKey(self: @TState) -> felt252;
 }
 
-#[starknet::interface]
-trait IWebauthnSignerCamel<TState> {
-    fn verifyWebauthnSigner(
-        ref self: TState, 
-        pub_x: u256,
-        pub_y: u256, // public key as point on elliptic curve
-        // r: u256, // 'r' part from ecdsa
-        // s: u256, // 's' part from ecdsa
-        // type_offset: usize, // offset to 'type' field in json
-        // challenge_offset: usize, // offset to 'challenge' field in json
-        // origin_offset: usize, // offset to 'origin' field in json
-        // client_data_json: Array<u8>, // json with client_data as 1-byte array 
-        // challenge: Array<u8>, // challenge as 1-byte array
-        // origin: Array<u8>, //  array origin as 1-byte array
-        // authenticator_data: Array<u8>
-    ) -> Array<felt252>;
-}
-
 
 #[starknet::contract]
 mod Account {
@@ -177,10 +159,11 @@ use ecdsa::check_ecdsa_signature;
         }
     }
 
+    #[generate_trait]
     #[external(v0)]
-    impl WebauthnSignerCamelImpl of super::IWebauthnSignerCamel<ContractState> {
+    impl WebauthnSignerCamelImpl of IWebauthnSignerCamel {
         fn verifyWebauthnSigner(
-            ref self: ContractState, 
+            self: @ContractState, 
             pub_x: u256,
             pub_y: u256, // public key as point on elliptic curve
             // r: u256, // 'r' part from ecdsa
@@ -193,23 +176,33 @@ use ecdsa::check_ecdsa_signature;
             // origin: Array<u8>, //  array origin as 1-byte array
             // authenticator_data: Array<u8>
         ) -> Array<felt252> {
-            let pub_x = 85361148225729824017625108732123897247053575672172763810522989717862412662042_u256;
-            let pub_y = 34990362585894687818855246831758567645528911684717374214517047635026995605_u256;
-            // let pub_key = match 
-            //     Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y){
-            //         Result::Ok(pub_key) => pub_key,
-            //         Result::Err(e) => { return e; }
-            //     };
-            // let pub_key = match pub_key {
-            //     Option::Some(pub_key) => pub_key,
-            //     Option::None(_) => { return ArrayTrait::new(); }
-            // };
+            let pub_key = match 
+                Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y){
+                    Result::Ok(pub_key) => pub_key,
+                    Result::Err(e) => { return e; }
+                };
+            let pub_key = match pub_key {
+                Option::Some(pub_key) => pub_key,
+                Option::None(_) => { return ArrayTrait::new(); }
+            };
             let mut arr = ArrayTrait::new();
             arr.append(pub_x.low.into());
             arr.append(pub_x.high.into());
             arr.append(pub_y.low.into());
             arr.append(pub_y.high.into());
             arr
+        }
+    }
+
+    #[generate_trait]
+    #[external(v0)]
+    impl CreatePointImpl of ICreatePointTraitCamel {
+        fn createPoint(
+            self: @ContractState, 
+            pub_x: u256,
+            pub_y: u256,
+        ) -> () {
+            Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y);
         }
     }
 
