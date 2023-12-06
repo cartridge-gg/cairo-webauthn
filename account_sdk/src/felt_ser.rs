@@ -345,8 +345,8 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
 #[cfg(test)]
 mod tests {
     use starknet::macros::felt;
-
     use super::*;
+
     #[test]
     fn test_simple_serialization() {
         assert_eq!(to_felts(&42_usize), vec![felt!("42")]);

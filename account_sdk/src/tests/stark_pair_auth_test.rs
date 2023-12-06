@@ -32,7 +32,11 @@ async fn test_authorize_execute() {
         .execute(vec![Call {
             to: *FEE_TOKEN_ADDRESS,
             selector: selector!("transfer"),
-            calldata: vec![new_account.address(), felt!("0x8944000000000000"), felt!("0x0")],
+            calldata: vec![
+                new_account.address(),
+                felt!("0x8944000000000000"),
+                felt!("0x0"),
+            ],
         }])
         .send()
         .await

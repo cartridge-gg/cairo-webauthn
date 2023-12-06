@@ -1,15 +1,15 @@
-use primitive_types::U256;
 use starknet::{
     accounts::{Account, Call},
-    core::types::{FieldElement, FunctionCall, BlockId, BlockTag},
-    macros::{selector, felt},
-    signers::SigningKey, providers::Provider,
+    core::types::{BlockId, BlockTag, FunctionCall},
+    macros::{felt, selector},
+    providers::Provider,
+    signers::SigningKey,
 };
-use u256_literal::u256;
 
 use crate::{
     deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS},
-    tests::runners::{devnet_runner::DevnetRunner, TestnetRunner, katana_runner::KatanaRunner}, webauthn_signer::P256r1Signer,
+    tests::runners::{katana_runner::KatanaRunner, TestnetRunner},
+    webauthn_signer::P256r1Signer,
 };
 
 use super::deployment_test::{declare, deploy};
@@ -34,7 +34,11 @@ async fn test_public_key_point() {
         .execute(vec![Call {
             to: *FEE_TOKEN_ADDRESS,
             selector: selector!("transfer"),
-            calldata: vec![new_account.address(), felt!("0x8944000000000000"), felt!("0x0")],
+            calldata: vec![
+                new_account.address(),
+                felt!("0x8944000000000000"),
+                felt!("0x0"),
+            ],
         }])
         .send()
         .await
@@ -66,5 +70,3 @@ async fn test_public_key_point() {
 
     dbg!(result);
 }
-
-
