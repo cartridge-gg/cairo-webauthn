@@ -1,34 +1,34 @@
 use p256::{
-    ecdsa::{SigningKey, VerifyingKey},
+    ecdsa::{signature::Signer, Signature, SigningKey, VerifyingKey},
     elliptic_curve::sec1::Coordinates,
 };
 use rand_core::OsRng;
-use serde::Serialize;
 use starknet::core::types::FieldElement;
 
-use crate::felt_ser::to_felts;
+use crate::webauthn_signer::credential::{AuthenticatorData, CliendData};
+
+use self::credential::AuthenticatorAssertionResponse;
+
+pub mod cairo_args;
+pub mod credential;
 
 pub type U256 = (FieldElement, FieldElement);
 pub type Secp256r1Point = (U256, U256);
-#[derive(Debug, Clone, Serialize)]
-pub struct VerifyWebauthnSignerArgs {
-    pub_x: U256,
-    pub_y: U256,
-}
 
 pub struct P256r1Signer {
     pub signing_key: SigningKey,
+    rp_id: String,
 }
 
 impl P256r1Signer {
-    pub fn random() -> Self {
+    pub fn random(rp_id: String) -> Self {
         let signing_key = SigningKey::random(&mut OsRng);
-        Self::new(signing_key)
+        Self::new(signing_key, rp_id)
     }
-    pub fn new(signing_key: SigningKey) -> Self {
-        Self { signing_key }
+    pub fn new(signing_key: SigningKey, rp_id: String) -> Self {
+        Self { signing_key, rp_id }
     }
-    fn public_key_bytes(&self) -> ([u8; 32], [u8; 32]) {
+    pub fn public_key_bytes(&self) -> ([u8; 32], [u8; 32]) {
         let verifying_key: VerifyingKey = VerifyingKey::from(&self.signing_key);
         let encoded = &verifying_key.to_encoded_point(false);
         let (x, y) = match encoded.coordinates() {
@@ -40,34 +40,30 @@ impl P256r1Signer {
             y.as_slice().try_into().unwrap(),
         )
     }
-    pub fn sign(&self) -> Vec<FieldElement> {
-        let (pub_x, pub_y) = self.public_key();
-        let args = VerifyWebauthnSignerArgs { pub_x, pub_y };
-        to_felts(&args)
+    pub fn sign(&self, challenge: String) -> AuthenticatorAssertionResponse {
+        let authenticator_data = AuthenticatorData {
+            rp_id_hash: [0; 32],
+            flags: 0b00000001,
+            sign_count: 0,
+        };
+        let mut to_sign = Into::<Vec<u8>>::into(authenticator_data.clone());
+        to_sign.append(&mut challenge.clone().into_bytes());
+        let signature: Signature = self.signing_key.try_sign(&to_sign).unwrap();
+        let signature = signature.to_bytes().to_vec();
+        let client_data_json = CliendData::new(challenge, self.rp_id.clone()).to_json();
+        AuthenticatorAssertionResponse {
+            authenticator_data,
+            client_data_json,
+            signature,
+            user_handle: None,
+        }
     }
-    fn public_key(&self) -> Secp256r1Point {
-        let (x, y) = self.public_key_bytes();
-        dbg!(x.len(), y.len());
-        (felt_pair(&x), felt_pair(&y))
-    }
-}
-
-fn felt_pair(bytes: &[u8; 32]) -> (FieldElement, FieldElement) {
-    (
-        FieldElement::from_bytes_be(&extend_to_32(&bytes[16..32])).unwrap(),
-        FieldElement::from_bytes_be(&extend_to_32(&bytes[0..16])).unwrap(),
-    )
-}
-
-fn extend_to_32(bytes: &[u8]) -> [u8; 32] {
-    let mut ret = [0; 32];
-    ret[32 - bytes.len()..].copy_from_slice(bytes);
-    ret
 }
 
 #[test]
 fn test_signer() {
-    let signer = P256r1Signer::random();
-    let calldata = signer.sign();
+    let rp_id = "https://localhost:8080".to_string();
+    let signer = P256r1Signer::random(rp_id);
+    let calldata = signer.sign("842903840923".into());
     dbg!(&calldata);
 }

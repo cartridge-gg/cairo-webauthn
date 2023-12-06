@@ -166,8 +166,8 @@ use ecdsa::check_ecdsa_signature;
             self: @ContractState, 
             pub_x: u256,
             pub_y: u256, // public key as point on elliptic curve
-            // r: u256, // 'r' part from ecdsa
-            // s: u256, // 's' part from ecdsa
+            r: u256, // 'r' part from ecdsa
+            s: u256, // 's' part from ecdsa
             // type_offset: usize, // offset to 'type' field in json
             // challenge_offset: usize, // offset to 'challenge' field in json
             // origin_offset: usize, // offset to 'origin' field in json

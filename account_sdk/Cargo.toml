@@ -26,3 +26,6 @@ u256-literal = "1.2.1"
 primitive-types = { version = "0.12", default-features = false }
 p256 = "0.13.2"
 rand_core = { version = "0.6.4", features = ["getrandom"] }
+webauthn-authenticator-rs = { version = "0.4.9" }
+webauthn-rs-proto = "0.4.9"
+base64 = "0.21.5"

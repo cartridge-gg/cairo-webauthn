@@ -9,7 +9,7 @@ use starknet::{
 use crate::{
     deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS},
     tests::runners::{katana_runner::KatanaRunner, TestnetRunner},
-    webauthn_signer::P256r1Signer,
+    webauthn_signer::{P256r1Signer, cairo_args::VerifyWebauthnSignerArgs}, felt_ser::to_felts,
 };
 
 use super::deployment_test::{declare, deploy};
@@ -44,9 +44,10 @@ async fn test_public_key_point() {
         .await
         .unwrap();
 
-    let signer = P256r1Signer::random();
+    let signer = P256r1Signer::random("localhost".into());
 
-    let calldata = signer.sign();
+    let response = signer.sign("aaaa".into());
+    let calldata = VerifyWebauthnSignerArgs::from((signer.public_key_bytes(), response.clone()));
     dbg!(&calldata);
 
     let result = runner
@@ -55,7 +56,7 @@ async fn test_public_key_point() {
             FunctionCall {
                 contract_address: new_account.address(),
                 entry_point_selector: selector!("verifyWebauthnSigner"),
-                calldata,
+                calldata: to_felts(&calldata),
             },
             BlockId::Tag(BlockTag::Latest),
         )
