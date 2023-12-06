@@ -1,5 +1,8 @@
 #![allow(unused_variables)]
-use std::{fmt::{Display, self}, str::FromStr};
+use std::{
+    fmt::{self, Display},
+    str::FromStr,
+};
 
 use serde::{ser, Serialize};
 use starknet::core::types::FieldElement;
@@ -11,7 +14,7 @@ pub struct Serializer {
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
-pub enum Error{
+pub enum Error {
     Message(String),
     TypeNotSupported,
     UnknownLength,
@@ -64,7 +67,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     type SerializeStructVariant = Self;
 
     fn serialize_bool(self, v: bool) -> Result<()> {
-        Err(Error::TypeNotSupported)
+        self.serialize_u64(u64::from(v))
     }
 
     fn serialize_i8(self, v: i8) -> Result<()> {
@@ -79,8 +82,6 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         Err(Error::TypeNotSupported)
     }
 
-    // Not particularly efficient but this is example code anyway. A more
-    // performant approach would be to use the `itoa` crate.
     fn serialize_i64(self, v: i64) -> Result<()> {
         Err(Error::TypeNotSupported)
     }
@@ -115,7 +116,8 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_str(self, v: &str) -> Result<()> {
-        self.output.push(FieldElement::from_str(v).map_err(|e| Error::Message(e.to_string()))?);
+        self.output
+            .push(FieldElement::from_str(v).map_err(|e| Error::Message(e.to_string()))?);
         Ok(())
     }
 
@@ -176,7 +178,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
             Some(len) => {
                 self.output.push(len.into());
                 Ok(self)
-            },
+            }
             None => Err(Error::UnknownLength),
         }
     }
@@ -286,7 +288,6 @@ impl<'a> ser::SerializeTupleVariant for &'a mut Serializer {
     }
 }
 
-
 impl<'a> ser::SerializeMap for &'a mut Serializer {
     type Ok = ();
     type Error = Error;
@@ -341,14 +342,60 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
         Err(Error::TypeNotSupported)
     }
 }
-
+#[cfg(test)]
 mod tests {
-    use std::str::FromStr;
+    use starknet::macros::felt;
 
     use super::*;
     #[test]
-    fn test_ser_felt() {
-        let felt = FieldElement::from_str("42").unwrap();
-        assert_eq!(to_felts(&felt), vec![felt]);
+    fn test_simple_serialization() {
+        assert_eq!(to_felts(&42_usize), vec![felt!("42")]);
+        assert_eq!(to_felts(&false), vec![felt!("0")]);
+        assert_eq!(to_felts(&true), vec![felt!("1")]);
+    }
+
+    #[test]
+    fn test_sequence_serialization() {
+        let vec = (0..100)
+            .map(|i| FieldElement::from(usize::try_from(i).unwrap()))
+            .collect::<Vec<_>>();
+        let mut result = vec.clone();
+        result.insert(0, vec.len().into());
+        assert_eq!(to_felts(&vec), result);
+    }
+
+    #[derive(Debug, Clone, Serialize)]
+    struct TestStruct {
+        a: FieldElement,
+        i: usize,
+        x: usize,
+    }
+
+    #[test]
+    fn test_struct_serialization() {
+        let val = TestStruct {
+            a: felt!("1234"),
+            i: 1830,
+            x: 33,
+        };
+        let result = vec![val.a, val.i.into(), val.x.into()];
+        assert_eq!(to_felts(&val), result);
+    }
+
+    #[test]
+    fn test_struct_sequence_serialization() {
+        let val = TestStruct {
+            a: felt!("1234"),
+            i: 1830,
+            x: 33,
+        };
+        let serialized = vec![val.a, val.i.into(), val.x.into()];
+        let seq = (0..100).map(|_| val.clone()).collect::<Vec<_>>();
+        let mut result = (0..100)
+            .map(|_| serialized.clone())
+            .flatten()
+            .collect::<Vec<_>>();
+        result.insert(0, seq.len().into());
+        assert_eq!(to_felts(&seq), result);
     }
 }
