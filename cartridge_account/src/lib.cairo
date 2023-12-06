@@ -4,6 +4,7 @@
 mod interface;
 
 use starknet::testing;
+use starknet::secp256r1::Secp256r1Point;
 
 #[starknet::interface]
 trait IPublicKey<TState> {
@@ -17,16 +18,36 @@ trait IPublicKeyCamel<TState> {
     fn getPublicKey(self: @TState) -> felt252;
 }
 
+#[starknet::interface]
+trait IWebauthnSignerCamel<TState> {
+    fn verifyWebauthnSigner(
+        ref self: TState, 
+        pub_x: u256,
+        pub_y: u256, // public key as point on elliptic curve
+        // r: u256, // 'r' part from ecdsa
+        // s: u256, // 's' part from ecdsa
+        // type_offset: usize, // offset to 'type' field in json
+        // challenge_offset: usize, // offset to 'challenge' field in json
+        // origin_offset: usize, // offset to 'origin' field in json
+        // client_data_json: Array<u8>, // json with client_data as 1-byte array 
+        // challenge: Array<u8>, // challenge as 1-byte array
+        // origin: Array<u8>, //  array origin as 1-byte array
+        // authenticator_data: Array<u8>
+    ) -> felt252;
+}
+
 
 #[starknet::contract]
 mod Account {
-    use ecdsa::check_ecdsa_signature;
+    use core::result::ResultTrait;
+use ecdsa::check_ecdsa_signature;
     use openzeppelin::account::interface;
     use openzeppelin::introspection::src5::SRC5 as src5_component;
     use starknet::account::Call;
     use starknet::get_caller_address;
     use starknet::get_contract_address;
     use starknet::get_tx_info;
+    use starknet::secp256r1::{Secp256r1Point, Secp256r1Impl};
 
     const TRANSACTION_VERSION: felt252 = 1;
     // 2**128 + TRANSACTION_VERSION
@@ -151,6 +172,31 @@ mod Account {
 
         fn setPublicKey(ref self: ContractState, newPublicKey: felt252) {
             PublicKeyImpl::set_public_key(ref self, newPublicKey);
+        }
+    }
+
+    #[external(v0)]
+    impl WebauthnSignerCamelImpl of super::IWebauthnSignerCamel<ContractState> {
+        fn verifyWebauthnSigner(
+            ref self: ContractState, 
+            pub_x: u256,
+            pub_y: u256, // public key as point on elliptic curve
+            // r: u256, // 'r' part from ecdsa
+            // s: u256, // 's' part from ecdsa
+            // type_offset: usize, // offset to 'type' field in json
+            // challenge_offset: usize, // offset to 'challenge' field in json
+            // origin_offset: usize, // offset to 'origin' field in json
+            // client_data_json: Array<u8>, // json with client_data as 1-byte array 
+            // challenge: Array<u8>, // challenge as 1-byte
+            // origin: Array<u8>, //  array origin as 1-byte array
+            // authenticator_data: Array<u8>
+        ) -> felt252 {
+            let pub_key = match 
+                Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y).unwrap() {
+                Option::Some(pub_key) => pub_key,
+                Option::None(_) => { return 0; }
+            };
+            1
         }
     }
 
