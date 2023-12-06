@@ -27,24 +27,30 @@ mod Account {
     use starknet::get_caller_address;
     use starknet::get_contract_address;
     use starknet::get_tx_info;
+    use webauthn_session::session_component;
 
     const TRANSACTION_VERSION: felt252 = 1;
     // 2**128 + TRANSACTION_VERSION
     const QUERY_VERSION: felt252 = 0x100000000000000000000000000000001;
 
     component!(path: src5_component, storage: src5, event: SRC5Event);
-
     #[abi(embed_v0)]
     impl SRC5Impl = src5_component::SRC5Impl<ContractState>;
     #[abi(embed_v0)]
     impl SRC5CamelImpl = src5_component::SRC5CamelImpl<ContractState>;
     impl SRC5InternalImpl = src5_component::InternalImpl<ContractState>;
 
+    component!(path: session_component, storage: session, event: SessionEvent);
+    #[abi(embed_v0)]
+    impl SessionImpl = session_component::Session<ContractState>;
+
     #[storage]
     struct Storage {
         Account_public_key: felt252,
         #[substorage(v0)]
-        src5: src5_component::Storage
+        src5: src5_component::Storage,
+        #[substorage(v0)]
+        session: session_component::Storage
     }
 
     #[event]
@@ -52,7 +58,8 @@ mod Account {
     enum Event {
         OwnerAdded: OwnerAdded,
         OwnerRemoved: OwnerRemoved,
-        SRC5Event: src5_component::Event
+        SRC5Event: src5_component::Event,
+        SessionEvent: session_component::Event
     }
 
     #[derive(Drop, starknet::Event)]

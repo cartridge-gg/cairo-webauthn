@@ -1,14 +1,49 @@
 use starknet::{
-    accounts::{Account, Call, SingleOwnerAccount},
-    core::types::{DeclareTransactionResult, FieldElement},
+    accounts::{Account, Call, ConnectedAccount, SingleOwnerAccount},
+    core::types::{BlockId, BlockTag, DeclareTransactionResult, FieldElement},
     macros::{felt, selector},
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
-    signers::LocalWallet,
+    signers::{LocalWallet, SigningKey},
 };
 
 use super::runners::katana_runner::KatanaRunner;
-use crate::deploy_contract::{AccountDeclaration, DeployResult};
+use crate::deploy_contract::{
+    single_owner_account, AccountDeclaration, DeployResult, FEE_TOKEN_ADDRESS,
+};
 use crate::{deploy_contract::AccountDeployment, tests::runners::TestnetRunner};
+
+pub async fn create_account<'a>(
+    from: &SingleOwnerAccount<&'a JsonRpcClient<HttpTransport>, LocalWallet>,
+) -> SingleOwnerAccount<&'a JsonRpcClient<HttpTransport>, LocalWallet> {
+    let provider = from.provider();
+    let class_hash = declare(provider, &from).await;
+    let private_key = SigningKey::from_random();
+    let deployed_address = deploy(
+        provider,
+        &from,
+        private_key.verifying_key().scalar(),
+        class_hash,
+    )
+    .await;
+
+    let mut created = single_owner_account(provider, private_key, deployed_address).await;
+    created.set_block_id(BlockId::Tag(BlockTag::Latest));
+
+    from.execute(vec![Call {
+        to: *FEE_TOKEN_ADDRESS,
+        selector: selector!("transfer"),
+        calldata: vec![
+            created.address(),
+            felt!("100000000000000000000"),
+            felt!("0x0"),
+        ],
+    }])
+    .send()
+    .await
+    .unwrap();
+
+    created
+}
 
 pub async fn declare(
     client: &JsonRpcClient<HttpTransport>,
