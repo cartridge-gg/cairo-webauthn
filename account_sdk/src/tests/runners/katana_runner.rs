@@ -29,7 +29,6 @@ lazy_static! {
     pub static ref CONFIG: TestnetConfig = TestnetConfig{
         port: 1234,
         exec: "katana".to_string(),
-        execute_from_folder: ".".to_string(),
         log_file_path: "log/katana.log".to_string(),
     };
 }

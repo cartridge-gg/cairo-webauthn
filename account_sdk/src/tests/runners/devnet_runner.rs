@@ -21,9 +21,8 @@ lazy_static! {
     );
 
     pub static ref CONFIG: TestnetConfig = TestnetConfig{
-        port: 1234,
-        exec: "cargo".to_string(),
-        execute_from_folder: "/home/szymon/.devnet".to_string(),
+        port: 5050,
+        exec: "starknet-devnet".to_string(),
         log_file_path: "log/devnet.log".to_string(),
     };
 }
@@ -37,8 +36,6 @@ pub struct DevnetRunner {
 impl DevnetRunner {
     pub fn new(config: TestnetConfig) -> Self {
         let child = Command::new(config.exec)
-            .current_dir(config.execute_from_folder)
-            .args(["run", "--"])
             .args(["--port", &config.port.to_string()])
             .args(["--seed", "0"])
             .stdout(Stdio::piped())

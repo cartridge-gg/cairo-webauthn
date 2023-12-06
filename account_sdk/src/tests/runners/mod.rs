@@ -67,7 +67,6 @@ pub fn find_free_port() -> u16 {
 pub struct TestnetConfig {
     pub port: u16,
     pub exec: String,
-    pub execute_from_folder: String,
     pub log_file_path: String,
 }
 
