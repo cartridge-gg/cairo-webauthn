@@ -168,13 +168,13 @@ use ecdsa::check_ecdsa_signature;
             pub_y: u256, // public key as point on elliptic curve
             r: u256, // 'r' part from ecdsa
             s: u256, // 's' part from ecdsa
-            // type_offset: usize, // offset to 'type' field in json
-            // challenge_offset: usize, // offset to 'challenge' field in json
-            // origin_offset: usize, // offset to 'origin' field in json
-            // client_data_json: Array<u8>, // json with client_data as 1-byte array 
-            // challenge: Array<u8>, // challenge as 1-byte
-            // origin: Array<u8>, //  array origin as 1-byte array
-            // authenticator_data: Array<u8>
+            type_offset: usize, // offset to 'type' field in json
+            challenge_offset: usize, // offset to 'challenge' field in json
+            origin_offset: usize, // offset to 'origin' field in json
+            client_data_json: Array<u8>, // json with client_data as 1-byte array 
+            challenge: Array<u8>, // challenge as 1-byte array
+            origin: Array<u8>, //  array origin as 1-byte array
+            authenticator_data: Array<u8>
         ) -> Array<felt252> {
             let pub_key = match 
                 Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y){

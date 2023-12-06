@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
-pub struct CliendData{
+pub struct CliendData {
     #[serde(rename = "type")]
     type_: String,
     challenge: String,
