@@ -72,10 +72,4 @@ async fn test_verify_webauthn_signer() {
 
     assert_eq!(result.len(), 1);
     assert_eq!(result[0], felt!("1"));
-
-    // let result = new_account.execute(vec![Call {
-    //     to: new_account.address(),
-    //     selector: selector!("verifyWebauthnSigner"),
-    //     calldata,
-    // }]).send().await.unwrap();
 }
