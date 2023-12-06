@@ -66,9 +66,11 @@ impl ImplSignatureProofs of SignatureProofsTrait {
             single_proof_len
         })
     }
+
     fn len(self: SignatureProofs) -> usize {
         U32Div::div(self.proofs_flat.len(), self.single_proof_len)
     }
+    
     fn at(self: SignatureProofs, index: usize) -> Span<felt252> {
         self.proofs_flat.slice(index * self.single_proof_len, self.single_proof_len)
     }

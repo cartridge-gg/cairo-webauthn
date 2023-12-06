@@ -26,12 +26,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "alexandria_merkle_tree"
+version = "0.1.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria?tag=cairo-v2.3.0-rc0#ae1d5149ff601a7ac5b39edc867d33ebd83d7f4f"
+
+[[package]]
 name = "cartridge_account"
 version = "0.1.0"
 dependencies = [
  "openzeppelin",
  "snforge_std",
  "webauthn_auth",
+ "webauthn_session",
 ]
 
 [[package]]
@@ -49,4 +55,13 @@ name = "webauthn_auth"
 version = "0.1.0"
 dependencies = [
  "alexandria_encoding",
+]
+
+[[package]]
+name = "webauthn_session"
+version = "0.1.0"
+dependencies = [
+ "alexandria_data_structures",
+ "alexandria_encoding",
+ "alexandria_merkle_tree",
 ]
