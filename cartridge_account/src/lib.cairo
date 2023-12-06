@@ -22,9 +22,9 @@ trait IPublicKeyCamel<TState> {
 #[starknet::contract]
 mod Account {
     use core::starknet::SyscallResultTrait;
-use core::traits::Into;
-use core::result::ResultTrait;
-use ecdsa::check_ecdsa_signature;
+    use core::traits::Into;
+    use core::result::ResultTrait;
+    use ecdsa::check_ecdsa_signature;
     use openzeppelin::account::interface;
     use openzeppelin::introspection::src5::SRC5 as src5_component;
     use starknet::account::Call;
@@ -32,6 +32,7 @@ use ecdsa::check_ecdsa_signature;
     use starknet::get_contract_address;
     use starknet::get_tx_info;
     use starknet::secp256r1::{Secp256r1Point, Secp256r1Impl};
+    use webauthn_auth::webauthn::verify;
 
     const TRANSACTION_VERSION: felt252 = 1;
     // 2**128 + TRANSACTION_VERSION
@@ -175,22 +176,28 @@ use ecdsa::check_ecdsa_signature;
             challenge: Array<u8>, // challenge as 1-byte array
             origin: Array<u8>, //  array origin as 1-byte array
             authenticator_data: Array<u8>
-        ) -> Array<felt252> {
+        ) -> bool {
             let pub_key = match 
                 Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y){
                     Result::Ok(pub_key) => pub_key,
-                    Result::Err(e) => { return e; }
+                    Result::Err(e) => { return false; }
                 };
             let pub_key = match pub_key {
                 Option::Some(pub_key) => pub_key,
-                Option::None(_) => { return ArrayTrait::new(); }
+                Option::None(_) => { return false; }
             };
-            let mut arr = ArrayTrait::new();
-            arr.append(pub_x.low.into());
-            arr.append(pub_x.high.into());
-            arr.append(pub_y.low.into());
-            arr.append(pub_y.high.into());
-            arr
+            verify(
+                pub_key, 
+                r, 
+                s, 
+                type_offset, 
+                challenge_offset, 
+                origin_offset, 
+                client_data_json, 
+                challenge, 
+                origin, 
+                authenticator_data
+            ).is_ok()
         }
     }
 

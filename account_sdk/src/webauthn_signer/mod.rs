@@ -41,16 +41,21 @@ impl P256r1Signer {
         )
     }
     pub fn sign(&self, challenge: String) -> AuthenticatorAssertionResponse {
+        use sha2::{digest::Update, Digest, Sha256};
+
         let authenticator_data = AuthenticatorData {
             rp_id_hash: [0; 32],
-            flags: 0b00000001,
+            flags: 0b00000101,
             sign_count: 0,
         };
+        let client_data_json = CliendData::new(challenge, self.rp_id.clone()).to_json();
+        let client_data_hash = Sha256::new().chain(client_data_json.clone()).finalize();
+
         let mut to_sign = Into::<Vec<u8>>::into(authenticator_data.clone());
-        to_sign.append(&mut challenge.clone().into_bytes());
+        to_sign.append(&mut client_data_hash.to_vec());
         let signature: Signature = self.signing_key.try_sign(&to_sign).unwrap();
         let signature = signature.to_bytes().to_vec();
-        let client_data_json = CliendData::new(challenge, self.rp_id.clone()).to_json();
+
         AuthenticatorAssertionResponse {
             authenticator_data,
             client_data_json,

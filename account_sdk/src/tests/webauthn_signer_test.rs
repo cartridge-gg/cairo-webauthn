@@ -9,15 +9,15 @@ use starknet::{
 use crate::{
     deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS},
     felt_ser::to_felts,
-    tests::runners::{devnet_runner::DevnetRunner, TestnetRunner, katana_runner::KatanaRunner},
+    tests::runners::{devnet_runner::DevnetRunner, TestnetRunner},
     webauthn_signer::{cairo_args::VerifyWebauthnSignerArgs, P256r1Signer},
 };
 
 use super::deployment_test::{declare, deploy};
 
 #[tokio::test]
-async fn test_public_key_point() {
-    let runner = KatanaRunner::load();
+async fn test_verify_webauthn_signer() {
+    let runner = DevnetRunner::load();
     let prefunded = runner.prefunded_single_owner_account().await;
     let class_hash = declare(runner.client(), &prefunded).await;
     let private_key = SigningKey::from_random();
@@ -56,7 +56,6 @@ async fn test_public_key_point() {
         challenge.into_bytes(),
         response.clone(),
     );
-    dbg!(&calldata);
 
     let result = runner
         .client()
@@ -71,11 +70,12 @@ async fn test_public_key_point() {
         .await
         .expect("failed to call contract");
 
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0], felt!("1"));
+
     // let result = new_account.execute(vec![Call {
     //     to: new_account.address(),
     //     selector: selector!("verifyWebauthnSigner"),
     //     calldata,
     // }]).send().await.unwrap();
-
-    dbg!(result);
 }
