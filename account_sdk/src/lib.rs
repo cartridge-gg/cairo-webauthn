@@ -3,6 +3,7 @@ mod transaction_waiter;
 
 #[cfg(test)]
 mod tests;
+pub mod felt_ser;
 
 use wasm_bindgen::prelude::*;
 
