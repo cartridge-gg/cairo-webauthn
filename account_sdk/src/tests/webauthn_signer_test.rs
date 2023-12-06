@@ -7,8 +7,10 @@ use starknet::{
 };
 use u256_literal::u256;
 
-use super::katana_runner::KatanaRunner;
-use crate::deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS};
+use crate::{
+    deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS},
+    tests::runners::{devnet_runner::DevnetRunner, TestnetRunner, katana_runner::KatanaRunner}, webauthn_signer::P256r1Signer,
+};
 
 use super::deployment_test::{declare, deploy};
 
@@ -38,15 +40,9 @@ async fn test_public_key_point() {
         .await
         .unwrap();
 
-    
-    let pub_x = felt_pair(u256!(
-        85361148225729824017625108732123897247053575672172763810522989717862412662042
-    ));
-    let pub_y = felt_pair(u256!(
-        34990362585894687818855246831758567645528911684717374214517047635026995605
-    ));
+    let signer = P256r1Signer::random();
 
-    let calldata = vec![pub_x.0, pub_x.1, pub_y.0, pub_y.1];
+    let calldata = signer.sign();
     dbg!(&calldata);
 
     let result = runner
@@ -54,7 +50,7 @@ async fn test_public_key_point() {
         .call(
             FunctionCall {
                 contract_address: new_account.address(),
-                entry_point_selector: selector!("createPoint"),
+                entry_point_selector: selector!("verifyWebauthnSigner"),
                 calldata,
             },
             BlockId::Tag(BlockTag::Latest),
@@ -71,17 +67,4 @@ async fn test_public_key_point() {
     dbg!(result);
 }
 
-fn felt_pair(u: U256) -> (FieldElement, FieldElement) {
-    let mut bytes = [0; 32];
-    u.to_big_endian(&mut bytes);
-    (
-        FieldElement::from_bytes_be(&extend_to_32(&bytes[16..32])).unwrap(),
-        FieldElement::from_bytes_be(&extend_to_32(&bytes[0..16])).unwrap(),
-    )
-}
 
-fn extend_to_32(bytes: &[u8]) -> [u8; 32] {
-    let mut ret = [0; 32];
-    ret[32 - bytes.len()..].copy_from_slice(bytes);
-    ret
-}

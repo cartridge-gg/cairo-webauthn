@@ -1,4 +1,5 @@
 pub mod deploy_contract;
+pub mod webauthn_signer;
 mod transaction_waiter;
 
 #[cfg(test)]

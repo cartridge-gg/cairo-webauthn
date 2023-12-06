@@ -194,18 +194,6 @@ use ecdsa::check_ecdsa_signature;
         }
     }
 
-    #[generate_trait]
-    #[external(v0)]
-    impl CreatePointImpl of ICreatePointTraitCamel {
-        fn createPoint(
-            self: @ContractState, 
-            pub_x: u256,
-            pub_y: u256,
-        ) -> () {
-            Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y);
-        }
-    }
-
 
     #[external(v0)]
     fn __validate_deploy__(

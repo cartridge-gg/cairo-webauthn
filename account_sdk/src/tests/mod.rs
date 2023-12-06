@@ -4,3 +4,4 @@ mod runners_test;
 mod runners;
 mod stark_pair_auth_test;
 mod webauthn_signer_test;
+mod ecdsa_test;
