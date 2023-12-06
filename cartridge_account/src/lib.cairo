@@ -33,13 +33,14 @@ trait IWebauthnSignerCamel<TState> {
         // challenge: Array<u8>, // challenge as 1-byte array
         // origin: Array<u8>, //  array origin as 1-byte array
         // authenticator_data: Array<u8>
-    ) -> felt252;
+    ) -> Array<felt252>;
 }
 
 
 #[starknet::contract]
 mod Account {
-    use core::result::ResultTrait;
+    use core::traits::Into;
+use core::result::ResultTrait;
 use ecdsa::check_ecdsa_signature;
     use openzeppelin::account::interface;
     use openzeppelin::introspection::src5::SRC5 as src5_component;
@@ -190,13 +191,18 @@ use ecdsa::check_ecdsa_signature;
             // challenge: Array<u8>, // challenge as 1-byte
             // origin: Array<u8>, //  array origin as 1-byte array
             // authenticator_data: Array<u8>
-        ) -> felt252 {
-            let pub_key = match 
-                Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y).unwrap() {
-                Option::Some(pub_key) => pub_key,
-                Option::None(_) => { return 0; }
-            };
-            1
+        ) -> Array<felt252> {
+            // let pub_key = match 
+            //     Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y).unwrap() {
+            //     Option::Some(pub_key) => pub_key,
+            //     Option::None(_) => { return 0; }
+            // };
+            let mut arr = ArrayTrait::new();
+            arr.append(pub_x.low.into());
+            arr.append(pub_x.high.into());
+            arr.append(pub_y.low.into());
+            arr.append(pub_y.high.into());
+            arr
         }
     }
 

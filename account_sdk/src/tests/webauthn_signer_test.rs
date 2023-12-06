@@ -1,9 +1,9 @@
 use primitive_types::U256;
 use starknet::{
     accounts::{Account, Call},
-    core::types::FieldElement,
+    core::types::{FieldElement, FunctionCall, BlockId, BlockTag},
     macros::selector,
-    signers::SigningKey,
+    signers::SigningKey, providers::Provider,
 };
 use u256_literal::u256;
 
@@ -34,15 +34,22 @@ async fn test_public_key_point() {
         34990362585894687818855246831758567645528911684717374214517047635026995605
     ));
 
-    new_account
-        .execute(vec![Call {
-            to: new_account.address(),
-            selector: selector!("verifyWebauthnSigner"),
-            calldata: vec![pub_x.0, pub_x.1, pub_y.0, pub_y.1],
-        }])
-        .send()
+    let calldata = vec![pub_x.0, pub_x.1, pub_y.0, pub_y.1];
+    dbg!(&calldata);
+
+    let result = runner
+        .client()
+        .call(
+            FunctionCall {
+                contract_address: new_account.address(),
+                entry_point_selector: selector!("verifyWebauthnSigner"),
+                calldata,
+            },
+            BlockId::Tag(BlockTag::Latest),
+        )
         .await
-        .unwrap();
+        .expect("failed to call contract");
+    dbg!(result);
 }
 
 fn felt_pair(u: U256) -> (FieldElement, FieldElement) {
