@@ -50,4 +50,18 @@ trait AccountCamelABI<TState> {
     fn getPublicKey(self: @TState) -> felt252;
     fn isValidSignature(self: @TState, hash: felt252, signature: Array<felt252>) -> felt252;
     fn supportsInterface(self: @TState, interfaceId: felt252) -> bool;
+    fn verifyWebauthnSigner(
+        ref self: TState, 
+        pub_x: u256,
+        pub_y: u256, // public key as point on elliptic curve
+        // r: u256, // 'r' part from ecdsa
+        // s: u256, // 's' part from ecdsa
+        // type_offset: usize, // offset to 'type' field in json
+        // challenge_offset: usize, // offset to 'challenge' field in json
+        // origin_offset: usize, // offset to 'origin' field in json
+        // client_data_json: Array<u8>, // json with client_data as 1-byte array 
+        // challenge: Array<u8>, // challenge as 1-byte array
+        // origin: Array<u8>, //  array origin as 1-byte array
+        // authenticator_data: Array<u8>
+    ) -> Array<felt252>;
 }

@@ -39,7 +39,8 @@ trait IWebauthnSignerCamel<TState> {
 
 #[starknet::contract]
 mod Account {
-    use core::traits::Into;
+    use core::starknet::SyscallResultTrait;
+use core::traits::Into;
 use core::result::ResultTrait;
 use ecdsa::check_ecdsa_signature;
     use openzeppelin::account::interface;
@@ -192,10 +193,16 @@ use ecdsa::check_ecdsa_signature;
             // origin: Array<u8>, //  array origin as 1-byte array
             // authenticator_data: Array<u8>
         ) -> Array<felt252> {
+            let pub_x = 85361148225729824017625108732123897247053575672172763810522989717862412662042_u256;
+            let pub_y = 34990362585894687818855246831758567645528911684717374214517047635026995605_u256;
             // let pub_key = match 
-            //     Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y).unwrap() {
+            //     Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y){
+            //         Result::Ok(pub_key) => pub_key,
+            //         Result::Err(e) => { return e; }
+            //     };
+            // let pub_key = match pub_key {
             //     Option::Some(pub_key) => pub_key,
-            //     Option::None(_) => { return 0; }
+            //     Option::None(_) => { return ArrayTrait::new(); }
             // };
             let mut arr = ArrayTrait::new();
             arr.append(pub_x.low.into());

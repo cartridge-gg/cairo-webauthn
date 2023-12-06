@@ -2,13 +2,13 @@ use primitive_types::U256;
 use starknet::{
     accounts::{Account, Call},
     core::types::{FieldElement, FunctionCall, BlockId, BlockTag},
-    macros::selector,
+    macros::{selector, felt},
     signers::SigningKey, providers::Provider,
 };
 use u256_literal::u256;
 
 use super::katana_runner::KatanaRunner;
-use crate::deploy_contract::single_owner_account;
+use crate::deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS};
 
 use super::deployment_test::{declare, deploy};
 
@@ -27,6 +27,18 @@ async fn test_public_key_point() {
     .await;
 
     let new_account = single_owner_account(runner.client(), private_key, deployed_address).await;
+
+    prefunded
+        .execute(vec![Call {
+            to: *FEE_TOKEN_ADDRESS,
+            selector: selector!("transfer"),
+            calldata: vec![new_account.address(), felt!("0x8944000000000000"), felt!("0x0")],
+        }])
+        .send()
+        .await
+        .unwrap();
+
+    
     let pub_x = felt_pair(u256!(
         85361148225729824017625108732123897247053575672172763810522989717862412662042
     ));
@@ -49,6 +61,13 @@ async fn test_public_key_point() {
         )
         .await
         .expect("failed to call contract");
+
+    // let result = new_account.execute(vec![Call {
+    //     to: new_account.address(),
+    //     selector: selector!("verifyWebauthnSigner"),
+    //     calldata,
+    // }]).send().await.unwrap();
+
     dbg!(result);
 }
 
