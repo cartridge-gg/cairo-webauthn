@@ -280,7 +280,7 @@ fn find_and_verify_credential_source<
 fn expand_auth_data_and_verify_rp_id_hash(
     auth_data: Array<u8>, expected_rp_id: Array<u8>
 ) -> Result<AuthenticatorData, AuthnError> {
-    let auth_data_struct = match auth_data.try_into() {
+    let auth_data_struct: AuthenticatorData = match auth_data.try_into() {
         Option::Some(ad) => ad,
         Option::None => {
             return AuthnError::InvalidAuthData.into();

@@ -11,7 +11,7 @@ use starknet::{contract_address::ContractAddress};
 
 use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature, SignatureProofs};
 use webauthn_session::hash::{compute_session_hash, compute_call_hash};
-use alexandria_data_structures::merkle_tree::{Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait};
+use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait};
 
 
 use core::ecdsa::check_ecdsa_signature;
