@@ -21,6 +21,7 @@ trait IPublicKeyCamel<TState> {
 
 #[starknet::contract]
 mod Account {
+    use core::array::ArrayTrait;
     use core::starknet::SyscallResultTrait;
     use core::traits::Into;
     use core::result::ResultTrait;

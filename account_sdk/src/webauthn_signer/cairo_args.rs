@@ -1,5 +1,4 @@
 use serde::Serialize;
-use serde_json::Value;
 use starknet::core::types::FieldElement;
 
 use super::{credential::AuthenticatorAssertionResponse, U256};
@@ -31,9 +30,9 @@ impl VerifyWebauthnSignerArgs {
             felt_pair(&response.signature[0..32].try_into().unwrap()),
             felt_pair(&response.signature[32..64].try_into().unwrap()),
         );
-        let type_offset = find_key_index(&response.client_data_json, "type").unwrap();
-        let challenge_offset = find_key_index(&response.client_data_json, "challenge").unwrap();
-        let origin_offset = find_key_index(&response.client_data_json, "origin").unwrap();
+        let type_offset = find_value_index(&response.client_data_json, "type").unwrap();
+        let challenge_offset = find_value_index(&response.client_data_json, "challenge").unwrap();
+        let origin_offset = find_value_index(&response.client_data_json, "origin").unwrap();
         Self {
             pub_x,
             pub_y,
@@ -63,11 +62,69 @@ fn extend_to_32(bytes: &[u8]) -> [u8; 32] {
     ret
 }
 
-fn find_key_index(json_str: &str, key: &str) -> Option<usize> {
-    let v: Value = serde_json::from_str(json_str).ok()?;
-    let obj = v.as_object()?;
-    let value = obj.get(key)?;
-    let value_str = serde_json::to_string(value).ok()?;
-    let index = json_str.find(&value_str)?;
-    Some(index)
+fn find_value_index(json_str: &str, key: &str) -> Option<usize> {
+    let key_index = json_str.find(&format!("\"{}\"", key))?;
+
+    let colon_index = json_str[key_index..].find(':')? + key_index;
+
+    let value_start_index = json_str[colon_index + 1..]
+        .find('"')?;
+
+    Some(colon_index + 1 + value_start_index + 1)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::find_value_index;
+    #[test]
+    fn test_find_value_index() {
+        let json_str = r#"{"type":"webauthn.get","challenge":"aGVsbG8=","origin":"https://example.com"}"#;
+        assert_eq!(
+            find_value_index(
+                json_str,
+                "type"
+            ),
+            Some(9)
+        );
+        assert_eq!(
+            find_value_index(
+                json_str,
+                "challenge"
+            ),
+            Some(36)
+        );
+        assert_eq!(
+            find_value_index(
+                json_str,
+                "origin"
+            ),
+            Some(56)
+        );
+    }
+
+    #[test]
+    fn test_find_value_index_whitespace() {
+        let json_str = r#"{   "type":      "webauthn.get",  "challenge":   "aGVsbG8=","origin":    "https://example.com"}"#;
+        assert_eq!(
+            find_value_index(
+                json_str,
+                "type"
+            ),
+            Some(18)
+        );
+        assert_eq!(
+            find_value_index(
+                json_str,
+                "challenge"
+            ),
+            Some(50)
+        );
+        assert_eq!(
+            find_value_index(
+                json_str,
+                "origin"
+            ),
+            Some(74)
+        );
+    }
 }

@@ -58,7 +58,7 @@ fn verify(
     // Skipping for now
 
     // 12. Verify that the value of C.challenge equals the base64url encoding of options.challenge.
-    verify_challenge(@client_data_json, challenge_offset, challenge);
+    verify_challenge(@client_data_json, challenge_offset, challenge)?;
 
     // 13. Verify that the value of C.origin matches the Relying Party's origin.
     // Skipping for now.

@@ -1,3 +1,4 @@
+
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
@@ -11,7 +12,10 @@ pub struct CliendData {
 }
 
 impl CliendData {
-    pub fn new(challenge: String, origin: String) -> Self {
+    pub fn new(challenge: impl AsRef<[u8]>, origin: String) -> Self {
+        use base64::{Engine as _, engine::general_purpose::STANDARD};
+        let challenge = STANDARD.encode(challenge);
+
         Self {
             type_: "webauthn.get".into(),
             challenge,
