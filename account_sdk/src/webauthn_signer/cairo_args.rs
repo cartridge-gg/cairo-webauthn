@@ -67,8 +67,7 @@ fn find_value_index(json_str: &str, key: &str) -> Option<usize> {
 
     let colon_index = json_str[key_index..].find(':')? + key_index;
 
-    let value_start_index = json_str[colon_index + 1..]
-        .find('"')?;
+    let value_start_index = json_str[colon_index + 1..].find('"')?;
 
     Some(colon_index + 1 + value_start_index + 1)
 }
@@ -78,53 +77,18 @@ mod tests {
     use super::find_value_index;
     #[test]
     fn test_find_value_index() {
-        let json_str = r#"{"type":"webauthn.get","challenge":"aGVsbG8=","origin":"https://example.com"}"#;
-        assert_eq!(
-            find_value_index(
-                json_str,
-                "type"
-            ),
-            Some(9)
-        );
-        assert_eq!(
-            find_value_index(
-                json_str,
-                "challenge"
-            ),
-            Some(36)
-        );
-        assert_eq!(
-            find_value_index(
-                json_str,
-                "origin"
-            ),
-            Some(56)
-        );
+        let json_str =
+            r#"{"type":"webauthn.get","challenge":"aGVsbG8=","origin":"https://example.com"}"#;
+        assert_eq!(find_value_index(json_str, "type"), Some(9));
+        assert_eq!(find_value_index(json_str, "challenge"), Some(36));
+        assert_eq!(find_value_index(json_str, "origin"), Some(56));
     }
 
     #[test]
     fn test_find_value_index_whitespace() {
         let json_str = r#"{   "type":      "webauthn.get",  "challenge":   "aGVsbG8=","origin":    "https://example.com"}"#;
-        assert_eq!(
-            find_value_index(
-                json_str,
-                "type"
-            ),
-            Some(18)
-        );
-        assert_eq!(
-            find_value_index(
-                json_str,
-                "challenge"
-            ),
-            Some(50)
-        );
-        assert_eq!(
-            find_value_index(
-                json_str,
-                "origin"
-            ),
-            Some(74)
-        );
+        assert_eq!(find_value_index(json_str, "type"), Some(18));
+        assert_eq!(find_value_index(json_str, "challenge"), Some(50));
+        assert_eq!(find_value_index(json_str, "origin"), Some(74));
     }
 }

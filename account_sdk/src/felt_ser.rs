@@ -344,8 +344,8 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
 }
 #[cfg(test)]
 mod tests {
-    use starknet::macros::felt;
     use super::*;
+    use starknet::macros::felt;
 
     #[test]
     fn test_simple_serialization() {
