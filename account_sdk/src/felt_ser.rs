@@ -14,6 +14,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error{
     Message(String),
     TypeNotSupported,
+    UnknownLength,
 }
 
 impl ser::Error for Error {
@@ -27,6 +28,7 @@ impl Display for Error {
         match self {
             Error::Message(msg) => formatter.write_str(msg),
             Error::TypeNotSupported => formatter.write_str("Type not supported"),
+            Error::UnknownLength => formatter.write_str("Unknown length"),
         }
     }
 }
@@ -153,7 +155,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     where
         T: Serialize,
     {
-        Err(Error::TypeNotSupported)
+        value.serialize(self)
     }
 
     fn serialize_newtype_variant<T: ?Sized>(
@@ -170,11 +172,17 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
-        Err(Error::TypeNotSupported)
+        match len {
+            Some(len) => {
+                self.output.push(len.into());
+                Ok(self)
+            },
+            None => Err(Error::UnknownLength),
+        }
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple> {
-        Err(Error::TypeNotSupported)
+        Ok(self)
     }
 
     fn serialize_tuple_struct(
@@ -200,7 +208,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_struct(self, name: &'static str, len: usize) -> Result<Self::SerializeStruct> {
-        Err(Error::TypeNotSupported)
+        Ok(self)
     }
 
     fn serialize_struct_variant(
@@ -222,12 +230,11 @@ impl<'a> ser::SerializeSeq for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::TypeNotSupported)
+        value.serialize(&mut **self)
     }
 
-    // Close the sequence.
     fn end(self) -> Result<()> {
-        Err(Error::TypeNotSupported)
+        Ok(())
     }
 }
 
@@ -239,11 +246,11 @@ impl<'a> ser::SerializeTuple for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::TypeNotSupported)
+        value.serialize(&mut **self)
     }
 
     fn end(self) -> Result<()> {
-        Err(Error::TypeNotSupported)
+        Ok(())
     }
 }
 
@@ -255,11 +262,11 @@ impl<'a> ser::SerializeTupleStruct for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::TypeNotSupported)
+        value.serialize(&mut **self)
     }
 
     fn end(self) -> Result<()> {
-        Err(Error::TypeNotSupported)
+        Ok(())
     }
 }
 
@@ -311,11 +318,11 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::TypeNotSupported)
+        value.serialize(&mut **self)
     }
 
     fn end(self) -> Result<()> {
-        Err(Error::TypeNotSupported)
+        Ok(())
     }
 }
 
