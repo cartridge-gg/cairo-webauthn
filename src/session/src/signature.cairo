@@ -51,8 +51,8 @@ impl FeltSpanTryIntoSignature of TryInto<Span<felt252>, TxInfoSignature> {
 
 #[derive(Copy, Drop, Serde)]
 struct SignatureProofs {
-    proofs_flat: Span<felt252>,
     single_proof_len: usize,
+    proofs_flat: Span<felt252>,
 }
 
 #[generate_trait]

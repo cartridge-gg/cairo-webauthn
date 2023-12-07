@@ -24,12 +24,15 @@ mod tests;
 
 #[starknet::interface]
 trait ISession<TContractState> {
-    fn register_session(ref self: TContractState, token: felt252) -> felt252;
-    fn validate_session(ref self: TContractState, signature: TxInfoSignature, calls: Array<Call>) -> Result<(), ()>;
+    fn validate_session(ref self: TContractState, signature: TxInfoSignature, calls: Array<Call>);
+    // fn validate_session(ref self: TContractState, signature: TxInfoSignature);
+    fn register_session(ref self: TContractState, token: felt252);
+    fn revoke_session(ref self: TContractState, token: felt252, expires: u64);
 }
 
 #[starknet::component]
 mod session_component {
+    use core::result::ResultTrait;
     use super::Call;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature, SignatureProofs, SignatureProofsTrait};
@@ -38,6 +41,7 @@ mod session_component {
     struct Storage {
         session_key: felt252,
         session_expires: felt252,
+        revoked: LegacyMap::<felt252, u64>,
     }
 
     #[event]
@@ -55,17 +59,25 @@ mod session_component {
     impl SessionImpl<
         TContractState, +HasComponent<TContractState>
     > of super::ISession<ComponentState<TContractState>> {
+        fn validate_session(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<Call>) {
+            self.validate_signature(signature, calls).unwrap();
+        }
 
         fn register_session(
             ref self: ComponentState<TContractState>, token: felt252,
-        ) -> felt252 {
+        ) {
             self.session_key.write(token);
-            token
         }
 
-        fn validate_session(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<Call>) -> Result<(), ()> {
-            // self.validate_signature(signature, calls)
-            Result::Ok(())
+        fn revoke_session(
+            ref self: ComponentState<TContractState>, token: felt252, expires: u64,
+        ) {
+            let now = get_block_timestamp();
+            if expires <= now {
+                return;
+            };
+            // Expires can't be zero
+            self.revoked.write(token, expires);
         }
     }
 
@@ -83,19 +95,21 @@ mod session_component {
                 return Result::Err(());
             }
 
-            // let session_hash: felt252 = compute_session_hash(
-            //     sig, tx_info.chain_id, tx_info.account_contract_address
-            // );
+            // // let session_hash: felt252 = compute_session_hash(
+            // //     sig, tx_info.chain_id, tx_info.account_contract_address
+            // // );
 
-            // if is_valid_signature(
-            //     tx_info.account_contract_address, session_hash, sig.session_token
-            // ) == false {
-            //     return Result::Err(());
-            // }
+            // // if is_valid_signature(
+            // //     tx_info.account_contract_address, session_hash, sig.session_token
+            // // ) == false {
+            // //     return Result::Err(());
+            // // }
 
-            // if self.storage.contains_revoked_key(sig.session_key) {
-            //     return Result::Err(());
-            // }
+            // check if in the revoked list
+            let session_token = *signature.session_token.at(0);
+            if self.revoked.read(session_token) != 0 {
+                return Result::Err(());
+            }
 
             // if check_ecdsa_signature(tx_info.transaction_hash, sig.session_key, sig.r, sig.s) == false {
             //     return Result::Err(());

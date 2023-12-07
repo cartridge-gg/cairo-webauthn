@@ -1,11 +1,8 @@
-use std::time::Duration;
-
 use starknet::{
     accounts::{Account, Call},
     core::types::FieldElement,
     macros::{felt, selector},
 };
-use tokio::time::sleep;
 
 use crate::tests::{
     deployment_test::create_account,
@@ -21,6 +18,21 @@ struct Signature {
     proof_len: u32,
     proofs: Vec<FieldElement>,
     session_token: Vec<FieldElement>,
+}
+
+impl Default for Signature {
+    fn default() -> Self {
+        Self {
+            r: felt!("0x42"),
+            s: felt!("0x43"),
+            session_key: felt!("0x69"),
+            session_expires: u64::MAX,
+            root: felt!("0x0"),
+            proof_len: 1,
+            proofs: vec![felt!("44")],
+            session_token: vec![felt!("2137")],
+        }
+    }
 }
 
 impl Into<Vec<FieldElement>> for Signature {
@@ -40,43 +52,74 @@ impl Into<Vec<FieldElement>> for Signature {
     }
 }
 
+struct CallSequence {
+    calls: Vec<[FieldElement; 4]>,
+}
+
+impl Default for CallSequence {
+    fn default() -> Self {
+        Self {
+            calls: vec![[FieldElement::default(); 4]],
+        }
+    }
+}
+
+impl Into<Vec<FieldElement>> for CallSequence {
+    fn into(self) -> Vec<FieldElement> {
+        let mut result = Vec::new();
+        result.push(self.calls.len().into());
+        result.extend(self.calls.into_iter().flatten());
+        result
+    }
+}
+
 #[tokio::test]
-async fn test_authorize_execute() {
+async fn test_validate_session_valid() {
     let runner = DevnetRunner::load();
     let prefunded = runner.prefunded_single_owner_account().await;
     let account = create_account(&prefunded).await;
 
-    let signature = Signature {
-        r: felt!("0x42"),
-        s: felt!("0x43"),
-        session_key: felt!("0x69"),
-        session_expires: u64::MAX,
-        root: felt!("0x0"),
-        proof_len: 1,
-        proofs: vec![felt!("2137")],
-        session_token: vec![felt!("2137")],
-    };
-
-    let call = vec![
-        felt!("1"),
-        felt!("0x1000"),
-        felt!("0x1001"),
-        felt!("0x1002"),
-        felt!("0x1003"),
-    ];
-
-    let signature: Vec<FieldElement> = signature.into();
-    let calldata = signature.into_iter().chain(call).collect();
-
-    sleep(Duration::from_millis(100)).await;
+    let signature: Vec<FieldElement> = Signature::default().into();
+    let call: Vec<FieldElement> = CallSequence::default().into();
 
     account
         .execute(vec![Call {
             to: account.address(),
             selector: selector!("validate_session"),
-            calldata,
+            calldata: vec![signature, call].into_iter().flatten().collect(),
         }])
         .send()
         .await
         .expect("Failed to execute");
+}
+
+#[tokio::test]
+async fn test_validate_session_revoked() {
+    let runner = DevnetRunner::load();
+    let prefunded = runner.prefunded_single_owner_account().await;
+    let account = create_account(&prefunded).await;
+
+    account
+        .execute(vec![Call {
+            to: account.address(),
+            selector: selector!("revoke_session"),
+            calldata: vec![2137u32.into(), u64::MAX.into()],
+        }])
+        .send()
+        .await
+        .expect("Failed to execute");
+
+    let signature: Vec<FieldElement> = Signature::default().into();
+    let call: Vec<FieldElement> = CallSequence::default().into();
+
+    let result = account
+        .execute(vec![Call {
+            to: account.address(),
+            selector: selector!("validate_session"),
+            calldata: vec![signature, call].into_iter().flatten().collect(),
+        }])
+        .send()
+        .await;
+
+    assert!(result.is_err());
 }
