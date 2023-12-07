@@ -95,7 +95,6 @@ async fn test_validate_session_valid() {
 
 #[tokio::test]
 async fn test_validate_session_revoked() {
-    let runner = DevnetRunner::load();
     let prefunded = runner.prefunded_single_owner_account().await;
     let account = create_account(&prefunded).await;
 
