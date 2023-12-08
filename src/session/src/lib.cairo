@@ -34,6 +34,8 @@ mod session_component {
     use super::CustomCall;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature, SignatureProofs, SignatureProofsTrait};
+    use webauthn_session::hash::{compute_session_hash, compute_call_hash};
+    use ecdsa::check_ecdsa_signature;
 
     #[storage]
     struct Storage {
@@ -55,6 +57,7 @@ mod session_component {
         const LENGHT_MISMATCH: felt252 = 'Length of proofs mismatched';
         const SESSION_EXPIRED: felt252 = 'Session expired';
         const SESSION_REVOKED: felt252 = 'Session has been revoked';
+        const SESSION_SIGNATURE_INVALID: felt252 = 'Session signature is invalid';
     }
 
     #[embeddable_as(Session)]
@@ -92,24 +95,22 @@ mod session_component {
                 return Result::Err(Errors::SESSION_EXPIRED);
             }
 
-            // // let session_hash: felt252 = compute_session_hash(
-            // //     sig, tx_info.chain_id, tx_info.account_contract_address
-            // // );
-
-            // // if is_valid_signature(
-            // //     tx_info.account_contract_address, session_hash, sig.session_token
-            // // ) == false {
-            // //     return Result::Err(());
-            // // }
-
             // check if in the revoked list
             let session_token = *signature.session_token.at(0);
             if self.revoked.read(session_token) != 0 {
                 return Result::Err(Errors::SESSION_REVOKED);
             }
 
-            // if check_ecdsa_signature(tx_info.transaction_hash, sig.session_key, sig.r, sig.s) == false {
-            //     return Result::Err(());
+            // // check signature
+            // let tx_info = get_tx_info().unbox();
+            // let session_hash: felt252 = compute_session_hash(
+            //     signature, tx_info.chain_id, tx_info.account_contract_address
+            // );
+            // let valid_signature = check_ecdsa_signature(
+            //     session_hash, signature.session_key, signature.r, signature.s //? Is it issuer in `session_key`?
+            // );
+            // if !valid_signature {
+            //     return Result::Err(Errors::SESSION_SIGNATURE_INVALID);
             // }
 
             // check_policy(call_array, sig.root, sig.proofs)?;
