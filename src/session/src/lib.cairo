@@ -24,9 +24,8 @@ mod tests;
 
 #[starknet::interface]
 trait ISession<TContractState> {
-    fn validate_session(ref self: TContractState, signature: TxInfoSignature, calls: Array<Call>);
-    // fn validate_session(ref self: TContractState, signature: TxInfoSignature);
-    fn register_session(ref self: TContractState, token: felt252);
+    fn validate_session(self: @TContractState, signature: TxInfoSignature, calls: Array<Call>);
+    // fn register_session(ref self: TContractState, token: felt252);
     fn revoke_session(ref self: TContractState, token: felt252, expires: u64);
 }
 
@@ -39,34 +38,32 @@ mod session_component {
 
     #[storage]
     struct Storage {
-        session_key: felt252,
-        session_expires: felt252,
         revoked: LegacyMap::<felt252, u64>,
     }
 
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        TokenRegistered: TokenRegistered
+        TokenRevoked: TokenRevoked,
     }
 
     #[derive(Drop, starknet::Event)]
-    struct TokenRegistered {
+    struct TokenRevoked {
         token: felt252,
+    }
+
+    mod Errors {
+        const LENGHT_MISMATCH: felt252 = 'Length of proofs mismatched';
+        const SESSION_EXPIRED: felt252 = 'Session expired';
+        const SESSION_REVOKED: felt252 = 'Session has been revoked';
     }
 
     #[embeddable_as(Session)]
     impl SessionImpl<
         TContractState, +HasComponent<TContractState>
     > of super::ISession<ComponentState<TContractState>> {
-        fn validate_session(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<Call>) {
+        fn validate_session(self: @ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<Call>) {
             self.validate_signature(signature, calls).unwrap();
-        }
-
-        fn register_session(
-            ref self: ComponentState<TContractState>, token: felt252,
-        ) {
-            self.session_key.write(token);
         }
 
         fn revoke_session(
@@ -78,6 +75,7 @@ mod session_component {
             };
             // Expires can't be zero
             self.revoked.write(token, expires);
+            self.emit(TokenRevoked { token: token });
         }
     }
 
@@ -85,14 +83,14 @@ mod session_component {
     impl InternalImpl<
         TContractState, +HasComponent<TContractState>
     > of InternalTrait<TContractState> {
-        fn validate_signature(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<Call>) -> Result<(), ()> {
+        fn validate_signature(self: @ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<Call>) -> Result<(), felt252> {
             if signature.proofs.len() != calls.len() {
-                return Result::Err(());
+                return Result::Err(Errors::LENGHT_MISMATCH);
             };
 
             let now = get_block_timestamp();
             if signature.session_expires <= now {
-                return Result::Err(());
+                return Result::Err(Errors::SESSION_EXPIRED);
             }
 
             // // let session_hash: felt252 = compute_session_hash(
@@ -108,7 +106,7 @@ mod session_component {
             // check if in the revoked list
             let session_token = *signature.session_token.at(0);
             if self.revoked.read(session_token) != 0 {
-                return Result::Err(());
+                return Result::Err(Errors::SESSION_REVOKED);
             }
 
             // if check_ecdsa_signature(tx_info.transaction_hash, sig.session_key, sig.r, sig.s) == false {
