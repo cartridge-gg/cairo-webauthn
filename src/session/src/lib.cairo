@@ -37,20 +37,24 @@ mod session_component {
 
     #[storage]
     struct Storage {
-        session_key: felt252,
-        session_expires: felt252,
         revoked: LegacyMap::<felt252, u64>,
     }
 
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        TokenRegistered: TokenRegistered
+        TokenRevoked: TokenRevoked,
     }
 
     #[derive(Drop, starknet::Event)]
-    struct TokenRegistered {
+    struct TokenRevoked {
         token: felt252,
+    }
+
+    mod Errors {
+        const LENGHT_MISMATCH: felt252 = 'Length of proofs mismatched';
+        const SESSION_EXPIRED: felt252 = 'Session expired';
+        const SESSION_REVOKED: felt252 = 'Session has been revoked';
     }
 
     #[embeddable_as(Session)]
@@ -70,6 +74,7 @@ mod session_component {
             };
             // Expires can't be zero
             self.revoked.write(token, expires);
+            self.emit(TokenRevoked { token: token });
         }
     }
 
@@ -79,12 +84,12 @@ mod session_component {
     > of InternalTrait<TContractState> {
         fn validate_signature(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<CustomCall>) -> Result<(), ()> {
             if signature.proofs.len() != calls.len() {
-                return Result::Err(());
+                return Result::Err(Errors::LENGHT_MISMATCH);
             };
 
             let now = get_block_timestamp();
             if signature.session_expires <= now {
-                return Result::Err(());
+                return Result::Err(Errors::SESSION_EXPIRED);
             }
 
             // // let session_hash: felt252 = compute_session_hash(
@@ -100,7 +105,7 @@ mod session_component {
             // check if in the revoked list
             let session_token = *signature.session_token.at(0);
             if self.revoked.read(session_token) != 0 {
-                return Result::Err(());
+                return Result::Err(Errors::SESSION_REVOKED);
             }
 
             // if check_ecdsa_signature(tx_info.transaction_hash, sig.session_key, sig.r, sig.s) == false {
