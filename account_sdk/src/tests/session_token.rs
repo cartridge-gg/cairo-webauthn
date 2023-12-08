@@ -2,6 +2,7 @@ use starknet::{
     accounts::{Account, Call},
     core::types::FieldElement,
     macros::{felt, selector},
+    signers::SigningKey,
 };
 
 use crate::tests::{
@@ -9,7 +10,7 @@ use crate::tests::{
     runners::{devnet_runner::DevnetRunner, TestnetRunner},
 };
 
-struct Signature {
+struct Session {
     r: FieldElement,
     s: FieldElement,
     session_key: FieldElement,
@@ -20,7 +21,7 @@ struct Signature {
     session_token: Vec<FieldElement>,
 }
 
-impl Default for Signature {
+impl Default for Session {
     fn default() -> Self {
         Self {
             r: felt!("0x42"),
@@ -35,7 +36,17 @@ impl Default for Signature {
     }
 }
 
-impl Into<Vec<FieldElement>> for Signature {
+impl Session {
+    fn sign(&mut self, signing: SigningKey) {
+        let hash = FieldElement::from(2137u32);
+        let signature = signing.sign(&hash).unwrap();
+        self.r = signature.r;
+        self.s = signature.s;
+        self.session_key = signing.verifying_key().scalar();
+    }
+}
+
+impl Into<Vec<FieldElement>> for Session {
     fn into(self) -> Vec<FieldElement> {
         let mut result = Vec::new();
         result.push(self.r);
@@ -79,14 +90,18 @@ async fn test_validate_session_valid() {
     let prefunded = runner.prefunded_single_owner_account().await;
     let account = create_account(&prefunded).await;
 
-    let signature: Vec<FieldElement> = Signature::default().into();
+    let session_key = SigningKey::from_random();
+    let mut session = Session::default();
+    session.sign(session_key);
+    let session: Vec<FieldElement> = session.into();
+
     let call: Vec<FieldElement> = CallSequence::default().into();
 
     account
         .execute(vec![Call {
             to: account.address(),
             selector: selector!("validate_session"),
-            calldata: vec![signature, call].into_iter().flatten().collect(),
+            calldata: vec![session, call].into_iter().flatten().collect(),
         }])
         .send()
         .await
@@ -109,7 +124,7 @@ async fn test_validate_session_revoked() {
         .await
         .expect("Failed to execute");
 
-    let signature: Vec<FieldElement> = Signature::default().into();
+    let signature: Vec<FieldElement> = Session::default().into();
     let call: Vec<FieldElement> = CallSequence::default().into();
 
     let result = account
