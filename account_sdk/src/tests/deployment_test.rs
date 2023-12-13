@@ -6,9 +6,9 @@ use starknet::{
     signers::LocalWallet,
 };
 
-use super::katana_runner::KatanaRunner;
-use crate::deploy_contract::AccountDeployment;
+use super::runners::katana_runner::KatanaRunner;
 use crate::deploy_contract::{AccountDeclaration, DeployResult};
+use crate::{deploy_contract::AccountDeployment, tests::runners::TestnetRunner};
 
 pub async fn declare(
     client: &JsonRpcClient<HttpTransport>,

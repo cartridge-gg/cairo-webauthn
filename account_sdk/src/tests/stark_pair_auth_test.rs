@@ -4,8 +4,11 @@ use starknet::{
     signers::SigningKey,
 };
 
-use super::katana_runner::KatanaRunner;
-use crate::deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS};
+use super::runners::katana_runner::KatanaRunner;
+use crate::{
+    deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS},
+    tests::runners::TestnetRunner,
+};
 
 use super::deployment_test::{declare, deploy};
 
@@ -29,7 +32,11 @@ async fn test_authorize_execute() {
         .execute(vec![Call {
             to: *FEE_TOKEN_ADDRESS,
             selector: selector!("transfer"),
-            calldata: vec![new_account.address(), felt!("0x10000000"), felt!("0x0")],
+            calldata: vec![
+                new_account.address(),
+                felt!("0x8944000000000000"),
+                felt!("0x0"),
+            ],
         }])
         .send()
         .await

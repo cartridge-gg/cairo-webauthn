@@ -5,8 +5,8 @@ use starknet::{
     providers::Provider,
 };
 
-use super::katana_runner::KatanaRunner;
-use crate::deploy_contract::FEE_TOKEN_ADDRESS;
+use super::runners::katana_runner::KatanaRunner;
+use crate::{deploy_contract::FEE_TOKEN_ADDRESS, tests::runners::TestnetRunner};
 
 #[tokio::test]
 async fn test_balance_of() {

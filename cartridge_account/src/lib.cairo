@@ -4,6 +4,7 @@
 mod interface;
 
 use starknet::testing;
+use starknet::secp256r1::Secp256r1Point;
 
 #[starknet::interface]
 trait IPublicKey<TState> {
@@ -20,6 +21,10 @@ trait IPublicKeyCamel<TState> {
 
 #[starknet::contract]
 mod Account {
+    use core::array::ArrayTrait;
+    use core::starknet::SyscallResultTrait;
+    use core::traits::Into;
+    use core::result::ResultTrait;
     use ecdsa::check_ecdsa_signature;
     use openzeppelin::account::interface;
     use openzeppelin::introspection::src5::SRC5 as src5_component;
@@ -27,6 +32,8 @@ mod Account {
     use starknet::get_caller_address;
     use starknet::get_contract_address;
     use starknet::get_tx_info;
+    use starknet::secp256r1::{Secp256r1Point, Secp256r1Impl};
+    use webauthn_auth::webauthn::verify;
 
     const TRANSACTION_VERSION: felt252 = 1;
     // 2**128 + TRANSACTION_VERSION
@@ -151,6 +158,47 @@ mod Account {
 
         fn setPublicKey(ref self: ContractState, newPublicKey: felt252) {
             PublicKeyImpl::set_public_key(ref self, newPublicKey);
+        }
+    }
+
+    #[generate_trait]
+    #[external(v0)]
+    impl WebauthnSignerCamelImpl of IWebauthnSignerCamel {
+        fn verifyWebauthnSigner(
+            self: @ContractState, 
+            pub_x: u256,
+            pub_y: u256, // public key as point on elliptic curve
+            r: u256, // 'r' part from ecdsa
+            s: u256, // 's' part from ecdsa
+            type_offset: usize, // offset to 'type' field in json
+            challenge_offset: usize, // offset to 'challenge' field in json
+            origin_offset: usize, // offset to 'origin' field in json
+            client_data_json: Array<u8>, // json with client_data as 1-byte array 
+            challenge: Array<u8>, // challenge as 1-byte array
+            origin: Array<u8>, //  array origin as 1-byte array
+            authenticator_data: Array<u8>
+        ) -> bool {
+            let pub_key = match 
+                Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y){
+                    Result::Ok(pub_key) => pub_key,
+                    Result::Err(e) => { return false; }
+                };
+            let pub_key = match pub_key {
+                Option::Some(pub_key) => pub_key,
+                Option::None(_) => { return false; }
+            };
+            verify(
+                pub_key, 
+                r, 
+                s, 
+                type_offset, 
+                challenge_offset, 
+                origin_offset, 
+                client_data_json, 
+                challenge, 
+                origin, 
+                authenticator_data
+            ).is_ok()
         }
     }
 
