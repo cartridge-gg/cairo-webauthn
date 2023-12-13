@@ -1,9 +1,10 @@
 pub mod deploy_contract;
 mod transaction_waiter;
+pub mod webauthn_signer;
 
+pub mod felt_ser;
 #[cfg(test)]
 mod tests;
-pub mod felt_ser;
 
 use wasm_bindgen::prelude::*;
 
