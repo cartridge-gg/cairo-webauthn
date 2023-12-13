@@ -2,11 +2,36 @@
 version = 1
 
 [[package]]
+name = "alexandria_data_structures"
+version = "0.1.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria?tag=cairo-v2.3.0-rc0#ae1d5149ff601a7ac5b39edc867d33ebd83d7f4f"
+dependencies = [
+ "alexandria_encoding",
+]
+
+[[package]]
+name = "alexandria_encoding"
+version = "0.1.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria?tag=cairo-v2.3.0-rc0#ae1d5149ff601a7ac5b39edc867d33ebd83d7f4f"
+dependencies = [
+ "alexandria_math",
+]
+
+[[package]]
+name = "alexandria_math"
+version = "0.2.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria?tag=cairo-v2.3.0-rc0#ae1d5149ff601a7ac5b39edc867d33ebd83d7f4f"
+dependencies = [
+ "alexandria_data_structures",
+]
+
+[[package]]
 name = "cartridge_account"
 version = "0.1.0"
 dependencies = [
  "openzeppelin",
  "snforge_std",
+ "webauthn_auth",
 ]
 
 [[package]]
@@ -18,3 +43,10 @@ source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v0.8.0-bet
 name = "snforge_std"
 version = "0.1.0"
 source = "git+https://github.com/foundry-rs/starknet-foundry?tag=v0.7.1#d1bd8b9a361d437e8eaeb4ebffac291a48b4c920"
+
+[[package]]
+name = "webauthn_auth"
+version = "0.1.0"
+dependencies = [
+ "alexandria_encoding",
+]

@@ -58,7 +58,7 @@ fn verify(
     // Skipping for now
 
     // 12. Verify that the value of C.challenge equals the base64url encoding of options.challenge.
-    verify_challenge(@client_data_json, challenge_offset, challenge);
+    verify_challenge(@client_data_json, challenge_offset, challenge)?;
 
     // 13. Verify that the value of C.origin matches the Relying Party's origin.
     // Skipping for now.
@@ -280,7 +280,7 @@ fn find_and_verify_credential_source<
 fn expand_auth_data_and_verify_rp_id_hash(
     auth_data: Array<u8>, expected_rp_id: Array<u8>
 ) -> Result<AuthenticatorData, AuthnError> {
-    let auth_data_struct = match auth_data.try_into() {
+    let auth_data_struct: AuthenticatorData = match auth_data.try_into() {
         Option::Some(ad) => ad,
         Option::None => {
             return AuthnError::InvalidAuthData.into();
