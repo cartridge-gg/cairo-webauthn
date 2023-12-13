@@ -1,9 +1,12 @@
-mod call_sequence;
+mod account;
+mod sequence;
 mod session;
-mod session_account;
+mod signature;
 
-pub use call_sequence::CallSequence;
+pub use account::SessionAccount;
+pub use sequence::CallSequence;
 pub use session::Session;
+pub use signature::SessionSignature;
 
 #[cfg(test)]
 mod tests {
@@ -31,7 +34,7 @@ mod tests {
         let account = create_account(&prefunded).await;
 
         let session_key = SigningKey::from_random();
-        let mut session = Session::default();
+        let mut session = SessionSignature::default();
         session.sign(&session_key);
 
         let call: Vec<FieldElement> = CallSequence::default().into();
@@ -93,7 +96,7 @@ mod tests {
             .await
             .expect("Failed to execute");
 
-        let signature: Vec<FieldElement> = Session::default().into();
+        let signature: Vec<FieldElement> = SessionSignature::default().into();
         let call: Vec<FieldElement> = CallSequence::default().into();
 
         let result = account
