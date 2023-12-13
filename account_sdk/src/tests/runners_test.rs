@@ -1,4 +1,4 @@
-use super::runners::{katana_runner::KatanaRunner, TestnetRunner, devnet_runner::DevnetRunner};
+use super::runners::{devnet_runner::DevnetRunner, katana_runner::KatanaRunner, TestnetRunner};
 
 #[test]
 fn test_katana_runner() {
