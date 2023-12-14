@@ -39,8 +39,7 @@ impl Default for SessionSignature {
 
 impl Into<Vec<FieldElement>> for SessionSignature {
     fn into(self) -> Vec<FieldElement> {
-        let mut result = Vec::new();
-        result.push(super::SIGNATURE_TYPE);
+        let mut result = vec![super::SIGNATURE_TYPE];
         result.push(self.r);
         result.push(self.s);
         result.push(self.session_key);

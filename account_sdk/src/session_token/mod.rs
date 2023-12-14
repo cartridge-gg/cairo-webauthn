@@ -40,17 +40,21 @@ mod tests {
         let mut session = SessionSignature::default();
         session.sign(&session_key);
 
+        let to = master.address();
         let session = Session::default();
         let (chain_id, address) = (prefunded.chain_id(), prefunded.address());
-        let account = SessionAccount::new(session, prefunded, chain_id, address, session_key);
+        let account = SessionAccount::new(session, master, chain_id, address, session_key);
+
+        println!("selector: {}", selector!("validate_session"));
+        println!("address: {}", account.address());
 
         let calls = vec![Call {
-            to: master.address(),
+            to,
             selector: selector!("revoke_session"),
-            calldata: vec![FieldElement::THREE],
+            calldata: vec![felt!("0x2137")],
         }];
+        account.execute(calls.clone()).send().await.unwrap();
         // account.execute(calls).send().await.unwrap();
-        master.execute(calls).send().await.unwrap();
     }
 
     // #[tokio::test]

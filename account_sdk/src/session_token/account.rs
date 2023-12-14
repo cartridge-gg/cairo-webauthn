@@ -7,7 +7,8 @@ use starknet::{
     core::{
         crypto::EcdsaSignError,
         types::{
-            contract::legacy::LegacyContractClass, BlockId, FieldElement, FlattenedSierraClass, BlockTag,
+            contract::legacy::LegacyContractClass, BlockId, BlockTag, FieldElement,
+            FlattenedSierraClass,
         },
     },
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
@@ -19,24 +20,18 @@ use super::{Session, SessionSignature};
 
 impl<'a> ExecutionEncoder for SessionAccount<'a> {
     fn encode_calls(&self, calls: &[Call]) -> Vec<FieldElement> {
-        // analogous to SingleOwnerAccount::encode_calls for ExecutionEncoding::Legacy
-        let mut execute_calldata: Vec<FieldElement> = vec![calls.len().into()];
+        // analogous to SingleOwnerAccount::encode_calls for ExecutionEncoding::New
+        let mut serialized = vec![calls.len().into()];
 
-        let mut concated_calldata: Vec<FieldElement> = vec![];
         for call in calls.iter() {
-            execute_calldata.push(call.to); // to
-            execute_calldata.push(call.selector); // selector
-            execute_calldata.push(concated_calldata.len().into()); // data_offset
-            execute_calldata.push(call.calldata.len().into()); // data_len
+            serialized.push(call.to); // to
+            serialized.push(call.selector); // selector
 
-            for item in call.calldata.iter() {
-                concated_calldata.push(*item);
-            }
+            serialized.push(call.calldata.len().into()); // calldata.len()
+            serialized.extend_from_slice(&call.calldata);
         }
 
-        execute_calldata.push(concated_calldata.len().into()); // calldata_len
-        execute_calldata.extend_from_slice(&concated_calldata);
-        execute_calldata
+        serialized
     }
 }
 
@@ -91,6 +86,7 @@ impl<'a> Account for SessionAccount<'a> {
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
         let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
+        // let tx_hash = FieldElement::from(2137u32);
         let signature = self
             .signer
             .sign(&tx_hash)
@@ -99,7 +95,7 @@ impl<'a> Account for SessionAccount<'a> {
         let signature = SessionSignature {
             r: signature.r,
             s: signature.s,
-            session_key: self.session.session_key(),
+            session_key: self.signer.verifying_key().scalar(),
             session_expires: self.session.session_expires(),
             root: self.session.root(),
             proof_len: self.session.proof_len(),

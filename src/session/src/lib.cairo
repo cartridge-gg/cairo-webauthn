@@ -72,7 +72,7 @@ mod session_component {
         fn validate_session(self: @ComponentState<TContractState>, mut signature: Span<felt252>, calls: Span<Call>) {
             let sig: TxInfoSignature = Serde::<TxInfoSignature>::deserialize(ref signature).unwrap();
 
-            // self.validate_signature(sig, calls).unwrap();
+            self.validate_signature(sig, calls).unwrap();
         }
 
         fn revoke_session(
@@ -109,11 +109,13 @@ mod session_component {
                 signature, tx_info.chain_id, tx_info.account_contract_address
             );
 
+            let session_hash = 2137;
+
             let valid_signature = check_ecdsa_signature(
                 tx_info.transaction_hash, signature.session_key, signature.r, signature.s
             );
             if !valid_signature {
-                // return Result::Err(Errors::SESSION_SIGNATURE_INVALID);
+                return Result::Err(Errors::SESSION_SIGNATURE_INVALID);
             }
 
             // if check_policy(calls, signature.root, signature.proofs).is_err() {

@@ -21,6 +21,8 @@ trait IPublicKeyCamel<TState> {
 
 #[starknet::contract]
 mod Account {
+    use core::option::OptionTrait;
+    use core::array::SpanTrait;
     use core::array::ArrayTrait;
     use core::starknet::SyscallResultTrait;
     use core::traits::Into;
@@ -234,15 +236,24 @@ mod Account {
         fn validate_transaction(self: @ContractState) -> felt252 {
             let tx_info = get_tx_info().unbox();
             let tx_hash = tx_info.transaction_hash;
-            let signature = tx_info.signature;
+            let mut signature = tx_info.signature;
             if signature.len() == 2_u32 {
                 assert(self._is_valid_signature(tx_hash, signature), Errors::INVALID_SIGNATURE);
+                return starknet::VALIDATED;
+            } 
+
+            let signature_type = *signature.pop_front().unwrap();
+            
+            if signature_type == 'Session Token v1' {
+                // TODO: replace this mock
+                let calls = array![Call {
+                    to: get_caller_address(),
+                    selector: 1485514293835613587393115454149572371807630552041622198027280818831729347259,
+                    calldata: array![0x2137]
+                }];
+                SessionImpl::validate_session(self, signature, calls.span())
             } else {
-                if *signature.at(0) == 'Session Token v1' {
-                    SessionImpl::validate_session(self, signature, array![].span())
-                } else {
-                    assert(false, Errors::INVALID_SIGNATURE);
-                }
+                assert(false, Errors::INVALID_SIGNATURE);
             }
             starknet::VALIDATED
         }
