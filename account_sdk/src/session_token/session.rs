@@ -29,6 +29,30 @@ impl Session {
             session_token: self.session_token.clone(),
         }
     }
+
+    pub fn session_key(&self) -> FieldElement {
+        self.session_key
+    }
+
+    pub fn session_expires(&self) -> u64 {
+        self.session_expires
+    }
+
+    pub fn root(&self) -> FieldElement {
+        self.root
+    }
+
+    pub fn proof_len(&self) -> u32 {
+        self.proof_len
+    }
+
+    pub fn proofs(&self) -> Vec<FieldElement> {
+        self.proofs.clone()
+    }
+
+    pub fn session_token(&self) -> Vec<FieldElement> {
+        self.session_token.clone()
+    }
 }
 
 impl Default for Session {
