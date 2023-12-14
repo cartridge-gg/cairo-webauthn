@@ -235,7 +235,15 @@ mod Account {
             let tx_info = get_tx_info().unbox();
             let tx_hash = tx_info.transaction_hash;
             let signature = tx_info.signature;
-            assert(self._is_valid_signature(tx_hash, signature), Errors::INVALID_SIGNATURE);
+            if signature.len() == 2_u32 {
+                assert(self._is_valid_signature(tx_hash, signature), Errors::INVALID_SIGNATURE);
+            } else {
+                if *signature.at(0) == 'Session Token v1' {
+                    SessionImpl::validate_session(self, signature, array![].span())
+                } else {
+                    assert(false, Errors::INVALID_SIGNATURE);
+                }
+            }
             starknet::VALIDATED
         }
 

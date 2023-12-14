@@ -31,8 +31,8 @@ fn compute_session_hash(
         .finalize()
 }
 
-fn compute_call_hash(call: CustomCall) -> felt252 {
-    PoseidonImpl::new().update(POLICY_TYPE_HASH).update(call.to).update(call.selector).finalize()
+fn compute_call_hash(call: @CustomCall) -> felt252 {
+    PoseidonImpl::new().update(POLICY_TYPE_HASH).update((*call.to).into()).update(*call.selector).finalize()
 }
 
 fn hash_domain(chain_id: felt252) -> felt252 {
