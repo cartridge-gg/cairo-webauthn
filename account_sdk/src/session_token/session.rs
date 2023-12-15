@@ -13,27 +13,6 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn sign(&mut self, signing: &SigningKey) -> SessionSignature {
-        let hash = FieldElement::from(2137u32);
-        let signature = signing.sign(&hash).unwrap();
-        self.session_key = signing.verifying_key().scalar();
-
-        SessionSignature {
-            r: signature.r,
-            s: signature.s,
-            session_key: self.session_key,
-            session_expires: self.session_expires,
-            root: self.root,
-            proof_len: self.proof_len,
-            proofs: self.proofs.clone(),
-            session_token: self.session_token.clone(),
-        }
-    }
-
-    pub fn session_key(&self) -> FieldElement {
-        self.session_key
-    }
-
     pub fn session_expires(&self) -> u64 {
         self.session_expires
     }

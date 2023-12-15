@@ -236,10 +236,6 @@ fn execution_status_from_pending_receipt(receipt: &PendingTransactionReceipt) ->
         PendingTransactionReceipt::Invoke(receipt) => &receipt.execution_result,
         PendingTransactionReceipt::Declare(receipt) => &receipt.execution_result,
         PendingTransactionReceipt::L1Handler(receipt) => &receipt.execution_result,
-        PendingTransactionReceipt::DeployAccount(receipt) => &receipt.execution_result,
-    }
-}
-
 #[inline]
 fn finality_status_from_receipt(receipt: &TransactionReceipt) -> TransactionFinalityStatus {
     match receipt {
