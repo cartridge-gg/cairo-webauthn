@@ -1,10 +1,7 @@
-use starknet::{core::types::FieldElement, macros::felt, signers::SigningKey};
-
-use super::signature::SessionSignature;
+use starknet::{core::types::FieldElement, macros::felt};
 
 #[derive(Clone)]
 pub struct Session {
-    session_key: FieldElement,
     session_expires: u64,
     root: FieldElement,
     proof_len: u32,
@@ -37,7 +34,6 @@ impl Session {
 impl Default for Session {
     fn default() -> Self {
         Self {
-            session_key: felt!("0x69"),
             session_expires: u64::MAX,
             root: felt!("0x0"),
             proof_len: 1,

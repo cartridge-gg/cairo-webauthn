@@ -18,7 +18,7 @@ mod tests {
     use starknet::{
         accounts::{Account, Call, ConnectedAccount},
         macros::selector,
-        signers::{LocalWallet, Signer, SigningKey},
+        signers::{LocalWallet, SigningKey},
     };
     use tokio::time::sleep;
 

@@ -6,7 +6,7 @@ use std::time::Duration;
 use futures::FutureExt;
 use starknet::core::types::{
     ExecutionResult, FieldElement, MaybePendingTransactionReceipt, PendingTransactionReceipt,
-    StarknetError, TransactionFinalityStatus, TransactionReceipt,
+    TransactionFinalityStatus, TransactionReceipt,
 };
 use starknet::providers::{Provider, ProviderError};
 use tokio::time::{Instant, Interval};

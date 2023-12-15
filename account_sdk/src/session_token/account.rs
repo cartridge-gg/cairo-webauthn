@@ -101,7 +101,7 @@ where
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
         let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
-        let tx_hash = FieldElement::from(2137u32);
+        let tx_hash = FieldElement::from(2137u32); // TODO: use tx_hash when it achieves parity with the runner
         let signature = self
             .signer
             .sign_hash(&tx_hash)
