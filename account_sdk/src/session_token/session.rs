@@ -42,7 +42,7 @@ impl Default for Session {
             root: felt!("0x0"),
             proof_len: 1,
             proofs: vec![felt!("44")],
-            session_token: vec![felt!("2137")],
+            session_token: vec![felt!("0x2137")],
         }
     }
 }

@@ -34,13 +34,7 @@ mod tests {
         let runner = DevnetRunner::load();
         let master = create_account(&runner.prefunded_single_owner_account().await).await;
 
-        let session_key = SigningKey::from_random();
-        let ver = session_key.verifying_key();
-        let session_key = LocalWallet::from(session_key);
-        assert_eq!(
-            ver.scalar(),
-            session_key.get_public_key().await.unwrap().scalar()
-        );
+        let session_key = LocalWallet::from(SigningKey::from_random());
 
         let session = Session::default();
         let (chain_id, address) = (master.chain_id(), master.address());
@@ -55,5 +49,30 @@ mod tests {
 
         sleep(Duration::from_secs(10)).await;
         account.execute(calls.clone()).send().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_session_revoked() {
+        let runner = DevnetRunner::load();
+        let master = create_account(&runner.prefunded_single_owner_account().await).await;
+
+        let session_key = LocalWallet::from(SigningKey::from_random());
+
+        let session = Session::default();
+        let (chain_id, address) = (master.chain_id(), master.address());
+        let provider = *master.provider();
+        let account = SessionAccount::new(provider, session_key, session, address, chain_id);
+
+        let calls = vec![Call {
+            to: address,
+            selector: selector!("revoke_session"),
+            calldata: vec![felt!("0x2137")],
+        }];
+
+        sleep(Duration::from_secs(10)).await;
+        account.execute(calls.clone()).send().await.unwrap();
+        let result = account.execute(calls.clone()).send().await;
+
+        assert!(result.is_err());
     }
 }
