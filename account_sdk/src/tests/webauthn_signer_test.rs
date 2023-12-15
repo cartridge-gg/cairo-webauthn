@@ -73,7 +73,7 @@ async fn test_verify_webauthn_signer() {
             &args.origin,
             &args.authenticator_data,
         )
-        .block_id(BlockId::Number(0))
+        .block_id(BlockId::Tag(BlockTag::Latest))
         .call()
         .await
         .unwrap();
