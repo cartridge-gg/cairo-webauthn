@@ -1,11 +1,12 @@
+use cainome::cairo_serde::ContractAddress;
 use starknet::{
-    accounts::{Account, Call},
-    core::types::{BlockId, BlockTag, FunctionCall},
-    macros::{felt, selector},
-    providers::Provider,
+    accounts::Account,
+    core::types::{BlockId, BlockTag},
+    macros::felt,
 };
 
 use super::runners::katana_runner::KatanaRunner;
+use crate::abigen::erc20::{Erc20Contract, Erc20ContractReader, U256};
 use crate::{deploy_contract::FEE_TOKEN_ADDRESS, tests::runners::TestnetRunner};
 
 #[tokio::test]
@@ -13,34 +14,14 @@ async fn test_balance_of() {
     let runner = KatanaRunner::load();
     let account = runner.prefunded_single_owner_account().await;
 
-    runner
-        .client()
-        .call(
-            FunctionCall {
-                contract_address: *FEE_TOKEN_ADDRESS,
-                entry_point_selector: selector!("balanceOf"),
-                calldata: vec![account.address()],
-            },
-            BlockId::Tag(BlockTag::Latest),
-        )
+    let contract_erc20 = Erc20ContractReader::new(*FEE_TOKEN_ADDRESS, runner.client());
+
+    contract_erc20
+        .balanceOf(&ContractAddress(account.address()))
+        .block_id(BlockId::Tag(BlockTag::Latest))
+        .call()
         .await
         .expect("failed to call contract");
-}
-
-#[tokio::test]
-async fn test_balance_of_account() {
-    let runner = KatanaRunner::load();
-    let account = runner.prefunded_single_owner_account().await;
-
-    account
-        .execute(vec![Call {
-            to: *FEE_TOKEN_ADDRESS,
-            selector: selector!("balanceOf"),
-            calldata: vec![account.address()],
-        }])
-        .send()
-        .await
-        .unwrap();
 }
 
 #[tokio::test]
@@ -49,22 +30,23 @@ async fn test_transfer() {
     let new_account = felt!("0x18301129");
     let account = runner.prefunded_single_owner_account().await;
 
-    account
-        .execute(vec![Call {
-            to: *FEE_TOKEN_ADDRESS,
-            selector: selector!("balanceOf"),
-            calldata: vec![new_account],
-        }])
-        .send()
-        .await
-        .unwrap();
+    let contract_erc20 = Erc20Contract::new(*FEE_TOKEN_ADDRESS, &account);
 
-    account
-        .execute(vec![Call {
-            to: *FEE_TOKEN_ADDRESS,
-            selector: selector!("transfer"),
-            calldata: vec![new_account, felt!("0x10"), felt!("0x0")],
-        }])
+    contract_erc20
+        .balanceOf(&ContractAddress(new_account))
+        .block_id(BlockId::Tag(BlockTag::Latest))
+        .call()
+        .await
+        .expect("failed to call contract");
+
+    contract_erc20
+        .transfer(
+            &ContractAddress(new_account),
+            &U256 {
+                low: 0x10_u128,
+                high: 0,
+            },
+        )
         .send()
         .await
         .unwrap();

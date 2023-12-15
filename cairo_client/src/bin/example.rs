@@ -2,13 +2,13 @@ use std::vec;
 
 use anyhow::Result;
 
-use cairo_felt::Felt252;
-use cairo_lang_runner::Arg;
 use cairo_client::prepare::compile::DevCompiler;
 use cairo_client::prepare::generate::{DevGenerator, DummyGenerator};
 use cairo_client::prepare::logger::{LoggerCompiler, LoggerGenerator, LoggerParser};
 use cairo_client::prepare::parse::DevParser;
 use cairo_client::prepare::run::DevRunner;
+use cairo_felt::Felt252;
+use cairo_lang_runner::Arg;
 
 fn main() -> Result<()> {
     let generator = LoggerGenerator::new(DummyGenerator::new("cairo", "dev_sdk"));
