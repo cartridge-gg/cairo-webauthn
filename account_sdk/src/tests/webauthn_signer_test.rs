@@ -9,7 +9,7 @@ use crate::abigen::account::CartridgeAccountReader;
 use crate::abigen::erc20::{Erc20Contract, U256};
 use crate::{
     deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS},
-    tests::runners::{devnet_runner::DevnetRunner, TestnetRunner},
+    tests::runners::{katana_runner::KatanaRunner, TestnetRunner},
     webauthn_signer::{cairo_args::VerifyWebauthnSignerArgs, P256r1Signer},
 };
 
@@ -17,7 +17,7 @@ use super::deployment_test::{declare, deploy};
 
 #[tokio::test]
 async fn test_verify_webauthn_signer() {
-    let runner = DevnetRunner::load();
+    let runner = KatanaRunner::load();
     let prefunded = runner.prefunded_single_owner_account().await;
     let class_hash = declare(runner.client(), &prefunded).await;
     let private_key = SigningKey::from_random();
