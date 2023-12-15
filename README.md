@@ -18,9 +18,7 @@ This is a rust project, that will eventually be compiled to wasm. It's purpose i
 ### Running the tests
 To run the tests you first have to compile (to sierra and casm) the contract in the `cartidge_account` folder:
 ```bash
-cd cartidge_account
-scarb build
-cd ..
+make generate_artifacts
 ```
 After the contract is compiled run the tests using `cargo`:
 ```bash
