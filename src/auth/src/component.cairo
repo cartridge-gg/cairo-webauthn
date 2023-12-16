@@ -41,12 +41,6 @@ mod webauthn_component {
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        TEST: TestEvent,
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct TestEvent{
-        test: felt252,
     }
 
 
