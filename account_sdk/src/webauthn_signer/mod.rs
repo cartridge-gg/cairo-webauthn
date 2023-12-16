@@ -11,6 +11,7 @@ use self::credential::AuthenticatorAssertionResponse;
 
 pub mod cairo_args;
 pub mod credential;
+pub mod account;
 
 pub type U256 = (FieldElement, FieldElement);
 pub type Secp256r1Point = (U256, U256);
