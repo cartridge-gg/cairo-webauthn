@@ -118,7 +118,6 @@ where
         let assertion = self.signer.sign(challenge.clone());
 
         let signature = VerifyWebauthnSignerArgs::from_response(
-            self.signer.public_key_bytes(),
             self.origin.clone(),
             challenge.into_bytes(),
             assertion,

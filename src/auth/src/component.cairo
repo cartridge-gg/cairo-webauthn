@@ -7,6 +7,18 @@ struct WebauthnPubKey{
     y: u256,
 }
 
+#[derive(Drop, Serde)]
+struct WebauthnSignature {
+    r: u256, // 'r' part from ecdsa
+    s: u256, // 's' part from ecdsa
+    type_offset: usize, // offset to 'type' field in json
+    challenge_offset: usize, // offset to 'challenge' field in json
+    origin_offset: usize, // offset to 'origin' field in json
+    client_data_json: Array<u8>, // json with client_data as 1-byte array 
+    challenge: Array<u8>, // challenge as 1-byte array
+    origin: Array<u8>, //  array origin as 1-byte array
+    authenticator_data: Array<u8>
+}
 
 #[starknet::interface]
 trait IWebauthn<TContractState> {
@@ -19,15 +31,8 @@ trait IWebauthn<TContractState> {
     ) -> Option<WebauthnPubKey>;
     fn verifyWebauthnSigner(
         self: @TContractState, 
-        r: u256, // 'r' part from ecdsa
-        s: u256, // 's' part from ecdsa
-        type_offset: usize, // offset to 'type' field in json
-        challenge_offset: usize, // offset to 'challenge' field in json
-        origin_offset: usize, // offset to 'origin' field in json
-        client_data_json: Array<u8>, // json with client_data as 1-byte array 
-        challenge: Array<u8>, // challenge as 1-byte array
-        origin: Array<u8>, //  array origin as 1-byte array
-        authenticator_data: Array<u8>
+        signature: WebauthnSignature,
+        tx_hash: felt252,
     ) -> bool;
 }
 
@@ -40,7 +45,7 @@ mod webauthn_component {
     use ecdsa::check_ecdsa_signature;
     use starknet::secp256r1::{Secp256r1Point, Secp256r1Impl};
     use webauthn_auth::webauthn::verify;
-    use super::WebauthnPubKey;
+    use super::{WebauthnPubKey, WebauthnSignature};
 
     #[storage]
     struct Storage {
@@ -70,15 +75,8 @@ mod webauthn_component {
         }
         fn verifyWebauthnSigner(
             self: @ComponentState<TContractState>, 
-            r: u256, // 'r' part from ecdsa
-            s: u256, // 's' part from ecdsa
-            type_offset: usize, // offset to 'type' field in json
-            challenge_offset: usize, // offset to 'challenge' field in json
-            origin_offset: usize, // offset to 'origin' field in json
-            client_data_json: Array<u8>, // json with client_data as 1-byte array 
-            challenge: Array<u8>, // challenge as 1-byte array
-            origin: Array<u8>, //  array origin as 1-byte array
-            authenticator_data: Array<u8>
+            signature: WebauthnSignature,
+            tx_hash: felt252,
         ) -> bool{
             let pub = match self.getWebauthnPubKey() {
                 Option::Some(pub) => pub,
@@ -95,15 +93,15 @@ mod webauthn_component {
                 };
             verify(
                 pub_key, 
-                r, 
-                s, 
-                type_offset, 
-                challenge_offset, 
-                origin_offset, 
-                client_data_json, 
-                challenge, 
-                origin, 
-                authenticator_data
+                signature.r, 
+                signature.s, 
+                signature.type_offset, 
+                signature.challenge_offset, 
+                signature.origin_offset, 
+                signature.client_data_json, 
+                signature.challenge, 
+                signature.origin, 
+                signature.authenticator_data
             ).is_ok()
         }
     }

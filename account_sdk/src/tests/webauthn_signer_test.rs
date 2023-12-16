@@ -1,12 +1,16 @@
 use cainome::cairo_serde::ContractAddress;
 use starknet::{
-    accounts::Account,
-    core::types::{BlockId, BlockTag},
+    accounts::{Account, ConnectedAccount, Execution, PreparedExecution},
+    core::types::{BlockId, BlockTag, FieldElement},
+    macros::felt,
     signers::SigningKey,
 };
 
-use crate::abigen::account::{CartridgeAccountReader, CartridgeAccount, WebauthnPubKey};
-use crate::abigen::erc20::{Erc20Contract, U256};
+use crate::{abigen::erc20::{Erc20Contract, U256}, webauthn_signer::cairo_args::pub_key_to_felts};
+use crate::{
+    abigen::account::{CartridgeAccount, CartridgeAccountReader, WebauthnPubKey, WebauthnSignature},
+    transaction_waiter::TransactionWaiter,
+};
 use crate::{
     deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS},
     tests::runners::{katana_runner::KatanaRunner, TestnetRunner},
@@ -51,35 +55,56 @@ async fn test_verify_webauthn_signer() {
     let response = signer.sign(challenge.clone());
 
     let args = VerifyWebauthnSignerArgs::from_response(
-        signer.public_key_bytes(),
         origin,
         challenge.into_bytes(),
         response.clone(),
     );
 
     let new_account_reader = CartridgeAccountReader::new(new_account.address(), runner.client());
-    let new_account_executor = CartridgeAccount::new(new_account.address(), new_account);
+    let new_account_executor = CartridgeAccount::new(new_account.address(), new_account.clone());
 
-    new_account_executor.setWebauthnPubKey(&WebauthnPubKey {
-        x: args.pub_x.into(),
-        y: args.pub_y.into(),
-    }).send().await.unwrap();
+    let (pub_x, pub_y) = pub_key_to_felts(signer.public_key_bytes());
+    let set_execution: Execution<'_, _> = new_account_executor.setWebauthnPubKey(&WebauthnPubKey {
+        x: pub_x.into(),
+        y: pub_y.into(),
+    });
+    let max_fee = set_execution.estimate_fee().await.unwrap().overall_fee * 2;
+    let set_execution = set_execution
+        .nonce(new_account.get_nonce().await.unwrap())
+        .max_fee(FieldElement::from(max_fee))
+        .prepared()
+        .unwrap();
+    let set_tx = set_execution.transaction_hash(false);
 
-    std::thread::sleep(std::time::Duration::from_secs(10));
+    set_execution.send().await.unwrap();
 
-    dbg!(new_account_reader.getWebauthnPubKey().block_id(BlockId::Tag(BlockTag::Latest)).call().await.unwrap());
+    TransactionWaiter::new(set_tx, runner.client())
+        .await
+        .unwrap();
+
+    dbg!(new_account_reader
+        .getWebauthnPubKey()
+        .block_id(BlockId::Tag(BlockTag::Latest))
+        .call()
+        .await
+        .unwrap());
+
+    let signature = WebauthnSignature {
+            r: args.r.into(),
+            s: args.s.into(),
+            type_offset: args.type_offset,
+            challenge_offset: args.challenge_offset,
+            origin_offset: args.origin_offset,
+            client_data_json: args.client_data_json,
+            challenge: args.challenge,
+            origin: args.origin,
+            authenticator_data: args.authenticator_data,
+    };
 
     let result = new_account_reader
         .verifyWebauthnSigner(
-            &args.r.into(),
-            &args.s.into(),
-            &args.type_offset,
-            &args.challenge_offset,
-            &args.origin_offset,
-            &args.client_data_json,
-            &args.challenge,
-            &args.origin,
-            &args.authenticator_data,
+            &signature,
+            &FieldElement::from(0_usize),
         )
         .block_id(BlockId::Tag(BlockTag::Latest))
         .call()

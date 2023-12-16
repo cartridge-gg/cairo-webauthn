@@ -23,6 +23,7 @@ trait IPublicKeyCamel<TState> {
 mod Account {
     use core::option::OptionTrait;
     use core::array::SpanTrait;
+    use webauthn_auth::component::IWebauthn;
     use core::array::ArrayTrait;
     use core::starknet::SyscallResultTrait;
     use core::traits::Into;
@@ -37,7 +38,8 @@ mod Account {
     use starknet::secp256r1::{Secp256r1Point, Secp256r1Impl};
     use webauthn_auth::webauthn::verify;
     use webauthn_session::session_component;
-    use webauthn_auth::component::webauthn_component;
+    use webauthn_auth::component::{webauthn_component, WebauthnSignature};
+    use serde::Serde;
 
     const TRANSACTION_VERSION: felt252 = 1;
     // 2**128 + TRANSACTION_VERSION
@@ -216,16 +218,12 @@ mod Account {
             let mut signature = tx_info.signature;
             if signature.len() == 2_u32 {
                 assert(self._is_valid_signature(tx_hash, signature), Errors::INVALID_SIGNATURE);
-                return starknet::VALIDATED;
-            } 
-
-            let signature_type = *signature.at(0);
-
-            if signature_type == starknet::VALIDATED {
-                assert(false, Errors::INVALID_SIGNATURE);
+                starknet::VALIDATED 
+            } else {
+                let signature = Serde::<WebauthnSignature>::deserialize(ref signature).unwrap();
+                assert(self.verifyWebauthnSigner(signature, tx_hash), Errors::INVALID_SIGNATURE);
+                starknet::VALIDATED
             }
-
-            signature_type
         }
 
         fn _set_public_key(ref self: ContractState, new_public_key: felt252) {
