@@ -6,7 +6,7 @@ use std::time::Duration;
 use futures::FutureExt;
 use starknet::core::types::{
     ExecutionResult, FieldElement, MaybePendingTransactionReceipt, PendingTransactionReceipt,
-    TransactionFinalityStatus, TransactionReceipt,
+    StarknetError, TransactionFinalityStatus, TransactionReceipt,
 };
 use starknet::providers::{Provider, ProviderError};
 use tokio::time::{Instant, Interval};
@@ -236,6 +236,10 @@ fn execution_status_from_pending_receipt(receipt: &PendingTransactionReceipt) ->
         PendingTransactionReceipt::Invoke(receipt) => &receipt.execution_result,
         PendingTransactionReceipt::Declare(receipt) => &receipt.execution_result,
         PendingTransactionReceipt::L1Handler(receipt) => &receipt.execution_result,
+        PendingTransactionReceipt::DeployAccount(receipt) => &receipt.execution_result,
+    }
+}
+
 #[inline]
 fn finality_status_from_receipt(receipt: &TransactionReceipt) -> TransactionFinalityStatus {
     match receipt {

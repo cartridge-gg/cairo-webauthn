@@ -25,15 +25,14 @@ mod tests;
 
 #[starknet::interface]
 trait ISession<TContractState> {
-    fn validate_session(self: @TContractState, signature: Span<felt252>, calls: Array<CustomCall>);
-    fn revoke_session(ref self: TContractState, token: felt252, expires: u64);
+    fn validate_session(self: @TContractState, signature: Span<felt252>, calls: Span<Call>);
+    fn revoke_session(ref self: TContractState, token: felt252);
 }
 
 // Based on https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo
 #[starknet::component]
 mod session_component {
     use core::result::ResultTrait;
-    use super::CustomCall;
     use super::check_policy;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use starknet::account::Call;
@@ -87,7 +86,7 @@ mod session_component {
     impl InternalImpl<
         TContractState, +HasComponent<TContractState>
     > of InternalTrait<TContractState> {
-        fn validate_signature(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<CustomCall>) -> Result<(), felt252> {
+        fn validate_signature(self: @ComponentState<TContractState>, signature: TxInfoSignature, calls: Span<Call>) -> Result<(), felt252> {
             if signature.proofs.len() != calls.len() {
                 return Result::Err(Errors::LENGHT_MISMATCH);
             };
@@ -127,16 +126,6 @@ mod session_component {
         }
     }
 }
-
-
-#[derive(Drop, Copy, Serde)]
-struct CustomCall {
-    to: felt252,
-    selector: felt252,
-    data_offset: felt252,
-    data_len: felt252,
-}
-
 
 fn check_policy(
     call_array: Array<Call>, root: felt252, proofs: SignatureProofs,
