@@ -5,7 +5,7 @@ use starknet::{
     signers::SigningKey,
 };
 
-use crate::abigen::account::CartridgeAccountReader;
+use crate::abigen::account::{CartridgeAccountReader, CartridgeAccount, WebauthnPubKey};
 use crate::abigen::erc20::{Erc20Contract, U256};
 use crate::{
     deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS},
@@ -57,12 +57,20 @@ async fn test_verify_webauthn_signer() {
         response.clone(),
     );
 
-    let new_account = CartridgeAccountReader::new(new_account.address(), runner.client());
+    let new_account_reader = CartridgeAccountReader::new(new_account.address(), runner.client());
+    let new_account_executor = CartridgeAccount::new(new_account.address(), new_account);
 
-    let result = new_account
+    new_account_executor.setWebauthnPubKey(&WebauthnPubKey {
+        x: args.pub_x.into(),
+        y: args.pub_y.into(),
+    }).send().await.unwrap();
+
+    std::thread::sleep(std::time::Duration::from_secs(10));
+
+    dbg!(new_account_reader.getWebauthnPubKey().block_id(BlockId::Tag(BlockTag::Latest)).call().await.unwrap());
+
+    let result = new_account_reader
         .verifyWebauthnSigner(
-            &args.pub_x.into(),
-            &args.pub_y.into(),
             &args.r.into(),
             &args.s.into(),
             &args.type_offset,
@@ -78,5 +86,6 @@ async fn test_verify_webauthn_signer() {
         .await
         .unwrap();
 
+    dbg!(result);
     assert!(result);
 }

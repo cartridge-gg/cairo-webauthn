@@ -1,11 +1,24 @@
 use starknet::account::Call;
+use core::serde::Serde;
+
+#[derive(Drop, Serde, starknet::Store)]
+struct WebauthnPubKey{
+    x: u256,
+    y: u256,
+}
+
 
 #[starknet::interface]
 trait IWebauthn<TContractState> {
+    fn setWebauthnPubKey (
+        ref self: TContractState, 
+        public_key: WebauthnPubKey,
+    );
+    fn getWebauthnPubKey (
+        self: @TContractState, 
+    ) -> Option<WebauthnPubKey>;
     fn verifyWebauthnSigner(
         self: @TContractState, 
-        pub_x: u256,
-        pub_y: u256, // public key as point on elliptic curve
         r: u256, // 'r' part from ecdsa
         s: u256, // 's' part from ecdsa
         type_offset: usize, // offset to 'type' field in json
@@ -27,11 +40,7 @@ mod webauthn_component {
     use ecdsa::check_ecdsa_signature;
     use starknet::secp256r1::{Secp256r1Point, Secp256r1Impl};
     use webauthn_auth::webauthn::verify;
-
-    struct WebauthnPubKey{
-        x: u256,
-        y: u256,
-    }
+    use super::WebauthnPubKey;
 
     #[storage]
     struct Storage {
@@ -48,10 +57,19 @@ mod webauthn_component {
     impl WebauthnImpl<
         TContractState, +HasComponent<TContractState>
     > of super::IWebauthn<ComponentState<TContractState>> {
+        fn setWebauthnPubKey (
+        ref self: ComponentState<TContractState>, 
+        public_key: WebauthnPubKey,
+        ) {
+            self.public_key.write(Option::Some(public_key));
+        }
+        fn getWebauthnPubKey (
+            self: @ComponentState<TContractState>, 
+        ) -> Option<WebauthnPubKey>{
+            self.public_key.read()
+        }
         fn verifyWebauthnSigner(
             self: @ComponentState<TContractState>, 
-            pub_x: u256,
-            pub_y: u256, // public key as point on elliptic curve
             r: u256, // 'r' part from ecdsa
             s: u256, // 's' part from ecdsa
             type_offset: usize, // offset to 'type' field in json
@@ -62,8 +80,12 @@ mod webauthn_component {
             origin: Array<u8>, //  array origin as 1-byte array
             authenticator_data: Array<u8>
         ) -> bool{
+            let pub = match self.getWebauthnPubKey() {
+                Option::Some(pub) => pub,
+                Option::None => { return false; }
+            };
             let pub_key = match 
-                Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y){
+                Secp256r1Impl::secp256_ec_new_syscall(pub.x, pub.y){
                     Result::Ok(pub_key) => pub_key,
                     Result::Err(e) => { return false; }
                 };
