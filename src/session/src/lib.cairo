@@ -57,7 +57,7 @@ mod session_component {
     impl SessionImpl<
         TContractState, +HasComponent<TContractState>
     > of super::ISession<ComponentState<TContractState>> {
-        fn validate_session(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<Call>) {
+        fn validate_session(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<CustomCall>) {
             self.validate_signature(signature, calls).unwrap();
         }
 
