@@ -4,7 +4,7 @@ use core::poseidon::{PoseidonImpl, PoseidonTrait};
 use starknet::{contract_address::ContractAddress};
 
 use webauthn_session::signature::TxInfoSignature;
-use webauthn_session::Call;
+use webauthn_session::CustomCall;
 
 // H('StarkNetDomain(chainId:felt)')
 const STARKNET_DOMAIN_TYPE_HASH: felt252 =
@@ -31,7 +31,7 @@ fn compute_session_hash(
         .finalize()
 }
 
-fn compute_call_hash(call: Call) -> felt252 {
+fn compute_call_hash(call: CustomCall) -> felt252 {
     PoseidonImpl::new().update(POLICY_TYPE_HASH).update(call.to).update(call.selector).finalize()
 }
 

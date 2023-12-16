@@ -25,13 +25,13 @@ mod tests;
 #[starknet::interface]
 trait ISession<TContractState> {
     fn register_session(ref self: TContractState, token: felt252) -> felt252;
-    fn validate_session(ref self: TContractState, signature: TxInfoSignature, calls: Array<Call>) -> Result<(), ()>;
+    fn validate_session(ref self: TContractState, signature: TxInfoSignature, calls: Array<CustomCall>) -> Result<(), ()>;
 
 }
 
 #[starknet::component]
 mod session_component {
-    use super::Call;
+    use super::CustomCall;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature, SignatureProofs, SignatureProofsTrait};
 
@@ -64,7 +64,7 @@ mod session_component {
             token
         }
 
-        fn validate_session(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<Call>) -> Result<(), ()> {
+        fn validate_session(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<CustomCall>) -> Result<(), ()> {
             self.validate_signature(signature, calls)
         }
     }
@@ -73,7 +73,7 @@ mod session_component {
     impl InternalImpl<
         TContractState, +HasComponent<TContractState>
     > of InternalTrait<TContractState> {
-        fn validate_signature(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<Call>) -> Result<(), ()> {
+        fn validate_signature(ref self: ComponentState<TContractState>, signature: TxInfoSignature, calls: Array<CustomCall>) -> Result<(), ()> {
             if signature.proofs.len() != calls.len() {
                 return Result::Err(());
             };
@@ -150,7 +150,7 @@ mod session_component {
 // }
 
 #[derive(Drop, Copy, Serde)]
-struct Call {
+struct CustomCall {
     to: felt252,
     selector: felt252,
     data_offset: felt252,
