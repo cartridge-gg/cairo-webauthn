@@ -1,15 +1,19 @@
 use cainome::cairo_serde::ContractAddress;
 use starknet::{
-    accounts::{Account, ConnectedAccount, Execution, PreparedExecution},
+    accounts::{Account, ConnectedAccount, Execution},
     core::types::{BlockId, BlockTag, FieldElement},
-    macros::felt,
     signers::SigningKey,
 };
 
-use crate::{abigen::erc20::{Erc20Contract, U256}, webauthn_signer::cairo_args::pub_key_to_felts};
 use crate::{
-    abigen::account::{CartridgeAccount, CartridgeAccountReader, WebauthnPubKey, WebauthnSignature},
+    abigen::account::{
+        CartridgeAccount, CartridgeAccountReader, WebauthnPubKey, WebauthnSignature,
+    },
     transaction_waiter::TransactionWaiter,
+};
+use crate::{
+    abigen::erc20::{Erc20Contract, U256},
+    webauthn_signer::{account::WebauthnAccount, cairo_args::pub_key_to_felts},
 };
 use crate::{
     deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS},
@@ -54,11 +58,8 @@ async fn test_verify_webauthn_signer() {
     let challenge = "aaaa".to_string();
     let response = signer.sign(challenge.clone());
 
-    let args = VerifyWebauthnSignerArgs::from_response(
-        origin,
-        challenge.into_bytes(),
-        response.clone(),
-    );
+    let args =
+        VerifyWebauthnSignerArgs::from_response(origin, challenge.into_bytes(), response.clone());
 
     let new_account_reader = CartridgeAccountReader::new(new_account.address(), runner.client());
     let new_account_executor = CartridgeAccount::new(new_account.address(), new_account.clone());
@@ -90,22 +91,19 @@ async fn test_verify_webauthn_signer() {
         .unwrap());
 
     let signature = WebauthnSignature {
-            r: args.r.into(),
-            s: args.s.into(),
-            type_offset: args.type_offset,
-            challenge_offset: args.challenge_offset,
-            origin_offset: args.origin_offset,
-            client_data_json: args.client_data_json,
-            challenge: args.challenge,
-            origin: args.origin,
-            authenticator_data: args.authenticator_data,
+        r: args.r.into(),
+        s: args.s.into(),
+        type_offset: args.type_offset,
+        challenge_offset: args.challenge_offset,
+        origin_offset: args.origin_offset,
+        client_data_json: args.client_data_json,
+        challenge: args.challenge,
+        origin: args.origin,
+        authenticator_data: args.authenticator_data,
     };
 
     let result = new_account_reader
-        .verifyWebauthnSigner(
-            &signature,
-            &FieldElement::from(0_usize),
-        )
+        .verifyWebauthnSigner(&signature, &FieldElement::from(0_usize))
         .block_id(BlockId::Tag(BlockTag::Latest))
         .call()
         .await
@@ -113,4 +111,23 @@ async fn test_verify_webauthn_signer() {
 
     dbg!(result);
     assert!(result);
+
+    let webauthn_executor = CartridgeAccount::new(
+        new_account.address(),
+        WebauthnAccount::new(
+            runner.client(),
+            signer,
+            new_account.address(),
+            new_account.chain_id(),
+        ),
+    );
+    let result = webauthn_executor
+        .setWebauthnPubKey(&WebauthnPubKey {
+            x: pub_x.into(),
+            y: pub_y.into(),
+        })
+        .send()
+        .await
+        .unwrap();
+    dbg!(result);
 }

@@ -216,13 +216,10 @@ mod Account {
             let tx_info = get_tx_info().unbox();
             let tx_hash = tx_info.transaction_hash;
             let mut signature = tx_info.signature;
-            if signature.len() == 2_u32 {
-                assert(self._is_valid_signature(tx_hash, signature), Errors::INVALID_SIGNATURE);
-                starknet::VALIDATED 
-            } else {
-                let signature = Serde::<WebauthnSignature>::deserialize(ref signature).unwrap();
-                assert(self.verifyWebauthnSigner(signature, tx_hash), Errors::INVALID_SIGNATURE);
+            if self._is_valid_signature(tx_hash, signature) {
                 starknet::VALIDATED
+            } else {
+                Errors::INVALID_SIGNATURE
             }
         }
 
@@ -234,14 +231,16 @@ mod Account {
         fn _is_valid_signature(
             self: @ContractState, hash: felt252, signature: Span<felt252>
         ) -> bool {
-            let valid_length = signature.len() == 2_u32;
+            
 
-            if valid_length {
+            if signature.len() == 2_u32 {
                 check_ecdsa_signature(
                     hash, self.Account_public_key.read(), *signature.at(0_u32), *signature.at(1_u32)
                 )
             } else {
-                false
+                let mut signature = signature;
+                let signature = Serde::<WebauthnSignature>::deserialize(ref signature).unwrap();
+                self.verifyWebauthnSigner(signature, hash)
             }
         }
     }

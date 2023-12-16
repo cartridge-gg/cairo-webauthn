@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use cainome::cairo_serde::CairoSerde;
 use serde::Serialize;
 use starknet::{
     accounts::{
@@ -19,6 +20,7 @@ use std::sync::Arc;
 use crate::felt_ser::to_felts;
 
 use super::{cairo_args::VerifyWebauthnSignerArgs, P256r1Signer};
+use crate::abigen::account::WebauthnSignature;
 
 pub struct WebauthnAccount<P>
 where
@@ -77,12 +79,12 @@ where
     P: Provider + Send,
 {
     fn encode_calls(&self, calls: &[Call]) -> Vec<FieldElement> {
-        // We dont serialize the slice directly since it's length should be ommited
-        calls
-            .iter()
-            .map(|call| to_felts(&SerializableCall::from(call)))
-            .flatten()
-            .collect()
+        to_felts(
+            &calls
+                .iter()
+                .map(|call| SerializableCall::from(call))
+                .collect::<Vec<_>>(),
+        )
     }
 }
 
@@ -113,17 +115,28 @@ where
         execution: &RawExecution,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
-        let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
-        let challenge = tx_hash.to_string();
+        let _tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
+        let challenge = "aaaa".to_string();
         let assertion = self.signer.sign(challenge.clone());
 
-        let signature = VerifyWebauthnSignerArgs::from_response(
+        let args = VerifyWebauthnSignerArgs::from_response(
             self.origin.clone(),
             challenge.into_bytes(),
             assertion,
         );
 
-        Ok(to_felts(&signature))
+        let result = WebauthnSignature {
+            r: args.r.into(),
+            s: args.s.into(),
+            type_offset: args.type_offset,
+            challenge_offset: args.challenge_offset,
+            origin_offset: args.origin_offset,
+            client_data_json: args.client_data_json,
+            challenge: args.challenge,
+            origin: args.origin,
+            authenticator_data: args.authenticator_data,
+        };
+        Ok(WebauthnSignature::cairo_serialize(&result))
     }
 
     async fn sign_declaration(
