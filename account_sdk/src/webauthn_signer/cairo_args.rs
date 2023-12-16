@@ -1,21 +1,35 @@
-use serde::Serialize;
 use starknet::core::types::FieldElement;
+
+use crate::abigen::account::U256 as AbiU256;
 
 use super::{credential::AuthenticatorAssertionResponse, U256};
 
-#[derive(Debug, Clone, Serialize)]
+// Note: The conversion is done here to avoid modifying the whole
+// codebase for now.
+// `unwrap()` is supposed to be safe here and the FieldElement value is
+// only use for serialiaziation.
+impl From<U256> for AbiU256 {
+    fn from(value: U256) -> Self {
+        Self {
+            low: value.0.try_into().unwrap(),
+            high: value.1.try_into().unwrap(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct VerifyWebauthnSignerArgs {
-    pub_x: U256,
-    pub_y: U256,
-    r: U256,
-    s: U256,
-    type_offset: usize,
-    challenge_offset: usize,
-    origin_offset: usize,
-    client_data_json: Vec<u8>,
-    challenge: Vec<u8>,
-    origin: Vec<u8>,
-    authenticator_data: Vec<u8>,
+    pub pub_x: AbiU256,
+    pub pub_y: AbiU256,
+    pub r: AbiU256,
+    pub s: AbiU256,
+    pub type_offset: u32,
+    pub challenge_offset: u32,
+    pub origin_offset: u32,
+    pub client_data_json: Vec<u8>,
+    pub challenge: Vec<u8>,
+    pub origin: Vec<u8>,
+    pub authenticator_data: Vec<u8>,
 }
 
 impl VerifyWebauthnSignerArgs {
@@ -34,13 +48,13 @@ impl VerifyWebauthnSignerArgs {
         let challenge_offset = find_value_index(&response.client_data_json, "challenge").unwrap();
         let origin_offset = find_value_index(&response.client_data_json, "origin").unwrap();
         Self {
-            pub_x,
-            pub_y,
-            r,
-            s,
-            type_offset,
-            challenge_offset,
-            origin_offset,
+            pub_x: pub_x.into(),
+            pub_y: pub_y.into(),
+            r: r.into(),
+            s: s.into(),
+            type_offset: type_offset as u32,
+            challenge_offset: challenge_offset as u32,
+            origin_offset: origin_offset as u32,
             client_data_json: response.client_data_json.into_bytes(),
             challenge,
             origin: origin.into_bytes(),

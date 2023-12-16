@@ -1,12 +1,13 @@
 use starknet::{
-    accounts::{Account, Call, SingleOwnerAccount},
+    accounts::SingleOwnerAccount,
     core::types::{DeclareTransactionResult, FieldElement},
-    macros::{felt, selector},
+    macros::felt,
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
     signers::LocalWallet,
 };
 
 use super::runners::katana_runner::KatanaRunner;
+use crate::abigen::account::CartridgeAccount;
 use crate::deploy_contract::{AccountDeclaration, DeployResult};
 use crate::{deploy_contract::AccountDeployment, tests::runners::TestnetRunner};
 
@@ -65,13 +66,6 @@ async fn test_deploy_and_call() {
     let class_hash = declare(client, &account).await;
     let deployed_address = deploy(client, &account, felt!("1337"), class_hash).await;
 
-    account
-        .execute(vec![Call {
-            to: deployed_address,
-            selector: selector!("getPublicKey"),
-            calldata: vec![],
-        }])
-        .send()
-        .await
-        .unwrap();
+    let contract = CartridgeAccount::new(deployed_address, account);
+    contract.getPublicKey().call().await.unwrap();
 }
