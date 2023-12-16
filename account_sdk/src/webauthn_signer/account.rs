@@ -25,6 +25,8 @@ where
     P: Provider + Send,
 {
     provider: P,
+    // Later the struct will be generic over the signer type
+    // and will support "external" signers
     signer: P256r1Signer,
     address: FieldElement,
     chain_id: FieldElement,

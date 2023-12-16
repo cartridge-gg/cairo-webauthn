@@ -9,9 +9,9 @@ use crate::webauthn_signer::credential::{AuthenticatorData, CliendData};
 
 use self::credential::AuthenticatorAssertionResponse;
 
+pub mod account;
 pub mod cairo_args;
 pub mod credential;
-pub mod account;
 
 pub type U256 = (FieldElement, FieldElement);
 pub type Secp256r1Point = (U256, U256);
