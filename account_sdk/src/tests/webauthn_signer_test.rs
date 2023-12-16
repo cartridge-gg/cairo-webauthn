@@ -61,10 +61,10 @@ async fn test_verify_webauthn_signer() {
 
     let result = new_account
         .verifyWebauthnSigner(
-            &args.pub_x,
-            &args.pub_y,
-            &args.r,
-            &args.s,
+            &args.pub_x.into(),
+            &args.pub_y.into(),
+            &args.r.into(),
+            &args.s.into(),
             &args.type_offset,
             &args.challenge_offset,
             &args.origin_offset,

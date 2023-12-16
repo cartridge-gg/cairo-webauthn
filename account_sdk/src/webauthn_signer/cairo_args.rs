@@ -1,3 +1,4 @@
+use serde::Serialize;
 use starknet::core::types::FieldElement;
 
 use crate::abigen::account::U256 as AbiU256;
@@ -17,12 +18,12 @@ impl From<U256> for AbiU256 {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct VerifyWebauthnSignerArgs {
-    pub pub_x: AbiU256,
-    pub pub_y: AbiU256,
-    pub r: AbiU256,
-    pub s: AbiU256,
+    pub pub_x: U256,
+    pub pub_y: U256,
+    pub r: U256,
+    pub s: U256,
     pub type_offset: u32,
     pub challenge_offset: u32,
     pub origin_offset: u32,
