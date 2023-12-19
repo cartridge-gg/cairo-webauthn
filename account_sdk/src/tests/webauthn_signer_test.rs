@@ -9,8 +9,9 @@ use crate::{
     abigen::account::{
         CartridgeAccount, CartridgeAccountReader, WebauthnPubKey, WebauthnSignature,
     },
+    deploy_contract::FEE_TOKEN_ADDRESS,
     tests::runners::devnet_runner::DevnetRunner,
-    transaction_waiter::TransactionWaiter, deploy_contract::FEE_TOKEN_ADDRESS, webauthn_signer::account::WebauthnAccount,
+    transaction_waiter::TransactionWaiter,
 };
 use crate::{
     abigen::erc20::{Erc20Contract, U256},
@@ -56,14 +57,11 @@ async fn test_verify_webauthn_signer() {
 
     let origin = "localhost".to_string();
     let signer = P256r1Signer::random(origin.clone());
-    let challenge = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".to_string();
-    let response = signer.sign(challenge.clone());
+    let challenge = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".as_bytes();
+    let response = signer.sign(challenge);
 
-    let args = VerifyWebauthnSignerArgs::from_response(
-        origin,
-        challenge.clone().into_bytes(),
-        response.clone(),
-    );
+    let args =
+        VerifyWebauthnSignerArgs::from_response(origin, challenge.to_vec(), response.clone());
 
     let new_account_reader = CartridgeAccountReader::new(new_account.address(), runner.client());
     let new_account_executor = CartridgeAccount::new(new_account.address(), new_account.clone());
@@ -106,7 +104,7 @@ async fn test_verify_webauthn_signer() {
     };
 
     let result = new_account_reader
-        .verifyWebauthnSigner(&signature, &challenge.into_bytes())
+        .verifyWebauthnSigner(&signature, &challenge.to_vec())
         .block_id(BlockId::Tag(BlockTag::Latest))
         .call()
         .await

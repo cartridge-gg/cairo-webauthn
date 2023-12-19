@@ -41,7 +41,7 @@ impl P256r1Signer {
             y.as_slice().try_into().unwrap(),
         )
     }
-    pub fn sign(&self, challenge: String) -> AuthenticatorAssertionResponse {
+    pub fn sign(&self, challenge: &[u8]) -> AuthenticatorAssertionResponse {
         use sha2::{digest::Update, Digest, Sha256};
 
         let authenticator_data = AuthenticatorData {
@@ -70,6 +70,6 @@ impl P256r1Signer {
 fn test_signer() {
     let rp_id = "https://localhost:8080".to_string();
     let signer = P256r1Signer::random(rp_id);
-    let calldata = signer.sign("842903840923".into());
+    let calldata = signer.sign("842903840923".as_bytes());
     dbg!(&calldata);
 }
