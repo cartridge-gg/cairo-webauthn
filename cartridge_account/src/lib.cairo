@@ -232,8 +232,6 @@ mod Account {
         fn _is_valid_signature(
             self: @ContractState, hash: felt252, signature: Span<felt252>
         ) -> bool {
-            
-
             if signature.len() == 2_u32 {
                 check_ecdsa_signature(
                     hash, self.Account_public_key.read(), *signature.at(0_u32), *signature.at(1_u32)
@@ -241,7 +239,19 @@ mod Account {
             } else {
                 let mut signature = signature;
                 let signature = Serde::<WebauthnSignature>::deserialize(ref signature).unwrap();
-                self.verifyWebauthnSigner(signature, ArrayTrait::new())
+                let tx_hash_mock = {
+                    let mut tx_hash_mock = ArrayTrait::new();
+                    tx_hash_mock.append(97);
+                    tx_hash_mock.append(97);
+                    tx_hash_mock.append(97);
+                    tx_hash_mock.append(97);
+                    tx_hash_mock.append(97);
+                    tx_hash_mock.append(97);
+                    tx_hash_mock.append(97);
+                    tx_hash_mock.append(97);
+                    tx_hash_mock
+                };
+                self.verifyWebauthnSigner(signature, tx_hash_mock)
             }
         }
     }

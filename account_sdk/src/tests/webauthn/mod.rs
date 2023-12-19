@@ -5,6 +5,7 @@ use starknet::{
     signers::SigningKey,
 };
 
+use crate::abigen::account::WebauthnPubKey;
 use crate::abigen::account::WebauthnSignature;
 use crate::{
     abigen,
@@ -83,23 +84,26 @@ async fn test_verify_webauthn_explicit() {
         .unwrap();
 
     assert!(result);
+}
 
-    // let webauthn_executor = CartridgeAccount::new(
-    //     new_account.address(),
-    //     WebauthnAccount::new(
-    //         runner.client(),
-    //         signer,
-    //         new_account.address(),
-    //         new_account.chain_id(),
-    //     ),
-    // );
-    // let result = webauthn_executor
-    //     .setWebauthnPubKey(&WebauthnPubKey {
-    //         x: pub_x.into(),
-    //         y: pub_y.into(),
-    //     })
-    //     .send()
-    //     .await
-    //     .unwrap();
-    // dbg!(result);
+#[tokio::test]
+async fn test_verify_webauthn_execute() {
+    let private_key = SigningKey::from_random();
+    let origin = "localhost".to_string();
+    let signer = P256r1Signer::random(origin.clone());
+
+    let data = utils::WebauthnTestData::<DevnetRunner>::new(private_key, signer).await;
+    data.set_webauthn_public_key().await;
+
+    let webauthn_executor = data.webauthn_executor().await;
+    let (pub_x, pub_y) = data.webauthn_public_key();
+    let result = webauthn_executor
+        .setWebauthnPubKey(&WebauthnPubKey {
+            x: pub_x.into(),
+            y: pub_y.into(),
+        })
+        .send()
+        .await
+        .unwrap();
+    dbg!(result);
 }

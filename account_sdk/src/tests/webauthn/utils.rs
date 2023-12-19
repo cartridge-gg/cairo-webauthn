@@ -1,6 +1,6 @@
 use cainome::cairo_serde::ContractAddress;
 use starknet::{
-    accounts::{Account, ConnectedAccount, Execution, SingleOwnerAccount},
+    accounts::{ConnectedAccount, Execution, SingleOwnerAccount},
     core::types::FieldElement,
     providers::{jsonrpc::HttpTransport, JsonRpcClient, Provider},
     signers::{LocalWallet, SigningKey},
@@ -73,10 +73,15 @@ where
     ) -> SingleOwnerAccount<&JsonRpcClient<HttpTransport>, LocalWallet> {
         single_owner_account(self.runner.client(), self.private_key.clone(), self.address).await
     }
+    pub fn webauthn_public_key(
+        &self,
+    ) -> ((FieldElement, FieldElement), (FieldElement, FieldElement)) {
+        pub_key_to_felts(self.signer.public_key_bytes())
+    }
     pub async fn set_webauthn_public_key(&self) {
-        let (pub_x, pub_y) = pub_key_to_felts(self.signer.public_key_bytes());
+        let (pub_x, pub_y) = self.webauthn_public_key();
         let account = self.single_owner_account().await;
-        let new_account_executor = CartridgeAccount::new(account.address(), account.clone());
+        let new_account_executor = self.single_owner_executor().await;
         let set_execution: Execution<'_, _> =
             new_account_executor.setWebauthnPubKey(&WebauthnPubKey {
                 x: pub_x.into(),

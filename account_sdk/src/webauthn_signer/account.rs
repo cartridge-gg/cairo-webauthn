@@ -116,7 +116,7 @@ where
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
         let _tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
-        let challenge = "aaaa".as_bytes();
+        let challenge = "aaaaaaaa".as_bytes();
         let assertion = self.signer.sign(challenge);
 
         let args = VerifyWebauthnSignerArgs::from_response(

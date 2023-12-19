@@ -96,10 +96,8 @@ fn verify(
 fn verify_challenge(
     client_data_json: @Array<u8>, challenge_offset: usize, challenge: Array<u8>
 ) -> Result<(), AuthnError> {
-    // let challenge: Array<u8> = Base64UrlEncoder::encode(challenge.span().slice(0, 32).snapshot.clone());
-    let challenge: Array<u8> = Base64UrlEncoder::encode(challenge.span().slice(0, 33).snapshot.clone());
-
     let mut i: usize = 0;
+    let challenge = Base64UrlEncoder::encode(challenge);
     let challenge_len: usize = challenge.len();
     loop {
         // Base64UrlEncoder at the moment pads with '=' => remove -1 later {assumes len == 43} or 
@@ -108,7 +106,7 @@ fn verify_challenge(
             break Result::Ok(());
         }
         if *client_data_json.at(challenge_offset + i) != *challenge.at(i) {
-            break AuthnError::ChallengeMismatch.into();
+            break Result::Err(AuthnError::ChallengeMismatch);
         }
         i += 1_usize;
     }
