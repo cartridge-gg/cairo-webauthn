@@ -16,6 +16,7 @@ pub mod credential;
 pub type U256 = (FieldElement, FieldElement);
 pub type Secp256r1Point = (U256, U256);
 
+#[derive(Debug, Clone)]
 pub struct P256r1Signer {
     pub signing_key: SigningKey,
     rp_id: String,
