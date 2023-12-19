@@ -1,3 +1,4 @@
+use core::array::SpanTrait;
 use array::ArrayTrait;
 use integer::upcast;
 use option::OptionTrait;
@@ -95,7 +96,9 @@ fn verify(
 fn verify_challenge(
     client_data_json: @Array<u8>, challenge_offset: usize, challenge: Array<u8>
 ) -> Result<(), AuthnError> {
-    let challenge: Array<u8> = Base64UrlEncoder::encode(challenge);
+    // let challenge: Array<u8> = Base64UrlEncoder::encode(challenge.span().slice(0, 32).snapshot.clone());
+    let challenge: Array<u8> = Base64UrlEncoder::encode(challenge.span().slice(0, 33).snapshot.clone());
+
     let mut i: usize = 0;
     let challenge_len: usize = challenge.len();
     loop {

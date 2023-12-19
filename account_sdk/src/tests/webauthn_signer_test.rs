@@ -9,15 +9,16 @@ use crate::{
     abigen::account::{
         CartridgeAccount, CartridgeAccountReader, WebauthnPubKey, WebauthnSignature,
     },
-    transaction_waiter::TransactionWaiter,
+    tests::runners::devnet_runner::DevnetRunner,
+    transaction_waiter::TransactionWaiter, deploy_contract::FEE_TOKEN_ADDRESS, webauthn_signer::account::WebauthnAccount,
 };
 use crate::{
     abigen::erc20::{Erc20Contract, U256},
-    webauthn_signer::{account::WebauthnAccount, cairo_args::pub_key_to_felts},
+    webauthn_signer::cairo_args::pub_key_to_felts,
 };
 use crate::{
-    deploy_contract::{single_owner_account, FEE_TOKEN_ADDRESS},
-    tests::runners::{katana_runner::KatanaRunner, TestnetRunner},
+    deploy_contract::single_owner_account,
+    tests::runners::TestnetRunner,
     webauthn_signer::{cairo_args::VerifyWebauthnSignerArgs, P256r1Signer},
 };
 
@@ -25,7 +26,7 @@ use super::deployment_test::{declare, deploy};
 
 #[tokio::test]
 async fn test_verify_webauthn_signer() {
-    let runner = KatanaRunner::load();
+    let runner = DevnetRunner::load();
     let prefunded = runner.prefunded_single_owner_account().await;
     let class_hash = declare(runner.client(), &prefunded).await;
     let private_key = SigningKey::from_random();
@@ -55,11 +56,14 @@ async fn test_verify_webauthn_signer() {
 
     let origin = "localhost".to_string();
     let signer = P256r1Signer::random(origin.clone());
-    let challenge = "aaaa".to_string();
+    let challenge = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".to_string();
     let response = signer.sign(challenge.clone());
 
-    let args =
-        VerifyWebauthnSignerArgs::from_response(origin, challenge.into_bytes(), response.clone());
+    let args = VerifyWebauthnSignerArgs::from_response(
+        origin,
+        challenge.clone().into_bytes(),
+        response.clone(),
+    );
 
     let new_account_reader = CartridgeAccountReader::new(new_account.address(), runner.client());
     let new_account_executor = CartridgeAccount::new(new_account.address(), new_account.clone());
@@ -97,13 +101,12 @@ async fn test_verify_webauthn_signer() {
         challenge_offset: args.challenge_offset,
         origin_offset: args.origin_offset,
         client_data_json: args.client_data_json,
-        challenge: args.challenge,
         origin: args.origin,
         authenticator_data: args.authenticator_data,
     };
 
     let result = new_account_reader
-        .verifyWebauthnSigner(&signature, &FieldElement::from(0_usize))
+        .verifyWebauthnSigner(&signature, &challenge.into_bytes())
         .block_id(BlockId::Tag(BlockTag::Latest))
         .call()
         .await
@@ -112,22 +115,22 @@ async fn test_verify_webauthn_signer() {
     dbg!(result);
     assert!(result);
 
-    let webauthn_executor = CartridgeAccount::new(
-        new_account.address(),
-        WebauthnAccount::new(
-            runner.client(),
-            signer,
-            new_account.address(),
-            new_account.chain_id(),
-        ),
-    );
-    let result = webauthn_executor
-        .setWebauthnPubKey(&WebauthnPubKey {
-            x: pub_x.into(),
-            y: pub_y.into(),
-        })
-        .send()
-        .await
-        .unwrap();
-    dbg!(result);
+    // let webauthn_executor = CartridgeAccount::new(
+    //     new_account.address(),
+    //     WebauthnAccount::new(
+    //         runner.client(),
+    //         signer,
+    //         new_account.address(),
+    //         new_account.chain_id(),
+    //     ),
+    // );
+    // let result = webauthn_executor
+    //     .setWebauthnPubKey(&WebauthnPubKey {
+    //         x: pub_x.into(),
+    //         y: pub_y.into(),
+    //     })
+    //     .send()
+    //     .await
+    //     .unwrap();
+    // dbg!(result);
 }

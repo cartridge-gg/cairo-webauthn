@@ -132,7 +132,6 @@ where
             challenge_offset: args.challenge_offset,
             origin_offset: args.origin_offset,
             client_data_json: args.client_data_json,
-            challenge: args.challenge,
             origin: args.origin,
             authenticator_data: args.authenticator_data,
         };

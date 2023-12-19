@@ -15,7 +15,6 @@ struct WebauthnSignature {
     challenge_offset: usize, // offset to 'challenge' field in json
     origin_offset: usize, // offset to 'origin' field in json
     client_data_json: Array<u8>, // json with client_data as 1-byte array 
-    challenge: Array<u8>, // challenge as 1-byte array
     origin: Array<u8>, //  array origin as 1-byte array
     authenticator_data: Array<u8>
 }
@@ -32,7 +31,7 @@ trait IWebauthn<TContractState> {
     fn verifyWebauthnSigner(
         self: @TContractState, 
         signature: WebauthnSignature,
-        tx_hash: felt252,
+        tx_hash: Array<u8>,
     ) -> bool;
 }
 
@@ -76,7 +75,7 @@ mod webauthn_component {
         fn verifyWebauthnSigner(
             self: @ComponentState<TContractState>, 
             signature: WebauthnSignature,
-            tx_hash: felt252,
+            tx_hash: Array<u8>,
         ) -> bool{
             let pub = match self.getWebauthnPubKey() {
                 Option::Some(pub) => pub,
@@ -99,7 +98,7 @@ mod webauthn_component {
                 signature.challenge_offset, 
                 signature.origin_offset, 
                 signature.client_data_json, 
-                signature.challenge, 
+                tx_hash, 
                 signature.origin, 
                 signature.authenticator_data
             ).is_ok()

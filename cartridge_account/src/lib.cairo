@@ -23,6 +23,7 @@ trait IPublicKeyCamel<TState> {
 mod Account {
     use core::option::OptionTrait;
     use core::array::SpanTrait;
+    use core::to_byte_array::FormatAsByteArray;
     use webauthn_auth::component::IWebauthn;
     use core::array::ArrayTrait;
     use core::starknet::SyscallResultTrait;
@@ -240,7 +241,7 @@ mod Account {
             } else {
                 let mut signature = signature;
                 let signature = Serde::<WebauthnSignature>::deserialize(ref signature).unwrap();
-                self.verifyWebauthnSigner(signature, hash)
+                self.verifyWebauthnSigner(signature, ArrayTrait::new())
             }
         }
     }
