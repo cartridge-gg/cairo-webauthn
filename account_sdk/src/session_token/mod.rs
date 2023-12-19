@@ -24,14 +24,14 @@ mod tests {
 
     use crate::tests::{
         deployment_test::create_account,
-        runners::{DevnetRunner, TestnetRunner},
+        runners::{KatanaRunner, TestnetRunner},
     };
 
     use super::*;
 
     #[tokio::test]
     async fn test_session_valid() {
-        let runner = DevnetRunner::load();
+        let runner = KatanaRunner::load();
         let master = create_account(&runner.prefunded_single_owner_account().await).await;
 
         let session_key = LocalWallet::from(SigningKey::from_random());
@@ -44,7 +44,7 @@ mod tests {
         let calls = vec![Call {
             to: address,
             selector: selector!("revoke_session"),
-            calldata: vec![felt!("0x2137")],
+            calldata: vec![FieldElement::from(0x2137u32)],
         }];
 
         sleep(Duration::from_secs(10)).await;
@@ -53,7 +53,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_session_revoked() {
-        let runner = DevnetRunner::load();
+        let runner = KatanaRunner::load();
         let master = create_account(&runner.prefunded_single_owner_account().await).await;
 
         let session_key = LocalWallet::from(SigningKey::from_random());
@@ -66,11 +66,11 @@ mod tests {
         let calls = vec![Call {
             to: address,
             selector: selector!("revoke_session"),
-            calldata: vec![felt!("0x2137")],
+            calldata: vec![FieldElement::from(0x2137u32)],
         }];
 
-        sleep(Duration::from_secs(10)).await;
         account.execute(calls.clone()).send().await.unwrap();
+        sleep(Duration::from_millis(100)).await;
         let result = account.execute(calls.clone()).send().await;
 
         assert!(result.is_err());

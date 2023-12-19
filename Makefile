@@ -26,3 +26,7 @@ deploy-katana:
 	starkli deploy "$${account_class}" ${test_pubkey} --salt 0x1234 ${config}; \
 	starkli declare ${build}ERC20${sierra} ${config}; \
 	starkli deploy "$${erc20_class}" str:token str:tkn u256:1 ${katana_0} --salt 0x1234 ${config};
+
+test-session: generate_artifacts
+	rm -rf ./account_sdk/log
+	cargo test --manifest-path account_sdk/Cargo.toml session
