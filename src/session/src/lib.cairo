@@ -10,7 +10,7 @@ use array::ArrayTrait;
 use core::{TryInto, Into};
 use starknet::{contract_address::ContractAddress};
 
-use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature, SignatureProofs};
+use webauthn_session::signature::{SessionSignature, FeltSpanTryIntoSignature, SignatureProofs};
 use webauthn_session::hash::{compute_session_hash, compute_call_hash};
 use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait};
 
@@ -25,6 +25,7 @@ mod tests;
 
 #[starknet::interface]
 trait ISession<TContractState> {
+    fn validate_session_abi(self: @TContractState, signature: SessionSignature, calls: Span<Call>);
     fn validate_session(self: @TContractState, signature: Span<felt252>, calls: Span<Call>);
     fn revoke_session(ref self: TContractState, token: felt252);
 }
@@ -36,7 +37,7 @@ mod session_component {
     use super::check_policy;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use starknet::account::Call;
-    use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature, SignatureProofs, SignatureProofsTrait};
+    use webauthn_session::signature::{SessionSignature, FeltSpanTryIntoSignature, SignatureProofs, SignatureProofsTrait};
     use webauthn_session::hash::{compute_session_hash, compute_call_hash};
     use ecdsa::check_ecdsa_signature;
 
@@ -68,8 +69,12 @@ mod session_component {
     impl SessionImpl<
         TContractState, +HasComponent<TContractState>
     > of super::ISession<ComponentState<TContractState>> {
+        fn validate_session_abi(self: @ComponentState<TContractState>, signature: SessionSignature, calls: Span<Call>) {
+            self.validate_signature(signature, calls).unwrap();
+        }
+
         fn validate_session(self: @ComponentState<TContractState>, mut signature: Span<felt252>, calls: Span<Call>) {
-            let sig: TxInfoSignature = Serde::<TxInfoSignature>::deserialize(ref signature).unwrap();
+            let sig: SessionSignature = Serde::<SessionSignature>::deserialize(ref signature).unwrap();
 
             self.validate_signature(sig, calls).unwrap();
         }
@@ -86,7 +91,7 @@ mod session_component {
     impl InternalImpl<
         TContractState, +HasComponent<TContractState>
     > of InternalTrait<TContractState> {
-        fn validate_signature(self: @ComponentState<TContractState>, signature: TxInfoSignature, calls: Span<Call>) -> Result<(), felt252> {
+        fn validate_signature(self: @ComponentState<TContractState>, signature: SessionSignature, calls: Span<Call>) -> Result<(), felt252> {
             if signature.proofs.len() != calls.len() {
                 return Result::Err(Errors::LENGHT_MISMATCH);
             };

@@ -3,7 +3,7 @@ use core::poseidon::{PoseidonImpl, PoseidonTrait};
 
 use starknet::{contract_address::ContractAddress};
 
-use webauthn_session::signature::TxInfoSignature;
+use webauthn_session::signature::SessionSignature;
 use webauthn_session::Call;
 
 // H('StarkNetDomain(chainId:felt)')
@@ -17,7 +17,7 @@ const POLICY_TYPE_HASH: felt252 = 0x2f0026e78543f036f33e26a8f5891b88c58dc1e20cbb
 // https://github.com/starkware-libs/cairo/blob/1cd1d242883787392f38f5a775ab045b5e2201f3/corelib/src/hash.cairo#L4
 // https://github.com/starkware-libs/cairo/blob/1cd1d242883787392f38f5a775ab045b5e2201f3/examples/hash_chain.cairo#L4
 fn compute_session_hash(
-    signature: TxInfoSignature, chain_id: felt252, account: ContractAddress
+    signature: SessionSignature, chain_id: felt252, account: ContractAddress
 ) -> felt252 {
     let domain_hash = hash_domain(chain_id);
     let message_hash = hash_message(

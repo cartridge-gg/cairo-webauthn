@@ -242,7 +242,7 @@ mod Account {
                 return starknet::VALIDATED;
             } 
 
-            let signature_type = *signature.pop_front().unwrap();
+            let signature_type = *signature.at(0);
             
             if signature_type == 'Session Token v1' {
                 // TODO: replace this mock

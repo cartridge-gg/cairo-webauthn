@@ -9,7 +9,7 @@ use array::ArrayTrait;
 use core::{TryInto, Into};
 use starknet::{contract_address::ContractAddress};
 
-use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature, SignatureProofs};
+use webauthn_session::signature::{SessionSignature, FeltSpanTryIntoSignature, SignatureProofs};
 use webauthn_session::hash::{compute_session_hash, compute_call_hash};
 use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait};
 
@@ -33,7 +33,7 @@ fn test_session() {
         0x2137,
     ].span();
 
-    let deser: TxInfoSignature = Serde::<TxInfoSignature>::deserialize(ref sig).unwrap();
+    let deser: SessionSignature = Serde::<SessionSignature>::deserialize(ref sig).unwrap();
     assert(deser.r == 0x42, 'invalid r');
     assert(deser.proofs.len() == 1, 'invalid proofs len');
 }

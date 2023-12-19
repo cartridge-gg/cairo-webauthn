@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use cainome::cairo_serde::CairoSerde;
 use starknet::{
     accounts::{
         Account, Call, ConnectedAccount, Declaration, Execution, ExecutionEncoder,
@@ -11,9 +12,11 @@ use starknet::{
     providers::Provider,
     signers::Signer,
 };
-use std::sync::Arc;
+use std::{sync::Arc, vec};
 
-use super::{Session, SessionSignature};
+use crate::abigen::account::{SessionSignature, SignatureProofs};
+use crate::session_token::Session;
+use crate::session_token::SIGNATURE_TYPE;
 
 impl<P, S> ExecutionEncoder for SessionAccount<P, S>
 where
@@ -115,17 +118,20 @@ where
             .map_err(SignError::SignersPubkey)?;
 
         let signature = SessionSignature {
+            signature_type: SIGNATURE_TYPE,
             r: signature.r,
             s: signature.s,
             session_key: session_key.scalar(),
             session_expires: self.session.session_expires(),
             root: self.session.root(),
-            proof_len: self.session.proof_len(),
-            proofs: self.session.proofs(),
+            proofs: SignatureProofs {
+                single_proof_len: self.session.proof_len(),
+                proofs_flat: self.session.proofs(),
+            },
             session_token: self.session.session_token(),
         };
 
-        Ok(signature.into())
+        Ok(SessionSignature::cairo_serialize(&signature))
     }
 
     async fn sign_declaration(
