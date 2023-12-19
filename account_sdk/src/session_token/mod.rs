@@ -16,12 +16,12 @@ mod tests {
     use std::time::Duration;
 
     use starknet::{
-        accounts::{Account, Call, ConnectedAccount},
-        macros::selector,
+        accounts::{Account, ConnectedAccount},
         signers::{LocalWallet, SigningKey},
     };
     use tokio::time::sleep;
 
+    use crate::abigen::account::CartridgeAccount;
     use crate::tests::{
         deployment_test::create_account,
         runners::{KatanaRunner, TestnetRunner},
@@ -40,15 +40,13 @@ mod tests {
         let (chain_id, address) = (master.chain_id(), master.address());
         let provider = *master.provider();
         let account = SessionAccount::new(provider, session_key, session, address, chain_id);
+        let account = CartridgeAccount::new(address, &account);
 
-        let calls = vec![Call {
-            to: address,
-            selector: selector!("revoke_session"),
-            calldata: vec![FieldElement::from(0x2137u32)],
-        }];
-
-        sleep(Duration::from_secs(10)).await;
-        account.execute(calls.clone()).send().await.unwrap();
+        account
+            .revoke_session(&FieldElement::from(0x2137u32))
+            .send()
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
@@ -62,17 +60,21 @@ mod tests {
         let (chain_id, address) = (master.chain_id(), master.address());
         let provider = *master.provider();
         let account = SessionAccount::new(provider, session_key, session, address, chain_id);
+        let cartridge_account = CartridgeAccount::new(address, &account);
 
-        let calls = vec![Call {
-            to: address,
-            selector: selector!("revoke_session"),
-            calldata: vec![FieldElement::from(0x2137u32)],
-        }];
+        cartridge_account
+            .revoke_session(&FieldElement::from(0x2137u32))
+            .send()
+            .await
+            .unwrap();
 
-        account.execute(calls.clone()).send().await.unwrap();
         sleep(Duration::from_millis(100)).await;
-        let result = account.execute(calls.clone()).send().await;
 
-        assert!(result.is_err());
+        let result = cartridge_account
+            .revoke_session(&FieldElement::from(0x2137u32))
+            .send()
+            .await;
+
+        assert!(result.is_err(), "Session should be revoked");
     }
 }
