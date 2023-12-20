@@ -12,7 +12,7 @@ use starknet::{contract_address::ContractAddress};
 
 use webauthn_session::signature::{SessionSignature, FeltSpanTryIntoSignature, SignatureProofs};
 use webauthn_session::hash::{compute_session_hash, compute_call_hash};
-use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait};
+use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, poseidon::PoseidonHasherImpl, MerkleTreeTrait};
 
 
 use core::ecdsa::check_ecdsa_signature;
@@ -123,9 +123,9 @@ mod session_component {
                 return Result::Err(Errors::SESSION_SIGNATURE_INVALID);
             }
 
-            // if check_policy(calls, signature.root, signature.proofs).is_err() {
-            //     return Result::Err(Errors::POLICY_CHECK_FAILED);
-            // }
+            if check_policy(calls, signature.root, signature.proofs).is_err() {
+                return Result::Err(Errors::POLICY_CHECK_FAILED);
+            }
 
             Result::Ok(())
         }
@@ -133,7 +133,7 @@ mod session_component {
 }
 
 fn check_policy(
-    call_array: Array<Call>, root: felt252, proofs: SignatureProofs,
+    call_array: Span<Call>, root: felt252, proofs: SignatureProofs,
 ) -> Result<(), ()> {
     let mut i = 0_usize;
     loop {
@@ -142,6 +142,7 @@ fn check_policy(
         }
         let leaf = compute_call_hash(call_array.at(i));
         let mut merkle: MerkleTree<Hasher> = MerkleTreeTrait::new();
+
         if merkle.verify(root, leaf, proofs.at(i)) == false {
             break Result::Err(());
         };

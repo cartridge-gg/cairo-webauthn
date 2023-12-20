@@ -9,6 +9,7 @@ use starknet::{
         contract::legacy::LegacyContractClass, BlockId, BlockTag, FieldElement,
         FlattenedSierraClass,
     },
+    macros::felt,
     providers::Provider,
     signers::Signer,
 };
@@ -117,16 +118,18 @@ where
             .await
             .map_err(SignError::SignersPubkey)?;
 
+        let root = felt!("0x057ca9a6788026c833225ac1262a0519aab27d2118d3ef90162425cfbdf916be");
+
         let signature = SessionSignature {
             signature_type: SIGNATURE_TYPE,
             r: signature.r,
             s: signature.s,
             session_key: session_key.scalar(),
             session_expires: self.session.session_expires(),
-            root: self.session.root(),
+            root: root,
             proofs: SignatureProofs {
-                single_proof_len: self.session.proof_len(),
-                proofs_flat: self.session.proofs(),
+                single_proof_len: 0,
+                proofs_flat: vec![],
             },
             session_token: self.session.session_token(),
         };

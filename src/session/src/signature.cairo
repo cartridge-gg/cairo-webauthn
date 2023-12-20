@@ -70,6 +70,9 @@ impl ImplSignatureProofs of SignatureProofsTrait {
     }
 
     fn len(self: SignatureProofs) -> usize {
+        if self.single_proof_len == 0 {
+            return 1; // When there is only one leaf, it is equal to the root, so the only proof is empty
+        }
         U32Div::div(self.proofs_flat.len(), self.single_proof_len)
     }
     
