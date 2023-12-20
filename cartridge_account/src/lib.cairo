@@ -116,7 +116,16 @@ mod Account {
         }
 
         fn __validate__(self: @ContractState, mut calls: Array<Call>) -> felt252 {
-            self.validate_transaction()
+            let signature_type = self.validate_transaction();
+            let tx_info = get_tx_info().unbox();
+
+            if signature_type == starknet::VALIDATED {
+                starknet::VALIDATED
+            } else if signature_type == 'Session Token v1' {
+                SessionImpl::validate_session(self, tx_info.signature, calls.span())
+            } else {
+                signature_type
+            }
         }
 
         fn is_valid_signature(
@@ -243,19 +252,12 @@ mod Account {
             } 
 
             let signature_type = *signature.at(0);
-            
-            if signature_type == 'Session Token v1' {
-                // TODO: replace this mock
-                let calls = array![Call {
-                    to: get_caller_address(),
-                    selector: 1485514293835613587393115454149572371807630552041622198027280818831729347259,
-                    calldata: array![0x2137]
-                }];
-                SessionImpl::validate_session(self, signature, calls.span())
-            } else {
+
+            if signature_type == starknet::VALIDATED {
                 assert(false, Errors::INVALID_SIGNATURE);
             }
-            starknet::VALIDATED
+
+            signature_type
         }
 
         fn _set_public_key(ref self: ContractState, new_public_key: felt252) {

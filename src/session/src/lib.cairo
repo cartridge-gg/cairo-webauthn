@@ -25,7 +25,7 @@ mod tests;
 #[starknet::interface]
 trait ISession<TContractState> {
     fn validate_session_abi(self: @TContractState, signature: SessionSignature, calls: Span<Call>);
-    fn validate_session(self: @TContractState, signature: Span<felt252>, calls: Span<Call>);
+    fn validate_session(self: @TContractState, signature: Span<felt252>, calls: Span<Call>) -> felt252;
     fn revoke_session(ref self: TContractState, token: felt252);
 
     fn compute_proof(self: @TContractState, calls: Array<Call>, position: u64) -> Span<felt252>;
@@ -76,10 +76,11 @@ mod session_component {
             self.validate_signature(signature, calls).unwrap();
         }
 
-        fn validate_session(self: @ComponentState<TContractState>, mut signature: Span<felt252>, calls: Span<Call>) {
+        fn validate_session(self: @ComponentState<TContractState>, mut signature: Span<felt252>, calls: Span<Call>) -> felt252 {
             let sig: SessionSignature = Serde::<SessionSignature>::deserialize(ref signature).unwrap();
 
             self.validate_signature(sig, calls).unwrap();
+            starknet::VALIDATED
         }
 
         fn revoke_session(
