@@ -1,6 +1,8 @@
 mod account;
 mod sequence;
 mod session;
+#[cfg(test)]
+mod test_utils;
 
 pub use account::SessionAccount;
 pub use sequence::CallSequence;
@@ -21,14 +23,17 @@ mod tests {
     };
     use tokio::time::sleep;
 
-    use crate::abigen::{
-        self,
-        account::{Call, CartridgeAccount},
-    };
     use crate::session_token::SessionAccount;
     use crate::tests::{
         deployment_test::create_account,
         runners::{KatanaRunner, TestnetRunner},
+    };
+    use crate::{
+        abigen::{
+            self,
+            account::{Call, CartridgeAccount},
+        },
+        session_token::test_utils::create_session_account,
     };
 
     use super::*;
@@ -107,25 +112,19 @@ mod tests {
     #[tokio::test]
     async fn test_session_revoked() {
         let runner = KatanaRunner::load();
-        let master = create_account(&runner.prefunded_single_owner_account().await).await;
+        let mut session_account =
+            create_session_account(&runner.prefunded_single_owner_account().await).await;
 
-        let session_key = LocalWallet::from(SigningKey::from_random());
-
-        let mut session = Session::default();
-        let cainome_address = ContractAddress::from(master.address());
-        let permited_calls = vec![Call {
+        let cainome_address = ContractAddress::from(session_account.address());
+        session_account.session().set_permitted_calls(vec![Call {
             to: cainome_address,
             selector: selector!("revoke_session"),
             calldata: vec![FieldElement::from(0x2137u32)],
-        }];
+        }]);
 
-        session.set_permitted_calls(permited_calls);
-        let (chain_id, address) = (master.chain_id(), master.address());
-        let provider = *master.provider();
-        let account = SessionAccount::new(provider, session_key, &session, address, chain_id);
-        let cartridge_account = CartridgeAccount::new(address, &account);
+        let account = CartridgeAccount::new(session_account.address(), &session_account);
 
-        cartridge_account
+        account
             .revoke_session(&FieldElement::from(0x2137u32))
             .send()
             .await
@@ -133,7 +132,7 @@ mod tests {
 
         sleep(Duration::from_millis(100)).await;
 
-        let result = cartridge_account
+        let result = account
             .revoke_session(&FieldElement::from(0x2137u32))
             .send()
             .await;

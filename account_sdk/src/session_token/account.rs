@@ -80,6 +80,10 @@ where
             address,
         }
     }
+
+    pub fn session(&mut self) -> &mut Session {
+        &mut self.session
+    }
 }
 
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
