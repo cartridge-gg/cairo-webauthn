@@ -155,4 +155,43 @@ mod tests {
 
         assert!(result.is_err(), "Session should be revoked");
     }
+
+    #[tokio::test]
+    async fn test_session_many_allowed() {
+        let runner = KatanaRunner::load();
+        let mut session_account =
+            create_session_account(&runner.prefunded_single_owner_account().await).await;
+
+        let cainome_address = ContractAddress::from(session_account.address());
+        session_account.session().set_permitted_calls(vec![
+            Call {
+                to: cainome_address,
+                selector: selector!("revoke_session"),
+                calldata: vec![],
+            },
+            Call {
+                to: cainome_address,
+                selector: selector!("validate_session"),
+                calldata: vec![],
+            },
+            Call {
+                to: cainome_address,
+                selector: selector!("compute_root"),
+                calldata: vec![],
+            },
+            Call {
+                to: cainome_address,
+                selector: selector!("not_yet_defined"),
+                calldata: vec![],
+            },
+        ]);
+
+        let account = CartridgeAccount::new(session_account.address(), &session_account);
+
+        account
+            .revoke_session(&FieldElement::from(0x2137u32))
+            .send()
+            .await
+            .unwrap();
+    }
 }
