@@ -2,20 +2,19 @@ use async_trait::async_trait;
 use cainome::cairo_serde::CairoSerde;
 use starknet::{
     accounts::{
-        Account, Call, ConnectedAccount, Declaration, Execution, ExecutionEncoder,
+        Account, Call as StarknetCall, ConnectedAccount, Declaration, Execution, ExecutionEncoder,
         LegacyDeclaration, RawDeclaration, RawExecution, RawLegacyDeclaration,
     },
     core::types::{
         contract::legacy::LegacyContractClass, BlockId, BlockTag, FieldElement,
         FlattenedSierraClass,
     },
-    macros::felt,
     providers::Provider,
     signers::Signer,
 };
 use std::{sync::Arc, vec};
 
-use crate::abigen::account::{SessionSignature, SignatureProofs};
+use crate::abigen::account::{CartridgeAccount, SessionSignature, SignatureProofs};
 use crate::session_token::Session;
 use crate::session_token::SIGNATURE_TYPE;
 
@@ -24,7 +23,7 @@ where
     P: Provider + Send,
     S: Signer + Send,
 {
-    fn encode_calls(&self, calls: &[Call]) -> Vec<FieldElement> {
+    fn encode_calls(&self, calls: &[StarknetCall]) -> Vec<FieldElement> {
         // analogous to SingleOwnerAccount::encode_calls for ExecutionEncoding::New
         let mut serialized = vec![calls.len().into()];
 
@@ -68,14 +67,15 @@ where
     pub fn new(
         provider: P,
         signer: S,
-        session: Session,
+        session: &Session,
         address: FieldElement,
         chain_id: FieldElement,
     ) -> Self {
+        assert_eq!(session.permitted_calls().len(), 1);
         Self {
             provider,
             signer,
-            session,
+            session: session.clone(),
             chain_id,
             address,
         }
@@ -118,7 +118,18 @@ where
             .await
             .map_err(SignError::SignersPubkey)?;
 
-        let root = felt!("0x057ca9a6788026c833225ac1262a0519aab27d2118d3ef90162425cfbdf916be");
+        let account = CartridgeAccount::new(self.address, &self);
+        let permited_calls = self.session.permitted_calls();
+        let proof = account
+            .compute_proof(permited_calls, &0)
+            .call()
+            .await
+            .expect("computing proof failed");
+        let root = account
+            .compute_root(&permited_calls[0], &proof)
+            .call()
+            .await
+            .expect("computing root failed");
 
         let signature = SessionSignature {
             signature_type: SIGNATURE_TYPE,
@@ -126,10 +137,10 @@ where
             s: signature.s,
             session_key: session_key.scalar(),
             session_expires: self.session.session_expires(),
-            root: root,
+            root,
             proofs: SignatureProofs {
-                single_proof_len: 0,
-                proofs_flat: vec![],
+                single_proof_len: proof.len() as u32,
+                proofs_flat: proof,
             },
             session_token: self.session.session_token(),
         };
@@ -153,7 +164,7 @@ where
         unimplemented!("sign_legacy_declaration")
     }
 
-    fn execute(&self, calls: Vec<Call>) -> Execution<Self> {
+    fn execute(&self, calls: Vec<StarknetCall>) -> Execution<Self> {
         Execution::new(calls, self)
     }
 

@@ -13,6 +13,7 @@ pub const SIGNATURE_TYPE: FieldElement = felt!("0x53657373696f6e20546f6b656e2076
 mod tests {
     use std::time::Duration;
 
+    use cainome::cairo_serde::ContractAddress;
     use starknet::{
         accounts::{Account, ConnectedAccount},
         macros::selector,
@@ -20,7 +21,11 @@ mod tests {
     };
     use tokio::time::sleep;
 
-    use crate::abigen::{self, account::CartridgeAccount};
+    use crate::abigen::{
+        self,
+        account::{Call, CartridgeAccount},
+    };
+    use crate::session_token::SessionAccount;
     use crate::tests::{
         deployment_test::create_account,
         runners::{KatanaRunner, TestnetRunner},
@@ -57,9 +62,9 @@ mod tests {
         let address = master.address();
         let account = CartridgeAccount::new(address, &master);
 
-        let cainome_address = cainome::cairo_serde::ContractAddress::from(address);
+        let cainome_address = ContractAddress::from(address);
 
-        let call = abigen::account::Call {
+        let call = Call {
             to: cainome_address,
             selector: selector!("revoke_session"),
             calldata: vec![FieldElement::from(0x2137u32)],
@@ -77,10 +82,19 @@ mod tests {
 
         let session_key = LocalWallet::from(SigningKey::from_random());
 
-        let session = Session::default();
+        let mut session = Session::default();
+        let cainome_address = ContractAddress::from(master.address());
+        let permited_calls = vec![Call {
+            to: cainome_address,
+            selector: selector!("revoke_session"),
+            calldata: vec![FieldElement::from(0x2137u32)],
+        }];
+
+        session.set_permitted_calls(permited_calls);
+
         let (chain_id, address) = (master.chain_id(), master.address());
         let provider = *master.provider();
-        let account = SessionAccount::new(provider, session_key, session, address, chain_id);
+        let account = SessionAccount::new(provider, session_key, &session, address, chain_id);
         let account = CartridgeAccount::new(address, &account);
 
         account
@@ -97,10 +111,18 @@ mod tests {
 
         let session_key = LocalWallet::from(SigningKey::from_random());
 
-        let session = Session::default();
+        let mut session = Session::default();
+        let cainome_address = ContractAddress::from(master.address());
+        let permited_calls = vec![Call {
+            to: cainome_address,
+            selector: selector!("revoke_session"),
+            calldata: vec![FieldElement::from(0x2137u32)],
+        }];
+
+        session.set_permitted_calls(permited_calls);
         let (chain_id, address) = (master.chain_id(), master.address());
         let provider = *master.provider();
-        let account = SessionAccount::new(provider, session_key, session, address, chain_id);
+        let account = SessionAccount::new(provider, session_key, &session, address, chain_id);
         let cartridge_account = CartridgeAccount::new(address, &account);
 
         cartridge_account
