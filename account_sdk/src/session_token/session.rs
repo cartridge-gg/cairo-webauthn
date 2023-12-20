@@ -22,6 +22,7 @@ impl Session {
         &self.permitted_calls
     }
 
+    #[cfg(test)]
     pub fn set_permitted_calls(&mut self, calls: Vec<Call>) {
         self.permitted_calls = calls;
     }

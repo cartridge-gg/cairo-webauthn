@@ -99,7 +99,7 @@ mod tests {
 
         let (chain_id, address) = (master.chain_id(), master.address());
         let provider = *master.provider();
-        let account = SessionAccount::new(provider, session_key, &session, address, chain_id);
+        let account = SessionAccount::new(provider, session_key, session, address, chain_id);
         let account = CartridgeAccount::new(address, &account);
 
         account

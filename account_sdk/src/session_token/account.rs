@@ -67,7 +67,7 @@ where
     pub fn new(
         provider: P,
         signer: S,
-        session: &Session,
+        session: Session,
         address: FieldElement,
         chain_id: FieldElement,
     ) -> Self {
@@ -75,7 +75,7 @@ where
         Self {
             provider,
             signer,
-            session: session.clone(),
+            session,
             chain_id,
             address,
         }

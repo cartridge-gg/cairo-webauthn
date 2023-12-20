@@ -33,5 +33,5 @@ pub async fn create_session_account<'a>(
 
     let session_key = LocalWallet::from(SigningKey::from_random());
 
-    SessionAccount::new(provider, session_key, &session, address, chain_id)
+    SessionAccount::new(provider, session_key, session, address, chain_id)
 }
