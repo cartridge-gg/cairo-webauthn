@@ -112,15 +112,8 @@ mod tests {
     #[tokio::test]
     async fn test_session_revoked() {
         let runner = KatanaRunner::load();
-        let mut session_account =
+        let session_account =
             create_session_account(&runner.prefunded_single_owner_account().await).await;
-
-        let cainome_address = ContractAddress::from(session_account.address());
-        session_account.session().set_permitted_calls(vec![Call {
-            to: cainome_address,
-            selector: selector!("revoke_session"),
-            calldata: vec![FieldElement::from(0x2137u32)],
-        }]);
 
         let account = CartridgeAccount::new(session_account.address(), &session_account);
 
@@ -131,6 +124,29 @@ mod tests {
             .unwrap();
 
         sleep(Duration::from_millis(100)).await;
+
+        let result = account
+            .revoke_session(&FieldElement::from(0x2137u32))
+            .send()
+            .await;
+
+        assert!(result.is_err(), "Session should be revoked");
+    }
+
+    #[tokio::test]
+    async fn test_session_invalid_proof() {
+        let runner = KatanaRunner::load();
+        let mut session_account =
+            create_session_account(&runner.prefunded_single_owner_account().await).await;
+
+        let cainome_address = ContractAddress::from(session_account.address());
+        session_account.session().set_permitted_calls(vec![Call {
+            to: cainome_address,
+            selector: selector!("validate_session"),
+            calldata: vec![FieldElement::from(0x2137u32)],
+        }]);
+
+        let account = CartridgeAccount::new(session_account.address(), &session_account);
 
         let result = account
             .revoke_session(&FieldElement::from(0x2137u32))
