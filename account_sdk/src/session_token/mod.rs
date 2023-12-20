@@ -15,17 +15,60 @@ mod tests {
 
     use starknet::{
         accounts::{Account, ConnectedAccount},
+        macros::selector,
         signers::{LocalWallet, SigningKey},
     };
     use tokio::time::sleep;
 
-    use crate::abigen::account::CartridgeAccount;
+    use crate::abigen::{self, account::CartridgeAccount};
     use crate::tests::{
         deployment_test::create_account,
         runners::{KatanaRunner, TestnetRunner},
     };
 
     use super::*;
+
+    #[tokio::test]
+    async fn test_session_compute_proof() {
+        let runner = KatanaRunner::load();
+        let master = create_account(&runner.prefunded_single_owner_account().await).await;
+
+        let address = master.address();
+        let account = CartridgeAccount::new(address, &master);
+
+        let cainome_address = cainome::cairo_serde::ContractAddress::from(address);
+
+        let call = abigen::account::Call {
+            to: cainome_address,
+            selector: selector!("revoke_session"),
+            calldata: vec![FieldElement::from(0x2137u32)],
+        };
+
+        let proof = account.compute_proof(&vec![call], &0).call().await.unwrap();
+
+        assert_eq!(proof, vec![]);
+    }
+
+    #[tokio::test]
+    async fn test_session_compute_root() {
+        let runner = KatanaRunner::load();
+        let master = create_account(&runner.prefunded_single_owner_account().await).await;
+
+        let address = master.address();
+        let account = CartridgeAccount::new(address, &master);
+
+        let cainome_address = cainome::cairo_serde::ContractAddress::from(address);
+
+        let call = abigen::account::Call {
+            to: cainome_address,
+            selector: selector!("revoke_session"),
+            calldata: vec![FieldElement::from(0x2137u32)],
+        };
+
+        let root = account.compute_root(&call, &vec![]).call().await.unwrap();
+
+        assert_ne!(root, felt!("0x0"));
+    }
 
     #[tokio::test]
     async fn test_session_valid() {

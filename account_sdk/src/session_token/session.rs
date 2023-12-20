@@ -3,27 +3,12 @@ use starknet::{core::types::FieldElement, macros::felt};
 #[derive(Clone)]
 pub struct Session {
     session_expires: u64,
-    root: FieldElement,
-    proof_len: u32,
-    proofs: Vec<FieldElement>,
     session_token: Vec<FieldElement>,
 }
 
 impl Session {
     pub fn session_expires(&self) -> u64 {
         self.session_expires
-    }
-
-    pub fn root(&self) -> FieldElement {
-        self.root
-    }
-
-    pub fn proof_len(&self) -> u32 {
-        self.proof_len
-    }
-
-    pub fn proofs(&self) -> Vec<FieldElement> {
-        self.proofs.clone()
     }
 
     pub fn session_token(&self) -> Vec<FieldElement> {
@@ -35,9 +20,6 @@ impl Default for Session {
     fn default() -> Self {
         Self {
             session_expires: u64::MAX,
-            root: felt!("0x0"),
-            proof_len: 1,
-            proofs: vec![felt!("44")],
             session_token: vec![felt!("0x2137")],
         }
     }
