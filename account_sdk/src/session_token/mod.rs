@@ -18,6 +18,7 @@ mod tests {
     use cainome::cairo_serde::ContractAddress;
     use starknet::{
         accounts::{Account, ConnectedAccount},
+        core::crypto::Signature,
         macros::selector,
         signers::{LocalWallet, Signer, SigningKey},
     };
@@ -83,6 +84,30 @@ mod tests {
             .send()
             .await
             .unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_session_invalid_signature() {
+        let runner: KatanaRunner = KatanaRunner::load();
+        // Initializing a prepared session account and master account
+        let (mut session_account, ..) = create_session_account(&runner).await;
+
+        // Setting an invalid session token
+        let session = session_account.session();
+        let invalid_token = Signature {
+            r: session.session_token()[1],
+            s: FieldElement::from(0x2137u32),
+        };
+        session.set_token(invalid_token);
+
+        // Calling the method not included in permitted
+        let account = CartridgeAccount::new(session_account.address(), &session_account);
+        let result = account
+            .revoke_session(&FieldElement::from(0x2137u32))
+            .send()
+            .await;
+
+        assert!(result.is_err(), "Signature verification should fail");
     }
 
     #[tokio::test]
