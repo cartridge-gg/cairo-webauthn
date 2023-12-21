@@ -1,30 +1,49 @@
+use std::vec;
+
 use starknet::{
     accounts::{Account, ConnectedAccount},
-    core::types::FieldElement,
+    core::{crypto::Signature, types::FieldElement},
     macros::felt,
+    signers::VerifyingKey,
 };
 
-use crate::abigen::account::{Call, CartridgeAccount};
+use crate::abigen::account::{Call, CartridgeAccount, SessionSignature, SignatureProofs};
+
+use super::SESSION_SIGNATURE_TYPE;
 
 #[derive(Clone)]
 pub struct CallWithProof(pub Call, pub Vec<FieldElement>);
 
 #[derive(Clone)]
 pub struct Session {
-    session_expires: u64,
+    session_key: VerifyingKey,
+    expires: u64,
     calls: Vec<CallWithProof>,
     session_token: Vec<FieldElement>,
     root: FieldElement,
 }
 
-enum SessionError {
+#[derive(Debug, thiserror::Error)]
+pub enum SessionError {
+    #[error("At least one call has to be permitted")]
     NoCallsPermited,
+    #[error("Call to compute method failed")]
     ChainCallFailed,
 }
 
 impl Session {
+    pub fn new(key: VerifyingKey, expires: u64) -> Self {
+        Self {
+            session_key: key,
+            expires,
+            calls: vec![],
+            session_token: vec![],
+            root: FieldElement::ZERO,
+        }
+    }
+
     pub fn session_expires(&self) -> u64 {
-        self.session_expires
+        self.expires
     }
 
     pub fn session_token(&self) -> Vec<FieldElement> {
@@ -39,7 +58,7 @@ impl Session {
         &mut self,
         calls: Vec<Call>,
         account: CartridgeAccount<A>,
-    ) -> Result<(), SessionError>
+    ) -> Result<FieldElement, SessionError>
     where
         A: Account + ConnectedAccount + Sync,
     {
@@ -65,17 +84,53 @@ impl Session {
             .await
             .map_err(|_| SessionError::ChainCallFailed)?;
 
-        Ok(())
-    }
-}
+        // Only three fields are hashed: session_key, session_expires and root
+        let signature = SessionSignature {
+            signature_type: FieldElement::ZERO,
+            r: FieldElement::ZERO,
+            s: FieldElement::ZERO,
+            session_key: self.session_key.scalar(),
+            session_expires: self.expires,
+            root: self.root,
+            proofs: SignatureProofs {
+                single_proof_len: 0,
+                proofs_flat: vec![],
+            },
+            session_token: vec![],
+        };
 
-impl Default for Session {
-    fn default() -> Self {
-        Self {
-            session_expires: u64::MAX,
-            session_token: vec![felt!("0x2137")],
-            calls: vec![],
-            root: felt!("0x2137"),
+        let session_hash = account
+            .compute_session_hash(&signature)
+            .call()
+            .await
+            .map_err(|_| SessionError::ChainCallFailed)?;
+
+        Ok(session_hash)
+    }
+
+    pub fn set_token(&mut self, token: Signature) {
+        self.session_token = vec![token.r, token.s];
+    }
+
+    pub fn signature(
+        &self,
+        transaction_signature: Signature,
+        call_position: usize,
+    ) -> SessionSignature {
+        let CallWithProof(_, proof) = &self.calls[call_position];
+
+        SessionSignature {
+            signature_type: SESSION_SIGNATURE_TYPE,
+            r: transaction_signature.r,
+            s: transaction_signature.s,
+            session_key: self.session_key.scalar(),
+            session_expires: self.expires,
+            root: self.root,
+            proofs: SignatureProofs {
+                single_proof_len: proof.len() as u32,
+                proofs_flat: proof.clone(),
+            },
+            session_token: self.session_token.clone(),
         }
     }
 }

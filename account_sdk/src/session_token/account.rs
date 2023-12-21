@@ -10,15 +10,12 @@ use starknet::{
         FlattenedSierraClass,
     },
     providers::Provider,
-    signers::{Signer, VerifyingKey},
+    signers::Signer,
 };
 use std::{sync::Arc, vec};
 
-use crate::abigen::account::{CartridgeAccount, SessionSignature, SignatureProofs};
+use crate::abigen::account::SessionSignature;
 use crate::session_token::Session;
-use crate::session_token::SESSION_SIGNATURE_TYPE;
-
-use super::session::CallWithProof;
 
 impl<P, S> ExecutionEncoder for SessionAccount<P, S>
 where
@@ -73,7 +70,6 @@ where
         address: FieldElement,
         chain_id: FieldElement,
     ) -> Self {
-        assert_eq!(session.permitted_calls().len(), 1);
         Self {
             provider,
             signer,
@@ -117,33 +113,7 @@ where
             .await
             .map_err(SignError::Signer)?;
 
-        let session_key: VerifyingKey = self
-            .signer
-            .get_public_key()
-            .await
-            .map_err(SignError::SignersPubkey)?;
-
-        let account = CartridgeAccount::new(self.address, &self);
-        let CallWithProof(permited_call, proof) = self.session.call_with_proof(0);
-        let root = account
-            .compute_root(permited_call, &proof)
-            .call()
-            .await
-            .expect("computing root failed");
-
-        let signature = SessionSignature {
-            signature_type: SESSION_SIGNATURE_TYPE,
-            r: signature.r,
-            s: signature.s,
-            session_key: session_key.scalar(),
-            session_expires: self.session.session_expires(),
-            root,
-            proofs: SignatureProofs {
-                single_proof_len: proof.len() as u32,
-                proofs_flat: proof.clone(),
-            },
-            session_token: self.session.session_token(),
-        };
+        let signature = self.session.signature(signature, 0);
 
         Ok(SessionSignature::cairo_serialize(&signature))
     }
