@@ -1,7 +1,8 @@
 use async_trait::async_trait;
+use cainome::cairo_serde::CairoSerde;
 use starknet::{
     accounts::{
-        Account, Call, ConnectedAccount, Declaration, Execution, ExecutionEncoder,
+        Account, Call as StarknetCall, ConnectedAccount, Declaration, Execution, ExecutionEncoder,
         LegacyDeclaration, RawDeclaration, RawExecution, RawLegacyDeclaration,
     },
     core::types::{
@@ -11,16 +12,18 @@ use starknet::{
     providers::Provider,
     signers::Signer,
 };
-use std::sync::Arc;
+use std::{sync::Arc, vec};
 
-use super::{Session, SessionSignature};
+use crate::abigen::account::{CartridgeAccount, SessionSignature, SignatureProofs};
+use crate::session_token::Session;
+use crate::session_token::SIGNATURE_TYPE;
 
 impl<P, S> ExecutionEncoder for SessionAccount<P, S>
 where
     P: Provider + Send,
     S: Signer + Send,
 {
-    fn encode_calls(&self, calls: &[Call]) -> Vec<FieldElement> {
+    fn encode_calls(&self, calls: &[StarknetCall]) -> Vec<FieldElement> {
         // analogous to SingleOwnerAccount::encode_calls for ExecutionEncoding::New
         let mut serialized = vec![calls.len().into()];
 
@@ -68,6 +71,7 @@ where
         address: FieldElement,
         chain_id: FieldElement,
     ) -> Self {
+        assert_eq!(session.permitted_calls().len(), 1);
         Self {
             provider,
             signer,
@@ -75,6 +79,10 @@ where
             chain_id,
             address,
         }
+    }
+
+    pub fn session(&mut self) -> &mut Session {
+        &mut self.session
     }
 }
 
@@ -114,18 +122,34 @@ where
             .await
             .map_err(SignError::SignersPubkey)?;
 
+        let account = CartridgeAccount::new(self.address, &self);
+        let permited_calls = self.session.permitted_calls();
+        let proof = account
+            .compute_proof(permited_calls, &0)
+            .call()
+            .await
+            .expect("computing proof failed");
+        let root = account
+            .compute_root(&permited_calls[0], &proof)
+            .call()
+            .await
+            .expect("computing root failed");
+
         let signature = SessionSignature {
+            signature_type: SIGNATURE_TYPE,
             r: signature.r,
             s: signature.s,
             session_key: session_key.scalar(),
             session_expires: self.session.session_expires(),
-            root: self.session.root(),
-            proof_len: self.session.proof_len(),
-            proofs: self.session.proofs(),
+            root,
+            proofs: SignatureProofs {
+                single_proof_len: proof.len() as u32,
+                proofs_flat: proof,
+            },
             session_token: self.session.session_token(),
         };
 
-        Ok(signature.into())
+        Ok(SessionSignature::cairo_serialize(&signature))
     }
 
     async fn sign_declaration(
@@ -144,7 +168,7 @@ where
         unimplemented!("sign_legacy_declaration")
     }
 
-    fn execute(&self, calls: Vec<Call>) -> Execution<Self> {
+    fn execute(&self, calls: Vec<StarknetCall>) -> Execution<Self> {
         Execution::new(calls, self)
     }
 

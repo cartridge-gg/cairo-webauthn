@@ -1,4 +1,3 @@
-use webauthn_session::signature::SignatureProofsTrait;
 use alexandria_data_structures::array_ext::ArrayTraitExt;
 use core::box::BoxTrait;
 use core::array::SpanTrait;
@@ -9,13 +8,13 @@ use option::OptionTrait;
 use array::ArrayTrait;
 use core::{TryInto, Into};
 use starknet::{contract_address::ContractAddress};
-
-use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature, SignatureProofs};
-use webauthn_session::hash::{compute_session_hash, compute_call_hash};
-use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait};
-
+use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, poseidon::PoseidonHasherImpl, MerkleTreeTrait};
 
 use core::ecdsa::check_ecdsa_signature;
+
+use webauthn_session::signature::{SessionSignature, FeltSpanTryIntoSignature, SignatureProofs, SignatureProofsTrait};
+use webauthn_session::hash::{compute_session_hash, compute_call_hash};
+
 
 mod hash;
 mod signature;
@@ -25,8 +24,12 @@ mod tests;
 
 #[starknet::interface]
 trait ISession<TContractState> {
-    fn validate_session(self: @TContractState, signature: Span<felt252>, calls: Span<Call>);
+    fn validate_session_abi(self: @TContractState, signature: SessionSignature, calls: Span<Call>);
+    fn validate_session(self: @TContractState, signature: Span<felt252>, calls: Span<Call>) -> felt252;
     fn revoke_session(ref self: TContractState, token: felt252);
+
+    fn compute_proof(self: @TContractState, calls: Array<Call>, position: u64) -> Span<felt252>;
+    fn compute_root(self: @TContractState, call: Call, proof: Span<felt252>) -> felt252;
 }
 
 // Based on https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo
@@ -36,9 +39,10 @@ mod session_component {
     use super::check_policy;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use starknet::account::Call;
-    use webauthn_session::signature::{TxInfoSignature, FeltSpanTryIntoSignature, SignatureProofs, SignatureProofsTrait};
+    use webauthn_session::signature::{SessionSignature, FeltSpanTryIntoSignature, SignatureProofs, SignatureProofsTrait};
     use webauthn_session::hash::{compute_session_hash, compute_call_hash};
     use ecdsa::check_ecdsa_signature;
+    use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, poseidon::PoseidonHasherImpl, MerkleTreeTrait};
 
     #[storage]
     struct Storage {
@@ -68,10 +72,15 @@ mod session_component {
     impl SessionImpl<
         TContractState, +HasComponent<TContractState>
     > of super::ISession<ComponentState<TContractState>> {
-        fn validate_session(self: @ComponentState<TContractState>, mut signature: Span<felt252>, calls: Span<Call>) {
-            let sig: TxInfoSignature = Serde::<TxInfoSignature>::deserialize(ref signature).unwrap();
+        fn validate_session_abi(self: @ComponentState<TContractState>, signature: SessionSignature, calls: Span<Call>) {
+            self.validate_signature(signature, calls).unwrap();
+        }
+
+        fn validate_session(self: @ComponentState<TContractState>, mut signature: Span<felt252>, calls: Span<Call>) -> felt252 {
+            let sig: SessionSignature = Serde::<SessionSignature>::deserialize(ref signature).unwrap();
 
             self.validate_signature(sig, calls).unwrap();
+            starknet::VALIDATED
         }
 
         fn revoke_session(
@@ -80,13 +89,39 @@ mod session_component {
             self.revoked.write(token, 1);
             self.emit(TokenRevoked { token: token });
         }
+
+        fn compute_proof(self: @ComponentState<TContractState>, mut calls: Array<Call>, position: u64) -> Span<felt252> {
+            assert(calls.len() > 0, 'No calls provided');
+            let mut merkle: MerkleTree<Hasher> = MerkleTreeTrait::new();
+
+            let mut leaves = array![];
+
+            // Hashing all the calls
+            loop {
+                let pub_key = match calls.pop_front() {
+                    Option::Some(single) => {
+                        leaves.append(compute_call_hash(@single));
+                    },
+                    Option::None(_) => { break; },
+                };
+            };
+
+            merkle.compute_proof(leaves.clone(), 0) 
+        }
+
+        fn compute_root(self: @ComponentState<TContractState>, call: Call, proof: Span<felt252>) -> felt252 {
+            let mut merkle: MerkleTree<Hasher> = MerkleTreeTrait::new();
+            let leaf = compute_call_hash(@call);
+
+            merkle.compute_root(leaf, proof)
+        }
     }
 
     #[generate_trait]
     impl InternalImpl<
         TContractState, +HasComponent<TContractState>
     > of InternalTrait<TContractState> {
-        fn validate_signature(self: @ComponentState<TContractState>, signature: TxInfoSignature, calls: Span<Call>) -> Result<(), felt252> {
+        fn validate_signature(self: @ComponentState<TContractState>, signature: SessionSignature, calls: Span<Call>) -> Result<(), felt252> {
             if signature.proofs.len() != calls.len() {
                 return Result::Err(Errors::LENGHT_MISMATCH);
             };
@@ -118,9 +153,9 @@ mod session_component {
                 return Result::Err(Errors::SESSION_SIGNATURE_INVALID);
             }
 
-            // if check_policy(calls, signature.root, signature.proofs).is_err() {
-            //     return Result::Err(Errors::POLICY_CHECK_FAILED);
-            // }
+            if check_policy(calls, signature.root, signature.proofs).is_err() {
+                return Result::Err(Errors::POLICY_CHECK_FAILED);
+            }
 
             Result::Ok(())
         }
@@ -128,7 +163,7 @@ mod session_component {
 }
 
 fn check_policy(
-    call_array: Array<Call>, root: felt252, proofs: SignatureProofs,
+    call_array: Span<Call>, root: felt252, proofs: SignatureProofs,
 ) -> Result<(), ()> {
     let mut i = 0_usize;
     loop {
@@ -137,6 +172,7 @@ fn check_policy(
         }
         let leaf = compute_call_hash(call_array.at(i));
         let mut merkle: MerkleTree<Hasher> = MerkleTreeTrait::new();
+
         if merkle.verify(root, leaf, proofs.at(i)) == false {
             break Result::Err(());
         };
