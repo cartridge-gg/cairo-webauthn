@@ -21,6 +21,8 @@ trait IPublicKeyCamel<TState> {
 
 #[starknet::contract]
 mod Account {
+    use core::option::OptionTrait;
+    use core::array::SpanTrait;
     use core::array::ArrayTrait;
     use core::starknet::SyscallResultTrait;
     use core::traits::Into;
@@ -114,7 +116,16 @@ mod Account {
         }
 
         fn __validate__(self: @ContractState, mut calls: Array<Call>) -> felt252 {
-            self.validate_transaction()
+            let signature_type = self.validate_transaction();
+            let tx_info = get_tx_info().unbox();
+
+            if signature_type == starknet::VALIDATED {
+                starknet::VALIDATED
+            } else if signature_type == 'Session Token v1' {
+                SessionImpl::validate_session(self, tx_info.signature, calls.span())
+            } else {
+                signature_type
+            }
         }
 
         fn is_valid_signature(
@@ -234,9 +245,19 @@ mod Account {
         fn validate_transaction(self: @ContractState) -> felt252 {
             let tx_info = get_tx_info().unbox();
             let tx_hash = tx_info.transaction_hash;
-            let signature = tx_info.signature;
-            assert(self._is_valid_signature(tx_hash, signature), Errors::INVALID_SIGNATURE);
-            starknet::VALIDATED
+            let mut signature = tx_info.signature;
+            if signature.len() == 2_u32 {
+                assert(self._is_valid_signature(tx_hash, signature), Errors::INVALID_SIGNATURE);
+                return starknet::VALIDATED;
+            } 
+
+            let signature_type = *signature.at(0);
+
+            if signature_type == starknet::VALIDATED {
+                assert(false, Errors::INVALID_SIGNATURE);
+            }
+
+            signature_type
         }
 
         fn _set_public_key(ref self: ContractState, new_public_key: felt252) {
