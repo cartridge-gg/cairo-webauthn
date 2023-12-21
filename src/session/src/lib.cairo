@@ -25,11 +25,12 @@ mod tests;
 #[starknet::interface]
 trait ISession<TContractState> {
     fn validate_session_abi(self: @TContractState, signature: SessionSignature, calls: Span<Call>);
-    fn validate_session(self: @TContractState, signature: Span<felt252>, calls: Span<Call>) -> felt252;
+    fn validate_session(self: @TContractState, public_key: felt252, signature: Span<felt252>, calls: Span<Call>) -> felt252;
     fn revoke_session(ref self: TContractState, token: felt252);
 
     fn compute_proof(self: @TContractState, calls: Array<Call>, position: u64) -> Span<felt252>;
     fn compute_root(self: @TContractState, call: Call, proof: Span<felt252>) -> felt252;
+    fn compute_session_hash(self: @TContractState, unsigned_signature: SessionSignature) -> felt252;
 }
 
 // Based on https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo
@@ -73,13 +74,12 @@ mod session_component {
         TContractState, +HasComponent<TContractState>
     > of super::ISession<ComponentState<TContractState>> {
         fn validate_session_abi(self: @ComponentState<TContractState>, signature: SessionSignature, calls: Span<Call>) {
-            self.validate_signature(signature, calls).unwrap();
         }
 
-        fn validate_session(self: @ComponentState<TContractState>, mut signature: Span<felt252>, calls: Span<Call>) -> felt252 {
+        fn validate_session(self: @ComponentState<TContractState>, public_key: felt252, mut signature: Span<felt252>, calls: Span<Call>) -> felt252 {
             let sig: SessionSignature = Serde::<SessionSignature>::deserialize(ref signature).unwrap();
 
-            self.validate_signature(sig, calls).unwrap();
+            self.validate_signature(public_key, sig, calls).unwrap();
             starknet::VALIDATED
         }
 
@@ -115,13 +115,22 @@ mod session_component {
 
             merkle.compute_root(leaf, proof)
         }
+
+        fn compute_session_hash(self: @ComponentState<TContractState>, unsigned_signature: SessionSignature) -> felt252 {
+            let tx_info = get_tx_info().unbox();
+            let session_hash: felt252 = compute_session_hash(
+                unsigned_signature, tx_info.chain_id, tx_info.account_contract_address
+            );
+
+            session_hash
+        }
     }
 
     #[generate_trait]
     impl InternalImpl<
         TContractState, +HasComponent<TContractState>
     > of InternalTrait<TContractState> {
-        fn validate_signature(self: @ComponentState<TContractState>, signature: SessionSignature, calls: Span<Call>) -> Result<(), felt252> {
+        fn validate_signature(self: @ComponentState<TContractState>, public_key: felt252, signature: SessionSignature, calls: Span<Call>) -> Result<(), felt252> {
             if signature.proofs.len() != calls.len() {
                 return Result::Err(Errors::LENGHT_MISMATCH);
             };
@@ -137,17 +146,21 @@ mod session_component {
                 return Result::Err(Errors::SESSION_REVOKED);
             }
 
-            // check signature
+            // check validity of token
             let tx_info = get_tx_info().unbox();
             let session_hash: felt252 = compute_session_hash(
                 signature, tx_info.chain_id, tx_info.account_contract_address
             );
+            let token_r = *signature.session_token.at(0);
+            let token_s = *signature.session_token.at(1);
 
-            let transaction_hash = tx_info.transaction_hash;
-            let transaction_hash = 2137; // TODO: use tx_hash when it achieves parity with the runner
+            let valid_token = check_ecdsa_signature(
+                session_hash, public_key, token_r, token_s
+            );
 
+            // check signature
             let valid_signature = check_ecdsa_signature(
-                transaction_hash, signature.session_key, signature.r, signature.s
+                tx_info.transaction_hash, signature.session_key, signature.r, signature.s
             );
             if !valid_signature {
                 return Result::Err(Errors::SESSION_SIGNATURE_INVALID);

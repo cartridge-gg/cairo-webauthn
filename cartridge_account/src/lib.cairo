@@ -122,7 +122,7 @@ mod Account {
             if signature_type == starknet::VALIDATED {
                 starknet::VALIDATED
             } else if signature_type == 'Session Token v1' {
-                SessionImpl::validate_session(self, tx_info.signature, calls.span())
+                SessionImpl::validate_session(self, self.get_public_key(), tx_info.signature, calls.span())
             } else {
                 signature_type
             }
