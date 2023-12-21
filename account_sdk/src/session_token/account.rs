@@ -10,13 +10,15 @@ use starknet::{
         FlattenedSierraClass,
     },
     providers::Provider,
-    signers::Signer,
+    signers::{Signer, VerifyingKey},
 };
 use std::{sync::Arc, vec};
 
 use crate::abigen::account::{CartridgeAccount, SessionSignature, SignatureProofs};
 use crate::session_token::Session;
-use crate::session_token::SIGNATURE_TYPE;
+use crate::session_token::SESSION_SIGNATURE_TYPE;
+
+use super::session::CallWithProof;
 
 impl<P, S> ExecutionEncoder for SessionAccount<P, S>
 where
@@ -109,34 +111,28 @@ where
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
         let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
-        let tx_hash = FieldElement::from(2137u32); // TODO: use tx_hash when it achieves parity with the runner
         let signature = self
             .signer
             .sign_hash(&tx_hash)
             .await
             .map_err(SignError::Signer)?;
 
-        let session_key: starknet::signers::VerifyingKey = self
+        let session_key: VerifyingKey = self
             .signer
             .get_public_key()
             .await
             .map_err(SignError::SignersPubkey)?;
 
         let account = CartridgeAccount::new(self.address, &self);
-        let permited_calls = self.session.permitted_calls();
-        let proof = account
-            .compute_proof(permited_calls, &0)
-            .call()
-            .await
-            .expect("computing proof failed");
+        let CallWithProof(permited_call, proof) = self.session.call_with_proof(0);
         let root = account
-            .compute_root(&permited_calls[0], &proof)
+            .compute_root(permited_call, &proof)
             .call()
             .await
             .expect("computing root failed");
 
         let signature = SessionSignature {
-            signature_type: SIGNATURE_TYPE,
+            signature_type: SESSION_SIGNATURE_TYPE,
             r: signature.r,
             s: signature.s,
             session_key: session_key.scalar(),
@@ -144,7 +140,7 @@ where
             root,
             proofs: SignatureProofs {
                 single_proof_len: proof.len() as u32,
-                proofs_flat: proof,
+                proofs_flat: proof.clone(),
             },
             session_token: self.session.session_token(),
         };
