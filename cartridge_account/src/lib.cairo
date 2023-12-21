@@ -21,6 +21,8 @@ trait IPublicKeyCamel<TState> {
 
 #[starknet::contract]
 mod Account {
+    use core::option::OptionTrait;
+    use core::array::SpanTrait;
     use core::array::ArrayTrait;
     use core::starknet::SyscallResultTrait;
     use core::traits::Into;
@@ -34,24 +36,30 @@ mod Account {
     use starknet::get_tx_info;
     use starknet::secp256r1::{Secp256r1Point, Secp256r1Impl};
     use webauthn_auth::webauthn::verify;
+    use webauthn_session::session_component;
 
     const TRANSACTION_VERSION: felt252 = 1;
     // 2**128 + TRANSACTION_VERSION
     const QUERY_VERSION: felt252 = 0x100000000000000000000000000000001;
 
     component!(path: src5_component, storage: src5, event: SRC5Event);
-
     #[abi(embed_v0)]
     impl SRC5Impl = src5_component::SRC5Impl<ContractState>;
     #[abi(embed_v0)]
     impl SRC5CamelImpl = src5_component::SRC5CamelImpl<ContractState>;
     impl SRC5InternalImpl = src5_component::InternalImpl<ContractState>;
 
+    component!(path: session_component, storage: session, event: SessionEvent);
+    #[abi(embed_v0)]
+    impl SessionImpl = session_component::Session<ContractState>;
+
     #[storage]
     struct Storage {
         Account_public_key: felt252,
         #[substorage(v0)]
-        src5: src5_component::Storage
+        src5: src5_component::Storage,
+        #[substorage(v0)]
+        session: session_component::Storage
     }
 
     #[event]
@@ -59,7 +67,8 @@ mod Account {
     enum Event {
         OwnerAdded: OwnerAdded,
         OwnerRemoved: OwnerRemoved,
-        SRC5Event: src5_component::Event
+        SRC5Event: src5_component::Event,
+        SessionEvent: session_component::Event
     }
 
     #[derive(Drop, starknet::Event)]
@@ -107,7 +116,16 @@ mod Account {
         }
 
         fn __validate__(self: @ContractState, mut calls: Array<Call>) -> felt252 {
-            self.validate_transaction()
+            let signature_type = self.validate_transaction();
+            let tx_info = get_tx_info().unbox();
+
+            if signature_type == starknet::VALIDATED {
+                starknet::VALIDATED
+            } else if signature_type == 'Session Token v1' {
+                SessionImpl::validate_session(self, tx_info.signature, calls.span())
+            } else {
+                signature_type
+            }
         }
 
         fn is_valid_signature(
@@ -227,9 +245,19 @@ mod Account {
         fn validate_transaction(self: @ContractState) -> felt252 {
             let tx_info = get_tx_info().unbox();
             let tx_hash = tx_info.transaction_hash;
-            let signature = tx_info.signature;
-            assert(self._is_valid_signature(tx_hash, signature), Errors::INVALID_SIGNATURE);
-            starknet::VALIDATED
+            let mut signature = tx_info.signature;
+            if signature.len() == 2_u32 {
+                assert(self._is_valid_signature(tx_hash, signature), Errors::INVALID_SIGNATURE);
+                return starknet::VALIDATED;
+            } 
+
+            let signature_type = *signature.at(0);
+
+            if signature_type == starknet::VALIDATED {
+                assert(false, Errors::INVALID_SIGNATURE);
+            }
+
+            signature_type
         }
 
         fn _set_public_key(ref self: ContractState, new_public_key: felt252) {
