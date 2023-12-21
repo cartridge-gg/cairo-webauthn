@@ -3,7 +3,6 @@ use std::vec;
 use starknet::{
     accounts::{Account, ConnectedAccount},
     core::{crypto::Signature, types::FieldElement},
-    macros::felt,
     signers::VerifyingKey,
 };
 
@@ -54,7 +53,7 @@ impl Session {
         &self.calls[position]
     }
 
-    pub async fn set_permitted_calls<A>(
+    pub async fn set_policy<A>(
         &mut self,
         calls: Vec<Call>,
         account: CartridgeAccount<A>,
@@ -118,6 +117,11 @@ impl Session {
         call_position: usize,
     ) -> SessionSignature {
         let CallWithProof(_, proof) = &self.calls[call_position];
+
+        assert!(
+            self.session_token().is_empty() == false,
+            "Session token is empty"
+        );
 
         SessionSignature {
             signature_type: SESSION_SIGNATURE_TYPE,

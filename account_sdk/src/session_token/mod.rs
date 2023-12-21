@@ -19,53 +19,65 @@ mod tests {
     use starknet::{
         accounts::{Account, ConnectedAccount},
         macros::selector,
-        signers::{LocalWallet, Signer, SigningKey, VerifyingKey},
+        signers::{LocalWallet, Signer, SigningKey},
     };
     use tokio::time::sleep;
 
+    use crate::session_token::SessionAccount;
     use crate::tests::{
         deployment_test::create_account,
         runners::{KatanaRunner, TestnetRunner},
     };
     use crate::{
-        abigen::account::{Call, CartridgeAccount, SessionSignature, SignatureProofs},
+        abigen::account::{Call, CartridgeAccount},
         session_token::test_utils::create_session_account,
     };
-    use crate::{deploy_contract::single_owner_account, session_token::SessionAccount};
 
     use super::*;
 
     #[tokio::test]
     async fn test_session_valid() {
+        // Initialize a local starknet instance
         let runner = KatanaRunner::load();
-        let (master_account, master_key) =
-            create_account(&runner.prefunded_single_owner_account().await).await;
 
-        let session_key = LocalWallet::from(SigningKey::from_random());
-
-        let mut session = Session::new(session_key.get_public_key().await.unwrap(), u64::MAX);
-        let cainome_address = ContractAddress::from(master_account.address());
-        let permited_calls = vec![Call {
-            to: cainome_address,
-            selector: selector!("revoke_session"),
-            calldata: vec![FieldElement::from(0x2137u32)],
-        }];
-
+        // Initialize a cartridge account, funding it from the prefunded account
+        let prefunded_account = runner.prefunded_single_owner_account().await;
+        let (master_account, master_key) = create_account(&prefunded_account).await;
         let master_cartridge_account =
             CartridgeAccount::new(master_account.address(), &master_account);
+
+        // Creating a session, that will be used to sign calls
+        let session_key = LocalWallet::from(SigningKey::from_random());
+        let mut session = Session::new(session_key.get_public_key().await.unwrap(), u64::MAX);
+
+        // Define what calls are allowed to be signed by the session
+        let permited_calls = vec![Call {
+            to: ContractAddress::from(master_account.address()),
+            selector: selector!("revoke_session"),
+            calldata: vec![],
+        }];
+
+        // After defining the calls, the session is hashed...
         let session_hash = session
-            .set_permitted_calls(permited_calls, master_cartridge_account)
+            .set_policy(permited_calls, master_cartridge_account)
             .await
             .unwrap();
 
+        // ... and signed by the master account
         let session_token = master_key.sign(&session_hash).unwrap();
         session.set_token(session_token);
 
-        let (chain_id, address) = (master_account.chain_id(), master_account.address());
-        let provider = *master_account.provider();
-        let account = SessionAccount::new(provider, session_key, session, address, chain_id);
-        let account = CartridgeAccount::new(address, &account);
+        // Signed session can be used to sign calls, analogously to the `SingleOwnerAccount`
+        let account = SessionAccount::new(
+            master_account.provider(),
+            session_key,
+            session,
+            master_account.address(),
+            master_account.chain_id(),
+        );
+        let account = CartridgeAccount::new(account.address(), &account);
 
+        // The session is used to sign a call
         account
             .revoke_session(&FieldElement::from(0x2137u32))
             .send()
@@ -76,11 +88,11 @@ mod tests {
     #[tokio::test]
     async fn test_session_revoked() {
         let runner = KatanaRunner::load();
-        let prefunded_account = runner.prefunded_single_owner_account().await;
-        let (session_account, master_key) = create_session_account(&prefunded_account).await;
-
+        // Initializing a prepared session account
+        let (session_account, ..) = create_session_account(&runner).await;
         let account = CartridgeAccount::new(session_account.address(), &session_account);
 
+        // Letting the session revoke itself
         let revoked_address = session_account.address();
         account
             .revoke_session(&revoked_address)
@@ -90,45 +102,38 @@ mod tests {
 
         sleep(Duration::from_millis(100)).await;
 
+        // The session should not be able to sign calls anymore
         let result = account.revoke_session(&revoked_address).send().await;
-
         assert!(result.is_err(), "Session should be revoked");
     }
 
     #[tokio::test]
     async fn test_session_invalid_proof() {
         let runner: KatanaRunner = KatanaRunner::load();
-        let prefunded_account = runner.prefunded_single_owner_account().await;
-        let (mut session_account, master_key) = create_session_account(&prefunded_account).await;
-
-        let cainome_address = ContractAddress::from(session_account.address());
-
-        let master_account = single_owner_account(
-            session_account.provider(),
-            master_key.clone(),
-            session_account.address(),
-        )
-        .await;
+        // Initializing a prepared session account and master account
+        let (mut session_account, master_key, master_account) =
+            create_session_account(&runner).await;
         let master_account = CartridgeAccount::new(session_account.address(), &master_account);
 
+        // Setting a single allowed call, not including the one later called
+        let permitted_calls = vec![Call {
+            to: ContractAddress::from(session_account.address()),
+            selector: selector!("validate_session"),
+            calldata: vec![],
+        }];
+
+        // Signing the session
         let session = session_account.session();
         let session_hash = session
-            .set_permitted_calls(
-                vec![Call {
-                    to: cainome_address,
-                    selector: selector!("validate_session"),
-                    calldata: vec![],
-                }],
-                master_account,
-            )
+            .set_policy(permitted_calls, master_account)
             .await
             .unwrap();
 
         let session_token = master_key.sign(&session_hash).unwrap();
         session.set_token(session_token);
 
+        // Calling the method not included in permitted
         let account = CartridgeAccount::new(session_account.address(), &session_account);
-
         let result = account
             .revoke_session(&FieldElement::from(0x2137u32))
             .send()
@@ -140,38 +145,34 @@ mod tests {
     #[tokio::test]
     async fn test_session_many_allowed() {
         let runner = KatanaRunner::load();
-        let prefunded_account = runner.prefunded_single_owner_account().await;
-        let (mut session_account, master_key) = create_session_account(&prefunded_account).await;
-
-        let master_account = single_owner_account(
-            session_account.provider(),
-            master_key.clone(),
-            session_account.address(),
-        )
-        .await;
+        // Initializing a prepared session account and master account
+        let (mut session_account, master_key, master_account) =
+            create_session_account(&runner).await;
         let master_account = CartridgeAccount::new(session_account.address(), &master_account);
-        let cainome_address = ContractAddress::from(session_account.address());
-        session_account
-            .session()
-            .set_permitted_calls(
+
+        // Defining multiple allowed calls
+        let to = ContractAddress::from(session_account.address());
+        let session = session_account.session();
+        let session_hash = session
+            .set_policy(
                 vec![
                     Call {
-                        to: cainome_address,
+                        to,
                         selector: selector!("revoke_session"),
                         calldata: vec![],
                     },
                     Call {
-                        to: cainome_address,
+                        to,
                         selector: selector!("validate_session"),
                         calldata: vec![],
                     },
                     Call {
-                        to: cainome_address,
+                        to,
                         selector: selector!("compute_root"),
                         calldata: vec![],
                     },
                     Call {
-                        to: cainome_address,
+                        to,
                         selector: selector!("not_yet_defined"),
                         calldata: vec![],
                     },
@@ -181,6 +182,10 @@ mod tests {
             .await
             .unwrap();
 
+        let session_token = master_key.sign(&session_hash).unwrap();
+        session.set_token(session_token);
+
+        // Calling using the new session token
         let account = CartridgeAccount::new(session_account.address(), &session_account);
 
         account
@@ -193,7 +198,7 @@ mod tests {
     #[tokio::test]
     async fn test_session_compute_proof() {
         let runner = KatanaRunner::load();
-        let (master_account, master_key) =
+        let (master_account, _) =
             create_account(&runner.prefunded_single_owner_account().await).await;
 
         let address = master_account.address();
@@ -204,7 +209,7 @@ mod tests {
         let call = Call {
             to: cainome_address,
             selector: selector!("revoke_session"),
-            calldata: vec![FieldElement::from(0x2137u32)],
+            calldata: vec![],
         };
 
         let proof = account.compute_proof(&vec![call], &0).call().await.unwrap();
@@ -215,7 +220,7 @@ mod tests {
     #[tokio::test]
     async fn test_session_compute_root() {
         let runner = KatanaRunner::load();
-        let (master_account, master_key) =
+        let (master_account, _) =
             create_account(&runner.prefunded_single_owner_account().await).await;
 
         let address = master_account.address();
@@ -226,7 +231,7 @@ mod tests {
         let call = Call {
             to: cainome_address,
             selector: selector!("revoke_session"),
-            calldata: vec![FieldElement::from(0x2137u32)],
+            calldata: vec![],
         };
 
         let root = account.compute_root(&call, &vec![]).call().await.unwrap();

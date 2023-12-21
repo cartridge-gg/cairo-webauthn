@@ -1,27 +1,34 @@
 use cainome::cairo_serde::ContractAddress;
 use starknet::{
     accounts::{Account, ConnectedAccount, SingleOwnerAccount},
-    core::types::FieldElement,
     macros::selector,
     providers::{jsonrpc::HttpTransport, JsonRpcClient},
     signers::{LocalWallet, Signer, SigningKey},
 };
 
-use crate::abigen::account::{Call, CartridgeAccount};
 use crate::session_token::SessionAccount;
 use crate::tests::deployment_test::create_account;
+use crate::{
+    abigen::account::{Call, CartridgeAccount},
+    tests::runners::TestnetRunner,
+};
 
 use super::Session;
 
-pub async fn create_session_account<'a>(
-    from: &SingleOwnerAccount<&'a JsonRpcClient<HttpTransport>, LocalWallet>,
+pub async fn create_session_account<'a, T>(
+    runner: &'a T,
 ) -> (
     SessionAccount<&'a JsonRpcClient<HttpTransport>, LocalWallet>,
     SigningKey,
-) {
+    SingleOwnerAccount<&'a JsonRpcClient<HttpTransport>, LocalWallet>,
+)
+where
+    T: TestnetRunner,
+{
+    let from = runner.prefunded_single_owner_account().await;
     let (provider, chain_id) = (*from.provider(), from.chain_id());
 
-    let (master_account, master_key) = create_account(from).await;
+    let (master_account, master_key) = create_account(&from).await;
 
     let address = master_account.address();
     let cartridge_account = CartridgeAccount::new(address, &master_account);
@@ -37,7 +44,7 @@ pub async fn create_session_account<'a>(
     let session_key = LocalWallet::from(SigningKey::from_random());
     let mut session = Session::new(session_key.get_public_key().await.unwrap(), u64::MAX);
     let session_hash = session
-        .set_permitted_calls(permited_calls, cartridge_account)
+        .set_policy(permited_calls, cartridge_account)
         .await
         .unwrap();
 
@@ -45,5 +52,5 @@ pub async fn create_session_account<'a>(
     session.set_token(session_token);
     let session_account = SessionAccount::new(provider, session_key, session, address, chain_id);
 
-    (session_account, master_key)
+    (session_account, master_key, master_account)
 }
