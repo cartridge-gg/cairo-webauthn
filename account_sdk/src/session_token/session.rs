@@ -1,6 +1,5 @@
 use std::vec;
 
-use cainome::cairo_serde::ContractAddress;
 use starknet::{
     accounts::{Account, ConnectedAccount},
     core::{crypto::Signature, types::FieldElement},
@@ -27,6 +26,8 @@ pub struct Session {
 pub enum SessionError {
     #[error("At least one call has to be permitted")]
     NoCallsPermited,
+    #[error("Call is not one of the allowed calls")]
+    CallNotInPolicy,
     #[error("Call to compute method failed")]
     ChainCallFailed,
 }
@@ -103,16 +104,26 @@ impl Session {
     pub fn signature(
         &self,
         transaction_signature: Signature,
-        call_position: usize,
-    ) -> SessionSignature {
-        let CallWithProof(_, proof) = &self.calls[call_position];
+        signed_calls: Vec<Call>,
+    ) -> Result<SessionSignature, SessionError> {
+        let proofs = signed_calls
+            .iter()
+            .map(|c| self.call_proof(c).ok_or(SessionError::CallNotInPolicy))
+            .collect::<Result<Vec<_>, SessionError>>()?;
+
+        let proofs_flat = proofs.into_iter().fold(Ok(vec![]), |acc, proof| {
+            acc.and_then(|mut acc| {
+                acc.extend(proof.1.clone());
+                Ok(acc)
+            })
+        })?;
 
         assert!(
             self.session_token().is_empty() == false,
             "Session token is empty"
         );
 
-        SessionSignature {
+        Ok(SessionSignature {
             signature_type: SESSION_SIGNATURE_TYPE,
             r: transaction_signature.r,
             s: transaction_signature.s,
@@ -120,11 +131,11 @@ impl Session {
             session_expires: self.expires,
             root: self.root,
             proofs: SignatureProofs {
-                single_proof_len: proof.len() as u32,
-                proofs_flat: proof.clone(),
+                single_proof_len: (proofs_flat.len() / signed_calls.len()) as u32,
+                proofs_flat,
             },
             session_token: self.session_token.clone(),
-        }
+        })
     }
 
     pub fn partial_signature(&self) -> SessionSignature {
@@ -141,5 +152,11 @@ impl Session {
             },
             session_token: vec![],
         }
+    }
+
+    fn call_proof(&self, call: &Call) -> Option<&CallWithProof> {
+        self.calls
+            .iter()
+            .find(|CallWithProof(c, _)| c.to == call.to && c.selector == call.selector)
     }
 }
