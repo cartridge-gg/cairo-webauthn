@@ -1,5 +1,6 @@
 use std::vec;
 
+use cainome::cairo_serde::ContractAddress;
 use starknet::{
     accounts::{Account, ConnectedAccount},
     core::{crypto::Signature, types::FieldElement},
@@ -45,8 +46,8 @@ impl Session {
         self.expires
     }
 
-    pub fn session_token(&self) -> Vec<FieldElement> {
-        self.session_token.clone()
+    pub fn session_token(&self) -> &Vec<FieldElement> {
+        &self.session_token
     }
 
     pub fn call_with_proof(&self, position: usize) -> &CallWithProof {
@@ -84,19 +85,7 @@ impl Session {
             .map_err(|_| SessionError::ChainCallFailed)?;
 
         // Only three fields are hashed: session_key, session_expires and root
-        let signature = SessionSignature {
-            signature_type: FieldElement::ZERO,
-            r: FieldElement::ZERO,
-            s: FieldElement::ZERO,
-            session_key: self.session_key.scalar(),
-            session_expires: self.expires,
-            root: self.root,
-            proofs: SignatureProofs {
-                single_proof_len: 0,
-                proofs_flat: vec![],
-            },
-            session_token: vec![],
-        };
+        let signature = self.partial_signature();
 
         let session_hash = account
             .compute_session_hash(&signature)
@@ -135,6 +124,22 @@ impl Session {
                 proofs_flat: proof.clone(),
             },
             session_token: self.session_token.clone(),
+        }
+    }
+
+    pub fn partial_signature(&self) -> SessionSignature {
+        SessionSignature {
+            signature_type: FieldElement::ZERO,
+            r: FieldElement::ZERO,
+            s: FieldElement::ZERO,
+            session_key: self.session_key.scalar(),
+            session_expires: self.expires,
+            root: self.root,
+            proofs: SignatureProofs {
+                single_proof_len: 0,
+                proofs_flat: vec![],
+            },
+            session_token: vec![],
         }
     }
 }

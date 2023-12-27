@@ -7,7 +7,7 @@ use result::ResultTrait;
 use option::OptionTrait;
 use array::ArrayTrait;
 use core::{TryInto, Into};
-use starknet::{contract_address::ContractAddress};
+use starknet::contract_address::ContractAddress;
 use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, poseidon::PoseidonHasherImpl, MerkleTreeTrait};
 
 use core::ecdsa::check_ecdsa_signature;
@@ -44,6 +44,8 @@ mod session_component {
     use webauthn_session::hash::{compute_session_hash, compute_call_hash};
     use ecdsa::check_ecdsa_signature;
     use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, poseidon::PoseidonHasherImpl, MerkleTreeTrait};
+    use starknet::contract_address::ContractAddress;
+    use starknet::get_contract_address;
 
     #[storage]
     struct Storage {
@@ -66,6 +68,7 @@ mod session_component {
         const SESSION_EXPIRED: felt252 = 'Session expired';
         const SESSION_REVOKED: felt252 = 'Session has been revoked';
         const SESSION_SIGNATURE_INVALID: felt252 = 'Session signature is invalid';
+        const SESSION_TOKEN_INVALID: felt252 = 'Session token not a valid sig';
         const POLICY_CHECK_FAILED: felt252 = 'Policy invalid for given calls';
     }
 
@@ -79,8 +82,14 @@ mod session_component {
         fn validate_session(self: @ComponentState<TContractState>, public_key: felt252, mut signature: Span<felt252>, calls: Span<Call>) -> felt252 {
             let sig: SessionSignature = Serde::<SessionSignature>::deserialize(ref signature).unwrap();
 
-            self.validate_signature(public_key, sig, calls).unwrap();
-            starknet::VALIDATED
+            match self.validate_signature(public_key, sig, calls) {
+                Result::Ok(_) => {
+                    starknet::VALIDATED
+                },
+                Result::Err(e) => {
+                    e
+                }
+            }
         }
 
         fn revoke_session(
@@ -119,9 +128,8 @@ mod session_component {
         fn compute_session_hash(self: @ComponentState<TContractState>, unsigned_signature: SessionSignature) -> felt252 {
             let tx_info = get_tx_info().unbox();
             let session_hash: felt252 = compute_session_hash(
-                unsigned_signature, tx_info.chain_id, tx_info.account_contract_address
+                unsigned_signature, tx_info.chain_id, get_contract_address()
             );
-
             session_hash
         }
     }
@@ -148,7 +156,7 @@ mod session_component {
 
             // check validity of token
             let tx_info = get_tx_info().unbox();
-            let session_hash: felt252 = compute_session_hash(
+            let session_hash = compute_session_hash(
                 signature, tx_info.chain_id, tx_info.account_contract_address
             );
             let token_r = *signature.session_token.at(0);
@@ -157,7 +165,10 @@ mod session_component {
             let valid_token = check_ecdsa_signature(
                 session_hash, public_key, token_r, token_s
             );
-
+            if !valid_token {
+                return Result::Err(Errors::SESSION_TOKEN_INVALID);
+            }
+    
             // check signature
             let valid_signature = check_ecdsa_signature(
                 tx_info.transaction_hash, signature.session_key, signature.r, signature.s

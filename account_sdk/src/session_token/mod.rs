@@ -48,8 +48,10 @@ mod tests {
             CartridgeAccount::new(master_account.address(), &master_account);
 
         // Creating a session, that will be used to sign calls
-        let session_key = LocalWallet::from(SigningKey::from_random());
-        let mut session = Session::new(session_key.get_public_key().await.unwrap(), u64::MAX);
+        let session_key = SigningKey::from_secret_scalar(FieldElement::from(2137u32));
+        let session_key = LocalWallet::from(session_key);
+        let mut session: Session =
+            Session::new(session_key.get_public_key().await.unwrap(), u64::MAX);
 
         // Define what calls are allowed to be signed by the session
         let permited_calls = vec![Call {
@@ -69,14 +71,15 @@ mod tests {
         session.set_token(session_token);
 
         // Signed session can be used to sign calls, analogously to the `SingleOwnerAccount`
-        let account = SessionAccount::new(
+        let sesion_account = SessionAccount::new(
             master_account.provider(),
-            session_key,
+            session_key.clone(),
             session,
             master_account.address(),
             master_account.chain_id(),
         );
-        let account = CartridgeAccount::new(account.address(), &account);
+        let account = CartridgeAccount::new(sesion_account.address(), &sesion_account);
+        assert_eq!(sesion_account.address(), master_account.address());
 
         // The session is used to sign a call
         account
@@ -93,7 +96,7 @@ mod tests {
         let (mut session_account, ..) = create_session_account(&runner).await;
 
         // Setting an invalid session token
-        let session = session_account.session();
+        let session = session_account.session_mut();
         let invalid_token = Signature {
             r: session.session_token()[1],
             s: FieldElement::from(0x2137u32),
@@ -115,20 +118,17 @@ mod tests {
         let runner = KatanaRunner::load();
         // Initializing a prepared session account
         let (session_account, ..) = create_session_account(&runner).await;
+        let session_token = session_account.session().session_token().clone();
         let account = CartridgeAccount::new(session_account.address(), &session_account);
 
         // Letting the session revoke itself
-        let revoked_address = session_account.address();
-        account
-            .revoke_session(&revoked_address)
-            .send()
-            .await
-            .unwrap();
+        let revoked_token = session_token[0];
+        account.revoke_session(&revoked_token).send().await.unwrap();
 
-        sleep(Duration::from_millis(100)).await;
+        sleep(Duration::from_millis(500)).await;
 
         // The session should not be able to sign calls anymore
-        let result = account.revoke_session(&revoked_address).send().await;
+        let result = account.revoke_session(&felt!("0x2137")).send().await;
         assert!(result.is_err(), "Session should be revoked");
     }
 
@@ -148,7 +148,7 @@ mod tests {
         }];
 
         // Signing the session
-        let session = session_account.session();
+        let session = session_account.session_mut();
         let session_hash = session
             .set_policy(permitted_calls, master_account)
             .await
@@ -177,7 +177,7 @@ mod tests {
 
         // Defining multiple allowed calls
         let to = ContractAddress::from(session_account.address());
-        let session = session_account.session();
+        let session = session_account.session_mut();
         let session_hash = session
             .set_policy(
                 vec![
