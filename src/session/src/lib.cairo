@@ -12,26 +12,15 @@ use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, poseidon::Poseidon
 
 use core::ecdsa::check_ecdsa_signature;
 
-use webauthn_session::signature::{SessionSignature, FeltSpanTryIntoSignature, SignatureProofs, SignatureProofsTrait};
+use webauthn_session::signature::{SessionSignature, SignatureProofs, SignatureProofsTrait};
 use webauthn_session::hash::{compute_session_hash, compute_call_hash};
-
 
 mod hash;
 mod signature;
+mod interface;
 
 #[cfg(test)]
 mod tests;
-
-#[starknet::interface]
-trait ISession<TContractState> {
-    fn validate_session_abi(self: @TContractState, signature: SessionSignature, calls: Span<Call>);
-    fn validate_session(self: @TContractState, public_key: felt252, signature: Span<felt252>, calls: Span<Call>) -> felt252;
-    fn revoke_session(ref self: TContractState, token: Span<felt252>);
-
-    fn compute_proof(self: @TContractState, calls: Array<Call>, position: u64) -> Span<felt252>;
-    fn compute_root(self: @TContractState, call: Call, proof: Span<felt252>) -> felt252;
-    fn compute_session_hash(self: @TContractState, unsigned_signature: SessionSignature) -> felt252;
-}
 
 // Based on https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo
 #[starknet::component]
@@ -40,12 +29,13 @@ mod session_component {
     use super::check_policy;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use starknet::account::Call;
-    use webauthn_session::signature::{SessionSignature, FeltSpanTryIntoSignature, SignatureProofs, SignatureProofsTrait};
+    use webauthn_session::signature::{SessionSignature, SignatureProofs, SignatureProofsTrait};
     use webauthn_session::hash::{compute_session_hash, compute_call_hash};
     use ecdsa::check_ecdsa_signature;
     use alexandria_merkle_tree::merkle_tree::{Hasher, MerkleTree, poseidon::PoseidonHasherImpl, MerkleTreeTrait};
     use starknet::contract_address::ContractAddress;
     use starknet::get_contract_address;
+    use super::interface::{ISession, ISessionCamel};
 
     #[storage]
     struct Storage {
@@ -75,14 +65,22 @@ mod session_component {
     #[embeddable_as(Session)]
     impl SessionImpl<
         TContractState, +HasComponent<TContractState>
-    > of super::ISession<ComponentState<TContractState>> {
-        fn validate_session_abi(self: @ComponentState<TContractState>, signature: SessionSignature, calls: Span<Call>) {
+    > of ISession<ComponentState<TContractState>> {
+        fn validate_session(self: @ComponentState<TContractState>, public_key: felt252, signature: SessionSignature, calls: Span<Call>) -> felt252 {
+            match self.validate_signature(public_key, signature, calls) {   
+                Result::Ok(_) => {
+                    starknet::VALIDATED
+                },
+                Result::Err(e) => {
+                    e
+                }
+            }
         }
 
-        fn validate_session(self: @ComponentState<TContractState>, public_key: felt252, mut signature: Span<felt252>, calls: Span<Call>) -> felt252 {
-            let sig: SessionSignature = Serde::<SessionSignature>::deserialize(ref signature).unwrap();
+        fn validate_session_serialized(self: @ComponentState<TContractState>, public_key: felt252, mut signature: Span<felt252>, calls: Span<Call>) -> felt252 {
+            let signature: SessionSignature = Serde::<SessionSignature>::deserialize(ref signature).unwrap();
 
-            match self.validate_signature(public_key, sig, calls) {
+            match self.validate_signature(public_key, signature, calls) {
                 Result::Ok(_) => {
                     starknet::VALIDATED
                 },
@@ -133,6 +131,77 @@ mod session_component {
             session_hash
         }
     }
+
+    #[embeddable_as(SessionCamel)]
+    impl SessionImplCamel<
+        TContractState, +HasComponent<TContractState>
+    > of ISessionCamel<ComponentState<TContractState>> {
+        fn validateSession(self: @ComponentState<TContractState>, publicKey: felt252, signature: SessionSignature, calls: Span<Call>) -> felt252 {
+            match self.validate_signature(publicKey, signature, calls) {   
+                Result::Ok(_) => {
+                    starknet::VALIDATED
+                },
+                Result::Err(e) => {
+                    e
+                }
+            }
+        }
+
+        fn validateSessionSerialized(self: @ComponentState<TContractState>, publicKey: felt252, mut signature: Span<felt252>, calls: Span<Call>) -> felt252 {
+            let signature: SessionSignature = Serde::<SessionSignature>::deserialize(ref signature).unwrap();
+
+            match self.validate_signature(publicKey, signature, calls) {
+                Result::Ok(_) => {
+                    starknet::VALIDATED
+                },
+                Result::Err(e) => {
+                    e
+                }
+            }
+        }
+
+        fn revokeSession(
+            ref self: ComponentState<TContractState>, token: Span<felt252>,
+        ) {
+            self.revoked.write(*token.at(0), *token.at(1));
+            self.emit(TokenRevoked { token: token });
+        }
+
+        fn computeProof(self: @ComponentState<TContractState>, mut calls: Array<Call>, position: u64) -> Span<felt252> {
+            assert(calls.len() > 0, 'No calls provided');
+            let mut merkle: MerkleTree<Hasher> = MerkleTreeTrait::new();
+
+            let mut leaves = array![];
+
+            // Hashing all the calls
+            loop {
+                let pub_key = match calls.pop_front() {
+                    Option::Some(single) => {
+                        leaves.append(compute_call_hash(@single));
+                    },
+                    Option::None(_) => { break; },
+                };
+            };
+
+            merkle.compute_proof(leaves.clone(), 0) 
+        }
+
+        fn computeRoot(self: @ComponentState<TContractState>, call: Call, proof: Span<felt252>) -> felt252 {
+            let mut merkle: MerkleTree<Hasher> = MerkleTreeTrait::new();
+            let leaf = compute_call_hash(@call);
+
+            merkle.compute_root(leaf, proof)
+        }
+
+        fn computeSessionHash(self: @ComponentState<TContractState>, unsignedSignature: SessionSignature) -> felt252 {
+            let tx_info = get_tx_info().unbox();
+            let session_hash: felt252 = compute_session_hash(
+                unsignedSignature, tx_info.chain_id, get_contract_address()
+            );
+            session_hash
+        }
+    }
+
 
     #[generate_trait]
     impl InternalImpl<
