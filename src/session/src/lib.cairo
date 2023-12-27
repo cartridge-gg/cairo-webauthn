@@ -26,7 +26,7 @@ mod tests;
 trait ISession<TContractState> {
     fn validate_session_abi(self: @TContractState, signature: SessionSignature, calls: Span<Call>);
     fn validate_session(self: @TContractState, public_key: felt252, signature: Span<felt252>, calls: Span<Call>) -> felt252;
-    fn revoke_session(ref self: TContractState, token: felt252);
+    fn revoke_session(ref self: TContractState, token: Span<felt252>);
 
     fn compute_proof(self: @TContractState, calls: Array<Call>, position: u64) -> Span<felt252>;
     fn compute_root(self: @TContractState, call: Call, proof: Span<felt252>) -> felt252;
@@ -49,7 +49,7 @@ mod session_component {
 
     #[storage]
     struct Storage {
-        revoked: LegacyMap::<felt252, u64>,
+        revoked: LegacyMap::<felt252, felt252>, // Revoked when revoked[signature_r] == signature_s
     }
 
     #[event]
@@ -60,7 +60,7 @@ mod session_component {
 
     #[derive(Drop, starknet::Event)]
     struct TokenRevoked {
-        token: felt252,
+        token: Span<felt252>,
     }
 
     mod Errors {
@@ -93,9 +93,9 @@ mod session_component {
         }
 
         fn revoke_session(
-            ref self: ComponentState<TContractState>, token: felt252,
+            ref self: ComponentState<TContractState>, token: Span<felt252>,
         ) {
-            self.revoked.write(token, 1);
+            self.revoked.write(*token.at(0), *token.at(1));
             self.emit(TokenRevoked { token: token });
         }
 
@@ -149,8 +149,9 @@ mod session_component {
             }
 
             // check if in the revoked list
-            let session_token = *signature.session_token.at(0);
-            if self.revoked.read(session_token) != 0 {
+            let token_r = *signature.session_token.at(0);
+            let token_s = *signature.session_token.at(1);
+            if self.revoked.read(token_r) == token_s {
                 return Result::Err(Errors::SESSION_REVOKED);
             }
 
@@ -159,8 +160,6 @@ mod session_component {
             let session_hash = compute_session_hash(
                 signature, tx_info.chain_id, tx_info.account_contract_address
             );
-            let token_r = *signature.session_token.at(0);
-            let token_s = *signature.session_token.at(1);
 
             let valid_token = check_ecdsa_signature(
                 session_hash, public_key, token_r, token_s

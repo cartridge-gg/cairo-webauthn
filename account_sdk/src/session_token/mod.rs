@@ -82,11 +82,8 @@ mod tests {
         assert_eq!(sesion_account.address(), master_account.address());
 
         // The session is used to sign a call
-        account
-            .revoke_session(&FieldElement::from(0x2137u32))
-            .send()
-            .await
-            .unwrap();
+        let revoked_token = vec![FieldElement::from(0x2137u32), FieldElement::from(0x2137u32)];
+        account.revoke_session(&revoked_token).send().await.unwrap();
     }
 
     #[tokio::test]
@@ -105,10 +102,8 @@ mod tests {
 
         // Calling the method not included in permitted
         let account = CartridgeAccount::new(session_account.address(), &session_account);
-        let result = account
-            .revoke_session(&FieldElement::from(0x2137u32))
-            .send()
-            .await;
+        let revoked_token = vec![FieldElement::from(0x2137u32), FieldElement::from(0x2137u32)];
+        let result = account.revoke_session(&revoked_token).send().await;
 
         assert!(result.is_err(), "Signature verification should fail");
     }
@@ -122,13 +117,13 @@ mod tests {
         let account = CartridgeAccount::new(session_account.address(), &session_account);
 
         // Letting the session revoke itself
-        let revoked_token = session_token[0];
-        account.revoke_session(&revoked_token).send().await.unwrap();
+        account.revoke_session(&session_token).send().await.unwrap();
 
-        sleep(Duration::from_millis(500)).await;
+        sleep(Duration::from_millis(100)).await;
 
         // The session should not be able to sign calls anymore
-        let result = account.revoke_session(&felt!("0x2137")).send().await;
+        let revoked_token = vec![FieldElement::from(0x2137u32), FieldElement::from(0x2137u32)];
+        let result = account.revoke_session(&revoked_token).send().await;
         assert!(result.is_err(), "Session should be revoked");
     }
 
@@ -159,10 +154,8 @@ mod tests {
 
         // Calling the method not included in permitted
         let account = CartridgeAccount::new(session_account.address(), &session_account);
-        let result = account
-            .revoke_session(&FieldElement::from(0x2137u32))
-            .send()
-            .await;
+        let revoked_token = vec![FieldElement::from(0x2137u32), FieldElement::from(0x2137u32)];
+        let result = account.revoke_session(&revoked_token).send().await;
 
         assert!(result.is_err(), "Signature verification should fail");
     }
@@ -213,11 +206,8 @@ mod tests {
         // Calling using the new session token
         let account = CartridgeAccount::new(session_account.address(), &session_account);
 
-        account
-            .revoke_session(&FieldElement::from(0x2137u32))
-            .send()
-            .await
-            .unwrap();
+        let revoked_token = vec![FieldElement::from(0x2137u32), FieldElement::from(0x2137u32)];
+        account.revoke_session(&revoked_token).send().await.unwrap();
     }
 
     #[tokio::test]
