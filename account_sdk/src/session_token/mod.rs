@@ -1,4 +1,5 @@
 mod account;
+mod hash;
 mod sequence;
 mod session;
 #[cfg(test)]
