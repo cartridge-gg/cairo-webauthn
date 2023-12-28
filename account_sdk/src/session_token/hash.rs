@@ -18,7 +18,7 @@ const POLICY_TYPE_HASH: FieldElement =
 
 const STARKNET_MESSAGE_FELT: FieldElement = felt!("0x537461726b4e6574204d657373616765");
 
-fn compute_session_hash(
+pub fn compute_session_hash(
     signature: SessionSignature,
     chain_id: FieldElement,
     account: FieldElement,
@@ -37,7 +37,7 @@ fn compute_session_hash(
     hasher.finalize()
 }
 
-fn compute_call_hash(call: &Call) -> FieldElement {
+pub fn compute_call_hash(call: &Call) -> FieldElement {
     let mut hasher = PoseidonHasher::new();
     hasher.update(POLICY_TYPE_HASH);
     hasher.update((call.to).into());
@@ -45,14 +45,14 @@ fn compute_call_hash(call: &Call) -> FieldElement {
     hasher.finalize()
 }
 
-fn hash_domain(chain_id: FieldElement) -> FieldElement {
+pub fn hash_domain(chain_id: FieldElement) -> FieldElement {
     let mut hasher = PoseidonHasher::new();
     hasher.update(STARKNET_DOMAIN_TYPE_HASH);
     hasher.update(chain_id);
     hasher.finalize()
 }
 
-fn hash_message(
+pub fn hash_message(
     session_key: FieldElement,
     session_expires: FieldElement,
     root: FieldElement,

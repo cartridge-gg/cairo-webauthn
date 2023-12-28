@@ -8,7 +8,7 @@ use starknet::{
 
 use crate::abigen::account::{Call, CartridgeAccount, SessionSignature, SignatureProofs};
 
-use super::SESSION_SIGNATURE_TYPE;
+use super::{hash, SESSION_SIGNATURE_TYPE};
 
 #[derive(Clone)]
 pub struct CallWithProof(pub Call, pub Vec<FieldElement>);
@@ -59,6 +59,8 @@ impl Session {
         &mut self,
         calls: Vec<Call>,
         account: CartridgeAccount<A>,
+        chain_id: FieldElement,
+        address: FieldElement,
     ) -> Result<FieldElement, SessionError>
     where
         A: Account + ConnectedAccount + Sync,
@@ -88,11 +90,7 @@ impl Session {
         // Only three fields are hashed: session_key, session_expires and root
         let signature = self.partial_signature();
 
-        let session_hash = account
-            .compute_session_hash(&signature)
-            .call()
-            .await
-            .map_err(|_| SessionError::ChainCallFailed)?;
+        let session_hash = hash::compute_session_hash(signature, chain_id, address);
 
         Ok(session_hash)
     }

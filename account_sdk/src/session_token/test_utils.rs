@@ -44,7 +44,12 @@ where
     let session_key = LocalWallet::from(SigningKey::from_random());
     let mut session = Session::new(session_key.get_public_key().await.unwrap(), u64::MAX);
     let session_hash = session
-        .set_policy(permited_calls, cartridge_account)
+        .set_policy(
+            permited_calls,
+            cartridge_account,
+            master_account.chain_id(),
+            master_account.address(),
+        )
         .await
         .unwrap();
 
