@@ -1,5 +1,5 @@
 use starknet::{core::types::FieldElement, macros::felt};
-use starknet_crypto::{poseidon_hash, PoseidonHasher};
+use starknet_crypto::PoseidonHasher;
 
 use crate::abigen::account::{Call, SessionSignature};
 
@@ -52,14 +52,14 @@ pub fn compute_call_hash(call: &Call) -> FieldElement {
     hasher.finalize()
 }
 
-pub fn hash_domain(chain_id: FieldElement) -> FieldElement {
+fn hash_domain(chain_id: FieldElement) -> FieldElement {
     let mut hasher = PoseidonHasher::new();
     hasher.update(STARKNET_DOMAIN_TYPE_HASH);
     hasher.update(chain_id);
     hasher.finalize()
 }
 
-pub fn hash_message(
+fn hash_message(
     session_key: FieldElement,
     session_expires: FieldElement,
     root: FieldElement,
@@ -109,32 +109,24 @@ fn compute_proof(mut nodes: Vec<FieldElement>, index: usize, proof: &mut Vec<Fie
     }
 
     // Compute next level
-    let next_level = get_next_level(nodes.clone());
+    let next_level = get_next_level(&nodes);
 
     // Find neighbor node
-    let index_parent;
-    let mut i = 0usize;
-    loop {
-        if i == index {
-            index_parent = i / 2;
-            if i % 2 == 0 {
-                proof.push(nodes[i + 1]);
-            } else {
-                proof.push(nodes[i - 1]);
-            }
-            break;
-        }
-        i += 1;
+    let index_parent = index / 2;
+    if index % 2 == 0 {
+        proof.push(nodes[index + 1]);
+    } else {
+        proof.push(nodes[index - 1]);
     }
 
     compute_proof(next_level, index_parent, proof)
 }
 
-fn get_next_level(mut nodes: Vec<FieldElement>) -> Vec<FieldElement> {
+fn get_next_level(nodes: &Vec<FieldElement>) -> Vec<FieldElement> {
     let mut next_level: Vec<FieldElement> = Vec::with_capacity(nodes.len() / 2);
-    while !nodes.is_empty() {
-        let left = nodes.remove(0);
-        let right = nodes.remove(0);
+    for i in 0..nodes.len() / 2 {
+        let left = nodes[i * 2];
+        let right = nodes[i * 2 + 1];
 
         let node = if left < right {
             hash_two_elements(left, right)
@@ -151,44 +143,21 @@ fn get_next_level(mut nodes: Vec<FieldElement>) -> Vec<FieldElement> {
 fn merkle_tree_poseidon_test() {
     // [Setup] Merkle tree.
     let root = felt!("0x7abc09d19c8a03abd4333a23f7823975c7bdd325170f0d32612b8baa1457d47");
-    let leaf = 0x1;
+    let leaf = felt!("0x1");
     let valid_proof = vec![
         felt!("0x2"),
         felt!("0x47ef3ad11ad3f8fc055281f1721acd537563ec134036bc4bd4de2af151f0832"),
     ];
     let leaves = vec![felt!("0x1"), felt!("0x2"), felt!("0x3")];
 
-    // // [Assert] Compute merkle root.
-    // let computed_root = compute_root(leaf, valid_proof);
-    // assert(computed_root == root, 'compute valid root failed');
+    // [Assert] Compute merkle root.
+    let computed_root = compute_root(leaf, valid_proof.clone());
+    assert_eq!(computed_root, root, "compute valid root failed");
 
     // [Assert] Compute merkle proof.
-    let mut input_leaves = leaves;
+    let input_leaves = leaves;
     let index = 0;
     let mut computed_proof = vec![];
     compute_proof(input_leaves, index, &mut computed_proof);
     assert_eq!(computed_proof, valid_proof, "compute valid proof failed");
-
-    // // [Assert] Verify a valid proof.
-    // let result = MerkleTreeImpl::<
-    //     _, PoseidonHasherImpl
-    // >::verify(ref merkle_tree, root, leaf, valid_proof);
-    // assert(result, 'verify valid proof failed');
-
-    // // [Assert] Verify an invalid proof.
-    // let invalid_proof = array![
-    //     0x2 + 1, 0x68ba2a188dd231112c1cb5aaa5d18be6d84f6c8683e5c3a6638dee83e727acc
-    // ]
-    //     .span();
-    // let result = MerkleTreeImpl::<
-    //     _, PoseidonHasherImpl
-    // >::verify(ref merkle_tree, root, leaf, invalid_proof);
-    // assert(!result, 'verify invalid proof failed');
-
-    // // [Assert] Verify a valid proof with an invalid leaf.
-    // let invalid_leaf = 0x1 + 1;
-    // let result = MerkleTreeImpl::<
-    //     _, PoseidonHasherImpl
-    // >::verify(ref merkle_tree, root, invalid_leaf, valid_proof);
-    // assert(!result, 'wrong result');
 }

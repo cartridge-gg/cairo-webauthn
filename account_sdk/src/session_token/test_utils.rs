@@ -8,10 +8,7 @@ use starknet::{
 
 use crate::session_token::SessionAccount;
 use crate::tests::deployment_test::create_account;
-use crate::{
-    abigen::account::{Call, CartridgeAccount},
-    tests::runners::TestnetRunner,
-};
+use crate::{abigen::account::Call, tests::runners::TestnetRunner};
 
 use super::Session;
 
@@ -31,7 +28,6 @@ where
     let (master_account, master_key) = create_account(&from).await;
 
     let address = master_account.address();
-    let cartridge_account = CartridgeAccount::new(address, &master_account);
     let cainome_address = ContractAddress::from(address);
 
     let call = Call {
@@ -46,7 +42,6 @@ where
     let session_hash = session
         .set_policy(
             permited_calls,
-            cartridge_account,
             master_account.chain_id(),
             master_account.address(),
         )

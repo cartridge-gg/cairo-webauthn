@@ -1,12 +1,11 @@
 use std::vec;
 
 use starknet::{
-    accounts::{Account, ConnectedAccount},
     core::{crypto::Signature, types::FieldElement},
     signers::VerifyingKey,
 };
 
-use crate::abigen::account::{Call, CartridgeAccount, SessionSignature, SignatureProofs};
+use crate::abigen::account::{Call, SessionSignature, SignatureProofs};
 
 use super::{
     hash::{self, calculate_merkle_proof, compute_call_hash, compute_root},
@@ -58,16 +57,12 @@ impl Session {
         &self.calls[position]
     }
 
-    pub async fn set_policy<A>(
+    pub async fn set_policy(
         &mut self,
         calls: Vec<Call>,
-        account: CartridgeAccount<A>,
         chain_id: FieldElement,
         address: FieldElement,
-    ) -> Result<FieldElement, SessionError>
-    where
-        A: Account + ConnectedAccount + Sync,
-    {
+    ) -> Result<FieldElement, SessionError> {
         if calls.is_empty() {
             Err(SessionError::NoCallsPermited)?;
         }

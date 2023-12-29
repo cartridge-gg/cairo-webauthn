@@ -45,8 +45,6 @@ mod tests {
         // Initialize a cartridge account, funding it from the prefunded account
         let prefunded_account = runner.prefunded_single_owner_account().await;
         let (master_account, master_key) = create_account(&prefunded_account).await;
-        let master_cartridge_account =
-            CartridgeAccount::new(master_account.address(), &master_account);
 
         // Creating a session, that will be used to sign calls
         let session_key = SigningKey::from_secret_scalar(FieldElement::from(2137u32));
@@ -65,7 +63,6 @@ mod tests {
         let session_hash = session
             .set_policy(
                 permitted_calls,
-                master_cartridge_account,
                 master_account.chain_id(),
                 master_account.address(),
             )
@@ -139,8 +136,6 @@ mod tests {
         // Initializing a prepared session account and master account
         let (mut session_account, master_key, master_account) =
             create_session_account(&runner).await;
-        let master_cartridge_account =
-            CartridgeAccount::new(session_account.address(), &master_account);
 
         // Setting a single allowed call, not including the one later called
         let permitted_calls = vec![Call {
@@ -154,7 +149,6 @@ mod tests {
         let session_hash = session
             .set_policy(
                 permitted_calls,
-                master_cartridge_account,
                 master_account.chain_id(),
                 master_account.address(),
             )
@@ -178,8 +172,6 @@ mod tests {
         // Initializing a prepared session account and master account
         let (mut session_account, master_key, master_account) =
             create_session_account(&runner).await;
-        let master_cartridge_account =
-            CartridgeAccount::new(session_account.address(), &master_account);
 
         // Defining multiple allowed calls
         let to = ContractAddress::from(session_account.address());
@@ -209,7 +201,6 @@ mod tests {
         let session_hash = session
             .set_policy(
                 permitted_calls,
-                master_cartridge_account,
                 master_account.chain_id(),
                 master_account.address(),
             )
