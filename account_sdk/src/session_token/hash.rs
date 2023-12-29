@@ -78,6 +78,24 @@ pub fn calculate_merkle_proof(call_hashes: &Vec<FieldElement>, index: usize) -> 
     proof
 }
 
+pub fn compute_root(mut current_node: FieldElement, mut proof: Vec<FieldElement>) -> FieldElement {
+    loop {
+        if proof.is_empty() {
+            break current_node;
+        }
+
+        let proof_element = proof.remove(0);
+        // Compute the hash of the current node and the current element of the proof.
+        // We need to check if the current node is smaller than the current element of the proof.
+        // If it is, we need to swap the order of the hash.
+        current_node = if current_node < proof_element {
+            hash_two_elements(current_node, proof_element)
+        } else {
+            hash_two_elements(proof_element, current_node)
+        };
+    }
+}
+
 // based on: https://github.com/keep-starknet-strange/alexandria/blob/ecc881e2aee668332441bdfa32336e3404cf8eb1/src/merkle_tree/src/merkle_tree.cairo#L182C4-L215
 fn compute_proof(mut nodes: Vec<FieldElement>, index: usize, proof: &mut Vec<FieldElement>) {
     // Break if we have reached the top of the tree

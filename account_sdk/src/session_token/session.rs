@@ -9,7 +9,7 @@ use starknet::{
 use crate::abigen::account::{Call, CartridgeAccount, SessionSignature, SignatureProofs};
 
 use super::{
-    hash::{self, calculate_merkle_proof, compute_call_hash},
+    hash::{self, calculate_merkle_proof, compute_call_hash, compute_root},
     SESSION_SIGNATURE_TYPE,
 };
 
@@ -82,11 +82,7 @@ impl Session {
             self.calls.push(call_with_proof);
         }
 
-        self.root = account
-            .compute_root(&calls[0], &self.calls[0].1)
-            .call()
-            .await
-            .map_err(|_| SessionError::ChainCallFailed)?;
+        self.root = compute_root(call_hashes[0], self.calls[0].1.clone());
 
         // Only three fields are hashed: session_key, session_expires and root
         let signature = self.partial_signature();

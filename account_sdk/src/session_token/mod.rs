@@ -125,7 +125,7 @@ mod tests {
         // Letting the session revoke itself
         account.revoke_session(&session_token).send().await.unwrap();
 
-        sleep(Duration::from_millis(100)).await;
+        sleep(Duration::from_millis(200)).await;
 
         // The session should not be able to sign calls anymore
         let revoked_token = vec![FieldElement::from(0x2137u32), FieldElement::from(0x2137u32)];
