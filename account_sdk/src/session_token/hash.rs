@@ -72,8 +72,14 @@ pub fn hash_message(
     hasher.finalize()
 }
 
+pub fn calculate_merkle_proof(call_hashes: &Vec<FieldElement>, index: usize) -> Vec<FieldElement> {
+    let mut proof = vec![];
+    compute_proof(call_hashes.clone(), index, &mut proof);
+    proof
+}
+
 // based on: https://github.com/keep-starknet-strange/alexandria/blob/ecc881e2aee668332441bdfa32336e3404cf8eb1/src/merkle_tree/src/merkle_tree.cairo#L182C4-L215
-pub fn compute_proof(mut nodes: Vec<FieldElement>, index: usize, proof: &mut Vec<FieldElement>) {
+fn compute_proof(mut nodes: Vec<FieldElement>, index: usize, proof: &mut Vec<FieldElement>) {
     // Break if we have reached the top of the tree
     if nodes.len() == 1 {
         return;

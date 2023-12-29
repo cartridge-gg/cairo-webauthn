@@ -8,7 +8,10 @@ use starknet::{
 
 use crate::abigen::account::{Call, CartridgeAccount, SessionSignature, SignatureProofs};
 
-use super::{hash, SESSION_SIGNATURE_TYPE};
+use super::{
+    hash::{self, calculate_merkle_proof, compute_call_hash},
+    SESSION_SIGNATURE_TYPE,
+};
 
 #[derive(Clone)]
 pub struct CallWithProof(pub Call, pub Vec<FieldElement>);
@@ -71,13 +74,11 @@ impl Session {
 
         self.calls = Vec::with_capacity(calls.len());
 
-        for i in 0..(calls.len() as u64) {
-            let proof = account
-                .compute_proof(&calls, &i)
-                .call()
-                .await
-                .map_err(|_| SessionError::ChainCallFailed)?;
-            let call_with_proof = CallWithProof(calls[i as usize].clone(), proof);
+        let call_hashes = calls.iter().map(compute_call_hash).collect::<Vec<_>>();
+
+        for i in 0..calls.len() {
+            let proof = calculate_merkle_proof(&call_hashes, i);
+            let call_with_proof = CallWithProof(calls[i].clone(), proof);
             self.calls.push(call_with_proof);
         }
 
