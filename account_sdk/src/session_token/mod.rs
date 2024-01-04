@@ -1,4 +1,5 @@
 mod account;
+mod hash;
 mod sequence;
 mod session;
 #[cfg(test)]
@@ -44,8 +45,6 @@ mod tests {
         // Initialize a cartridge account, funding it from the prefunded account
         let prefunded_account = runner.prefunded_single_owner_account().await;
         let (master_account, master_key) = create_account(&prefunded_account).await;
-        let master_cartridge_account =
-            CartridgeAccount::new(master_account.address(), &master_account);
 
         // Creating a session, that will be used to sign calls
         let session_key = SigningKey::from_secret_scalar(FieldElement::from(2137u32));
@@ -54,7 +53,7 @@ mod tests {
             Session::new(session_key.get_public_key().await.unwrap(), u64::MAX);
 
         // Define what calls are allowed to be signed by the session
-        let permited_calls = vec![Call {
+        let permitted_calls = vec![Call {
             to: ContractAddress::from(master_account.address()),
             selector: selector!("revoke_session"),
             calldata: vec![],
@@ -62,7 +61,11 @@ mod tests {
 
         // After defining the calls, the session is hashed...
         let session_hash = session
-            .set_policy(permited_calls, master_cartridge_account)
+            .set_policy(
+                permitted_calls,
+                master_account.chain_id(),
+                master_account.address(),
+            )
             .await
             .unwrap();
 
@@ -119,7 +122,7 @@ mod tests {
         // Letting the session revoke itself
         account.revoke_session(&session_token).send().await.unwrap();
 
-        sleep(Duration::from_millis(100)).await;
+        sleep(Duration::from_millis(200)).await;
 
         // The session should not be able to sign calls anymore
         let revoked_token = vec![FieldElement::from(0x2137u32), FieldElement::from(0x2137u32)];
@@ -133,7 +136,6 @@ mod tests {
         // Initializing a prepared session account and master account
         let (mut session_account, master_key, master_account) =
             create_session_account(&runner).await;
-        let master_account = CartridgeAccount::new(session_account.address(), &master_account);
 
         // Setting a single allowed call, not including the one later called
         let permitted_calls = vec![Call {
@@ -145,7 +147,11 @@ mod tests {
         // Signing the session
         let session = session_account.session_mut();
         let session_hash = session
-            .set_policy(permitted_calls, master_account)
+            .set_policy(
+                permitted_calls,
+                master_account.chain_id(),
+                master_account.address(),
+            )
             .await
             .unwrap();
 
@@ -166,36 +172,37 @@ mod tests {
         // Initializing a prepared session account and master account
         let (mut session_account, master_key, master_account) =
             create_session_account(&runner).await;
-        let master_account = CartridgeAccount::new(session_account.address(), &master_account);
 
         // Defining multiple allowed calls
         let to = ContractAddress::from(session_account.address());
         let session = session_account.session_mut();
+        let permitted_calls = vec![
+            Call {
+                to,
+                selector: selector!("revoke_session"),
+                calldata: vec![],
+            },
+            Call {
+                to,
+                selector: selector!("validate_session"),
+                calldata: vec![],
+            },
+            Call {
+                to,
+                selector: selector!("compute_root"),
+                calldata: vec![],
+            },
+            Call {
+                to,
+                selector: selector!("not_yet_defined"),
+                calldata: vec![],
+            },
+        ];
         let session_hash = session
             .set_policy(
-                vec![
-                    Call {
-                        to,
-                        selector: selector!("revoke_session"),
-                        calldata: vec![],
-                    },
-                    Call {
-                        to,
-                        selector: selector!("validate_session"),
-                        calldata: vec![],
-                    },
-                    Call {
-                        to,
-                        selector: selector!("compute_root"),
-                        calldata: vec![],
-                    },
-                    Call {
-                        to,
-                        selector: selector!("not_yet_defined"),
-                        calldata: vec![],
-                    },
-                ],
-                master_account,
+                permitted_calls,
+                master_account.chain_id(),
+                master_account.address(),
             )
             .await
             .unwrap();

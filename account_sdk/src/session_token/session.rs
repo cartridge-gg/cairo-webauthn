@@ -1,14 +1,16 @@
 use std::vec;
 
 use starknet::{
-    accounts::{Account, ConnectedAccount},
     core::{crypto::Signature, types::FieldElement},
     signers::VerifyingKey,
 };
 
-use crate::abigen::account::{Call, CartridgeAccount, SessionSignature, SignatureProofs};
+use crate::abigen::account::{Call, SessionSignature, SignatureProofs};
 
-use super::SESSION_SIGNATURE_TYPE;
+use super::{
+    hash::{self, calculate_merkle_proof, compute_call_hash, compute_root},
+    SESSION_SIGNATURE_TYPE,
+};
 
 #[derive(Clone)]
 pub struct CallWithProof(pub Call, pub Vec<FieldElement>);
@@ -55,44 +57,32 @@ impl Session {
         &self.calls[position]
     }
 
-    pub async fn set_policy<A>(
+    pub async fn set_policy(
         &mut self,
         calls: Vec<Call>,
-        account: CartridgeAccount<A>,
-    ) -> Result<FieldElement, SessionError>
-    where
-        A: Account + ConnectedAccount + Sync,
-    {
+        chain_id: FieldElement,
+        address: FieldElement,
+    ) -> Result<FieldElement, SessionError> {
         if calls.is_empty() {
             Err(SessionError::NoCallsPermited)?;
         }
 
         self.calls = Vec::with_capacity(calls.len());
 
-        for i in 0..(calls.len() as u64) {
-            let proof = account
-                .compute_proof(&calls, &i)
-                .call()
-                .await
-                .map_err(|_| SessionError::ChainCallFailed)?;
-            let call_with_proof = CallWithProof(calls[i as usize].clone(), proof);
+        let call_hashes = calls.iter().map(compute_call_hash).collect::<Vec<_>>();
+
+        for i in 0..calls.len() {
+            let proof = calculate_merkle_proof(&call_hashes, i);
+            let call_with_proof = CallWithProof(calls[i].clone(), proof);
             self.calls.push(call_with_proof);
         }
 
-        self.root = account
-            .compute_root(&calls[0], &self.calls[0].1)
-            .call()
-            .await
-            .map_err(|_| SessionError::ChainCallFailed)?;
+        self.root = compute_root(call_hashes[0], self.calls[0].1.clone());
 
         // Only three fields are hashed: session_key, session_expires and root
         let signature = self.partial_signature();
 
-        let session_hash = account
-            .compute_session_hash(&signature)
-            .call()
-            .await
-            .map_err(|_| SessionError::ChainCallFailed)?;
+        let session_hash = hash::compute_session_hash(signature, chain_id, address);
 
         Ok(session_hash)
     }
