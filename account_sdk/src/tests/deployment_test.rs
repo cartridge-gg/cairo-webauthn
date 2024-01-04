@@ -15,8 +15,11 @@ use crate::{deploy_contract::AccountDeployment, tests::runners::TestnetRunner};
 
 pub async fn create_account<'a>(
     from: &SingleOwnerAccount<&'a JsonRpcClient<HttpTransport>, LocalWallet>,
-) -> SingleOwnerAccount<&'a JsonRpcClient<HttpTransport>, LocalWallet> {
-    let provider = from.provider();
+) -> (
+    SingleOwnerAccount<&'a JsonRpcClient<HttpTransport>, LocalWallet>,
+    SigningKey,
+) {
+    let provider = *from.provider();
     let class_hash = declare(provider, &from).await;
     let private_key = SigningKey::from_random();
     let deployed_address = deploy(
@@ -27,7 +30,7 @@ pub async fn create_account<'a>(
     )
     .await;
 
-    let mut created = single_owner_account(provider, private_key, deployed_address).await;
+    let mut created = single_owner_account(provider, private_key.clone(), deployed_address).await;
     created.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     from.execute(vec![Call {
@@ -43,7 +46,7 @@ pub async fn create_account<'a>(
     .await
     .unwrap();
 
-    created
+    (created, private_key)
 }
 
 pub async fn declare(

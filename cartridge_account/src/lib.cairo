@@ -52,6 +52,8 @@ mod Account {
     component!(path: session_component, storage: session, event: SessionEvent);
     #[abi(embed_v0)]
     impl SessionImpl = session_component::Session<ContractState>;
+    #[abi(embed_v0)]
+    impl SessionCamelImpl = session_component::SessionCamel<ContractState>;
 
     #[storage]
     struct Storage {
@@ -122,7 +124,7 @@ mod Account {
             if signature_type == starknet::VALIDATED {
                 starknet::VALIDATED
             } else if signature_type == 'Session Token v1' {
-                SessionImpl::validate_session(self, tx_info.signature, calls.span())
+                SessionImpl::validate_session_serialized(self, self.get_public_key(), tx_info.signature, calls.span())
             } else {
                 signature_type
             }

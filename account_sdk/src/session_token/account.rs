@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use cainome::cairo_serde::CairoSerde;
+use cainome::cairo_serde::{CairoSerde, ContractAddress};
 use starknet::{
     accounts::{
         Account, Call as StarknetCall, ConnectedAccount, Declaration, Execution, ExecutionEncoder,
@@ -14,9 +14,9 @@ use starknet::{
 };
 use std::{sync::Arc, vec};
 
-use crate::abigen::account::{CartridgeAccount, SessionSignature, SignatureProofs};
+use super::session::SessionError;
+use crate::abigen::account::{Call, SessionSignature};
 use crate::session_token::Session;
-use crate::session_token::SIGNATURE_TYPE;
 
 impl<P, S> ExecutionEncoder for SessionAccount<P, S>
 where
@@ -45,6 +45,8 @@ pub enum SignError<S, P> {
     Signer(S),
     #[error(transparent)]
     SignersPubkey(P),
+    #[error(transparent)]
+    Session(SessionError),
 }
 
 pub struct SessionAccount<P, S>
@@ -71,7 +73,6 @@ where
         address: FieldElement,
         chain_id: FieldElement,
     ) -> Self {
-        assert_eq!(session.permitted_calls().len(), 1);
         Self {
             provider,
             signer,
@@ -81,7 +82,11 @@ where
         }
     }
 
-    pub fn session(&mut self) -> &mut Session {
+    pub fn session(&self) -> &Session {
+        &self.session
+    }
+
+    pub fn session_mut(&mut self) -> &mut Session {
         &mut self.session
     }
 }
@@ -108,46 +113,20 @@ where
         execution: &RawExecution,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
+        // Call structures are private, but printable, so can be parsed
+        let calls = parse_calls(execution);
+
         let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
-        let tx_hash = FieldElement::from(2137u32); // TODO: use tx_hash when it achieves parity with the runner
         let signature = self
             .signer
             .sign_hash(&tx_hash)
             .await
             .map_err(SignError::Signer)?;
 
-        let session_key: starknet::signers::VerifyingKey = self
-            .signer
-            .get_public_key()
-            .await
-            .map_err(SignError::SignersPubkey)?;
-
-        let account = CartridgeAccount::new(self.address, &self);
-        let permited_calls = self.session.permitted_calls();
-        let proof = account
-            .compute_proof(permited_calls, &0)
-            .call()
-            .await
-            .expect("computing proof failed");
-        let root = account
-            .compute_root(&permited_calls[0], &proof)
-            .call()
-            .await
-            .expect("computing root failed");
-
-        let signature = SessionSignature {
-            signature_type: SIGNATURE_TYPE,
-            r: signature.r,
-            s: signature.s,
-            session_key: session_key.scalar(),
-            session_expires: self.session.session_expires(),
-            root,
-            proofs: SignatureProofs {
-                single_proof_len: proof.len() as u32,
-                proofs_flat: proof,
-            },
-            session_token: self.session.session_token(),
-        };
+        let signature = self
+            .session
+            .signature(signature, calls)
+            .map_err(SignError::Session)?;
 
         Ok(SessionSignature::cairo_serialize(&signature))
     }
@@ -183,6 +162,27 @@ where
     fn declare_legacy(&self, contract_class: Arc<LegacyContractClass>) -> LegacyDeclaration<Self> {
         LegacyDeclaration::new(contract_class, self)
     }
+}
+
+pub fn parse_calls(execution: &RawExecution) -> Vec<Call> {
+    let tx_printed = format!("{:?}", execution);
+    let mut individual_calls = tx_printed.split("Call { to: FieldElement { inner: ");
+    individual_calls.next(); // First one is not a call
+
+    individual_calls
+        .map(|call| {
+            let mut call = call.split(" }, selector: FieldElement { inner: ");
+            let to = call.next().unwrap();
+            let selector = call.next().unwrap();
+            let selector = selector.split(" }").next().unwrap();
+
+            Call {
+                to: ContractAddress::from(FieldElement::from_hex_be(to).unwrap()),
+                selector: FieldElement::from_hex_be(selector).unwrap(),
+                calldata: vec![],
+            }
+        })
+        .collect()
 }
 
 impl<P, S> ConnectedAccount for SessionAccount<P, S>
