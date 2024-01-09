@@ -1,7 +1,7 @@
 mod utils;
 
 use starknet::{
-    core::types::{BlockId, BlockTag, ContractErrorData},
+    core::types::{BlockId, BlockTag},
     signers::SigningKey,
 };
 
@@ -97,25 +97,13 @@ async fn test_verify_webauthn_execute() {
 
     let webauthn_executor = data.webauthn_executor().await;
     let (pub_x, pub_y) = data.webauthn_public_key();
-    
+
     let result = webauthn_executor
-    .setWebauthnPubKey(&WebauthnPubKey {
-        x: pub_x.into(),
-        y: pub_y.into(),
-    })
-    .send()
-    .await;
-    use starknet::accounts::AccountError::Provider;
-    use starknet::providers::ProviderError::StarknetError;
-    use starknet::core::types::StarknetError::ContractError;
-    if let Err(Provider(StarknetError(ContractError(ContractErrorData{revert_error})))) = &result
-    {
-        if !revert_error.contains("The `validate` entry point should return `VALID`") {
-            dbg!(&result);
-            panic!("Different error")
-        }
-    } else {
-        dbg!(&result);
-        panic!("Different error")
-    }
+        .setWebauthnPubKey(&WebauthnPubKey {
+            x: pub_x.into(),
+            y: pub_y.into(),
+        })
+        .send()
+        .await;
+    result.unwrap();
 }

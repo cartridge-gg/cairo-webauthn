@@ -1,3 +1,4 @@
+use alexandria_data_structures::array_ext::ArrayTraitExt;
 use core::array::SpanTrait;
 use array::ArrayTrait;
 use integer::upcast;
@@ -97,129 +98,19 @@ fn verify_challenge(
     client_data_json: @Array<u8>, challenge_offset: usize, challenge: Array<u8>
 ) -> Result<(), AuthnError> {
     let mut i: usize = 0;
-    let challenge = Base64UrlEncoder::encode(challenge.span().slice(0, 31).snapshot.clone());
-    let challenge_len: usize = challenge.len();
+    let mut encoded = base64url_encode(challenge);
+    let encoded_len: usize = encoded.len();
     loop {
-        // Base64UrlEncoder at the moment pads with '=' => remove -1 later {assumes len == 43} or 
-        // additionally break on '=' sign
-        if i >= challenge_len - 1 {
+        
+        if i >= encoded_len {
             break Result::Ok(());
         }
-        if *client_data_json.at(challenge_offset + i) != *challenge.at(i) {
+        if *client_data_json.at(challenge_offset + i) != *encoded.at(i) {
             break Result::Err(AuthnError::ChallengeMismatch);
         }
         i += 1_usize;
     }
 }
-
-// According to https://www.w3.org/TR/webauthn/#sctn-verifying-assertion
-// Couldn't find a way to create a struct with all the necessary generic implementations
-// There was either some name resolution problem or a recursive (cyclic) compiler bug
-// Or I'm stupid
-// There is a 'parallel' implementation solution that would split this method into separate chunks,
-// and in the particular points (now dealt with by the generic traits) outsource the control flow 
-// to the user, trough for example some state-transition abstraction.
-// This is would ?probably? be better suited for Cairo use cases.
-// Another considerations: 
-//  Current approach - visually closer to the specification
-//  Parallel approach - easier testing
-// Either way the inner workings of the method stay the same.
-// fn verify_authentication_assertion<
-//     // Store:
-//     StoreT,
-//     impl WebauthnStoreTImpl: WebauthnStoreTrait<StoreT>,
-//     impl SDrop: Drop<StoreT>,
-//     // Authenticator:
-//     AuthenticatorT,
-//     impl WebauthnAuthenticatorTImpl: WebauthnAuthenticatorTrait<AuthenticatorT>,
-//     impl ADrop: Drop<AuthenticatorT>,
-//     // Utils
-//     impl UTF8DecoderImpl: UTF8Decoder,
-//     impl JSONClientDataParserImpl: JSONClientDataParser,
-//     impl OriginCheckerImpl: OriginChecker
-// >(
-//     // Can answer queries about prior registrations eg. a database driver
-//     store: StoreT,
-//     // An authenticator abstraction 
-//     authenticator: AuthenticatorT,
-//     // Options configured by the relying party needs for the ceremony
-//     options: PublicKeyCredentialRequestOptions,
-//     // Some(...) if the user was identified before the ceremony, 
-//     // eg. via a username or cookie, None otherwise
-//     preidentified_user_handle: Option<Array<u8>>,
-//     // Config options specific to the needs of this assertion
-//     assertion_options: AssertionOptions
-// ) -> Result<(), AuthnError> {
-//     // 1. 
-//     match @options.allow_credentials {
-//         Option::Some(c) => {
-//             match store.verify_allow_credentials(c) {
-//                 Result::Ok => (),
-//                 Result::Err => {
-//                     return AuthnError::TransportNotAllowed.into();
-//                 }
-//             }
-//         },
-//         Option::None => (),
-//     };
-//     // 2.
-//     let credential = match @authenticator.navigator_credentials_get(@options) {
-//         Result::Ok(c) => c,
-//         Result::Err => {
-//             return AuthnError::GetCredentialRejected.into();
-//         }
-//     };
-//     // 3. 
-//     let response = match @credential.response {
-//         AuthenticatorResponse::Attestation(_) => {
-//             return AuthnError::ResponseIsNotAttestation.into();
-//         },
-//         AuthenticatorResponse::Assertion(r) => r.clone()
-//     };
-//     // 4. pass (extensions) 
-//     // 5. 
-//     match @options.allow_credentials {
-//         Option::Some(c) => {
-//             if !allow_credentials_contain_credential(c, credential) {
-//                 return AuthnError::CredentialNotAllowed.into();
-//             };
-//         },
-//         Option::None => (),
-//     };
-//     // 6. AND 7. 
-//     let credential_public_key = find_and_verify_credential_source::<StoreT,
-//     WebauthnStoreTImpl,
-//     SDrop>(@store, @preidentified_user_handle, credential, response)?;
-//     // 8.
-//     let c_data = response.client_data_json.clone();
-//     let auth_data = response.authenticator_data.clone();
-//     let sig = response.signature.clone();
-//     // 9. 
-//     let json_text = UTF8DecoderImpl::decode(c_data.clone());
-//     // 10.
-//     let c = JSONClientDataParserImpl::parse(json_text);
-//     // 11. pass (string verification) TODO:
-//     // 12. 
-//     if c.challenge != Base64UrlEncoder::encode(options.challenge) {
-//         return AuthnError::ChallengeMismatch.into();
-//     };
-//     // 13. 
-//     if !OriginCheckerImpl::check(c.origin) {
-//         return AuthnError::OriginMismatch.into();
-//     };
-//     // 14. pass TODO:
-//     // 15. 
-//     let auth_data_struct = expand_auth_data_and_verify_rp_id_hash(
-//         auth_data.clone(), assertion_options.expected_rp_id
-//     )?;
-//     // 16. AND 17.
-//     verify_user_flags(@auth_data_struct, assertion_options.force_user_verified)?;
-//     // 18. pass (extensions) 
-//     // 19.
-//     let hash = sha256(c_data);
-//     // 20. 
-//     verify_signature(hash, auth_data, credential_public_key, sig)
-// }
 
 // Steps 6. and 7. of the verify_authentication_assertion(..) method
 // This should be exactly according to the specification
@@ -367,4 +258,124 @@ fn verify_signature(
         Result::Ok => Result::Ok(()),
         Result::Err(e) => AuthnError::InvalidSignature.into()
     }
+}
+
+fn base64url_encode(mut bytes: Array<u8>) -> Array<u8> {
+    let base64_chars = base64_chars();
+    let mut result = array![];
+    let mut p: u8 = 0;
+    let c = bytes.len() % 3;
+    if c == 1 {
+        p = 2;
+        bytes.append(0_u8);
+        bytes.append(0_u8);
+    } else if c == 2 {
+        p = 1;
+        bytes.append(0_u8);
+    }
+
+    let mut i = 0;
+    let bytes_len = bytes.len();
+    loop {
+        if i == bytes_len {
+            break;
+        }
+        let mut n: u32 = (*bytes[i]).into() * 65536_u32
+            | (*bytes[i + 1]).into() * 256_u32
+            | (*bytes[i + 2]).into();
+        let e1: usize = ((n / 262144) & 63).try_into().unwrap();
+        result.append(*base64_chars[e1]);
+        let e2: usize = ((n / 4096) & 63).try_into().unwrap();
+        result.append(*base64_chars[(e2)]);
+        let e3: usize = ((n / 64) & 63).try_into().unwrap();
+        let e4: usize = (n & 63).try_into().unwrap();
+        if i + 3 == bytes_len {
+            if p == 2 {
+                result.append('=');
+                result.append('=');
+            } else if p == 1 {
+                result.append(*base64_chars[e3]);
+                result.append('=');
+            } else {
+                result.append(*base64_chars[e3]);
+                result.append(*base64_chars[e4]);
+            }
+        } else {
+            result.append(*base64_chars[e3]);
+            result.append(*base64_chars[e4]);
+        }
+        i += 3;
+    };
+    result
+}
+
+
+fn base64_chars() -> Array<u8> {
+    let mut result = array![
+        'A',
+        'B',
+        'C',
+        'D',
+        'E',
+        'F',
+        'G',
+        'H',
+        'I',
+        'J',
+        'K',
+        'L',
+        'M',
+        'N',
+        'O',
+        'P',
+        'Q',
+        'R',
+        'S',
+        'T',
+        'U',
+        'V',
+        'W',
+        'X',
+        'Y',
+        'Z',
+        'a',
+        'b',
+        'c',
+        'd',
+        'e',
+        'f',
+        'g',
+        'h',
+        'i',
+        'j',
+        'k',
+        'l',
+        'm',
+        'n',
+        'o',
+        'p',
+        'q',
+        'r',
+        's',
+        't',
+        'u',
+        'v',
+        'w',
+        'x',
+        'y',
+        'z',
+        '0',
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '7',
+        '8',
+        '9',
+        '-',
+        '_'
+    ];
+    result
 }

@@ -13,7 +13,7 @@ use starknet::{
             FlattenedSierraClass,
         },
     },
-    providers::Provider, macros::felt,
+    providers::Provider,
 };
 use std::sync::Arc;
 
@@ -115,9 +115,9 @@ where
         execution: &RawExecution,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
-        let _tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
+        let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
         //felt!("0x0169af1f6f99d35e0b80e0140235ec4a2041048868071a8654576223934726f5");
-        let tx_hash = felt!("0x0169af1f6f99d35e0b80e0140235ec4a2041048868071a8654576223934726f5");
+        // let tx_hash = felt!("0x0169af1f6f99d35e0b80e0140235ec4a2041048868071a8654576223934726f5");
         let challenge = {
             let mut c = tx_hash.to_bytes_be();
             c.reverse();
