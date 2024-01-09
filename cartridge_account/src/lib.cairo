@@ -2,7 +2,6 @@
 // OpenZeppelin Contracts for Cairo v0.7.0 (account/account.cairo)
 
 mod interface;
-mod bytes_be_reversed;
 
 use starknet::testing;
 use starknet::secp256r1::Secp256r1Point;
@@ -25,7 +24,6 @@ mod Account {
     use core::option::OptionTrait;
     use core::array::SpanTrait;
     use core::to_byte_array::FormatAsByteArray;
-    use cartridge_account::bytes_be_reversed::BytesBeReversed;
     use webauthn_auth::component::IWebauthn;
     use core::array::ArrayTrait;
     use core::starknet::SyscallResultTrait;
@@ -43,7 +41,6 @@ mod Account {
     use webauthn_session::session_component;
     use webauthn_auth::component::{webauthn_component, WebauthnSignature};
     use serde::Serde;
-    use cartridge_account::bytes_be_reversed::BytesBeReversedImpl;
 
     const TRANSACTION_VERSION: felt252 = 1;
     // 2**128 + TRANSACTION_VERSION
