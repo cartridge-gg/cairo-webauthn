@@ -20,32 +20,11 @@ struct WebauthnSignature {
     authenticator_data: Array<u8>
 }
 
-#[starknet::interface]
-trait IWebauthn<TContractState> {
-    fn setWebauthnPubKey (
-        ref self: TContractState, 
-        public_key: WebauthnPubKey,
-    );
-    fn getWebauthnPubKey (
-        self: @TContractState, 
-    ) -> Option<WebauthnPubKey>;
-    fn verifyWebauthnSigner(
-        self: @TContractState, 
-        signature: WebauthnSignature,
-        tx_hash: felt252,
-    ) -> bool;
-    fn verifyWebauthnSignerSerialized(
-        self: @TContractState, 
-        signature: Span<felt252>,
-        tx_hash: felt252,
-    ) -> felt252;
-}
-
 // Based on https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo
 #[starknet::component]
 mod webauthn_component {
     use core::array::ArrayTrait;
-use core::result::ResultTrait;
+    use core::result::ResultTrait;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use starknet::account::Call;
     use ecdsa::check_ecdsa_signature;
@@ -71,7 +50,7 @@ use core::result::ResultTrait;
     #[embeddable_as(Webauthn)]
     impl WebauthnImpl<
         TContractState, +HasComponent<TContractState>
-    > of super::IWebauthn<ComponentState<TContractState>> {
+    > of webauthn_auth::interface::IWebauthn<ComponentState<TContractState>> {
         fn setWebauthnPubKey (
         ref self: ComponentState<TContractState>, 
         public_key: WebauthnPubKey,
