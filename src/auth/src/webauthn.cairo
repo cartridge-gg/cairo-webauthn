@@ -52,7 +52,7 @@ fn verify(
     challenge_offset: usize, // offset to 'challenge' field in json
     origin_offset: usize, // offset to 'origin' field in json
     client_data_json: Array<u8>, // json with client_data as 1-byte array 
-    challenge: Array<u8>, // challenge as 1-byte
+    challenge: felt252, // challenge as 1-byte
     origin: Array<u8>, //  array origin as 1-byte array
     authenticator_data: Array<u8> // authenticator data as 1-byte array
 ) -> Result<(), AuthnError> {
@@ -95,10 +95,10 @@ fn verify(
 }
 
 fn verify_challenge(
-    client_data_json: @Array<u8>, challenge_offset: usize, challenge: Array<u8>
+    client_data_json: @Array<u8>, challenge_offset: usize, challenge: felt252
 ) -> Result<(), AuthnError> {
     let mut i: usize = 0;
-    let mut encoded = base64url_encode(challenge);
+    let mut encoded = challenge.base64();
     let encoded_len: usize = encoded.len();
     loop {
         
@@ -260,55 +260,58 @@ fn verify_signature(
     }
 }
 
-fn base64url_encode(mut bytes: Array<u8>) -> Array<u8> {
-    let base64_chars = base64_chars();
-    let mut result = array![];
-    let mut p: u8 = 0;
-    let c = bytes.len() % 3;
-    if c == 1 {
-        p = 2;
-        bytes.append(0_u8);
-        bytes.append(0_u8);
-    } else if c == 2 {
-        p = 1;
-        bytes.append(0_u8);
-    }
-
-    let mut i = 0;
-    let bytes_len = bytes.len();
-    loop {
-        if i == bytes_len {
-            break;
-        }
-        let mut n: u32 = (*bytes[i]).into() * 65536_u32
-            | (*bytes[i + 1]).into() * 256_u32
-            | (*bytes[i + 2]).into();
-        let e1: usize = ((n / 262144) & 63).try_into().unwrap();
-        result.append(*base64_chars[e1]);
-        let e2: usize = ((n / 4096) & 63).try_into().unwrap();
-        result.append(*base64_chars[(e2)]);
-        let e3: usize = ((n / 64) & 63).try_into().unwrap();
-        let e4: usize = (n & 63).try_into().unwrap();
-        if i + 3 == bytes_len {
-            if p == 2 {
-                result.append('=');
-                result.append('=');
-            } else if p == 1 {
-                result.append(*base64_chars[e3]);
-                result.append('=');
-            } else {
-                result.append(*base64_chars[e3]);
-                result.append(*base64_chars[e4]);
-            }
-        } else {
-            result.append(*base64_chars[e3]);
-            result.append(*base64_chars[e4]);
-        }
-        i += 3;
-    };
-    result
+trait FeltBase64 {
+    fn base64(self: felt252) -> Array<u8>;
 }
 
+impl FeltBase64Impl of FeltBase64 {
+    fn base64(self: felt252) -> Array<u8>{
+        let mut result = array![];
+
+        let mut num: u256 = self.into();
+        let base64_chars = base64_chars(); 
+        if num != 0 {
+            let (quotient, remainder) = DivRem::div_rem(
+                num, 65536_u256.try_into().expect('Division by 0')
+            );
+            let remainder: usize = remainder.try_into().unwrap();
+            let r3: usize = (remainder / 1024) & 63;
+            let r2: usize = (remainder / 16) & 63;
+            let r1: usize = (remainder * 4) & 63;
+            result.append(*base64_chars[r1]);
+            result.append(*base64_chars[r2]);
+            result.append(*base64_chars[r3]);
+            num = quotient;
+        }
+        loop {
+            if num == 0 {
+                break;
+            }
+            let (quotient, remainder) = DivRem::div_rem(
+                num, 16777216_u256.try_into().expect('Division by 0')
+            );
+            let remainder: usize = remainder.try_into().unwrap();
+            let r4: usize = remainder / 262144;
+            let r3: usize = (remainder / 4096) & 63;
+            let r2: usize = (remainder / 64) & 63;
+            let r1: usize = remainder & 63;
+            result.append(*base64_chars[r1]);
+            result.append(*base64_chars[r2]);
+            result.append(*base64_chars[r3]);
+            result.append(*base64_chars[r4]);
+            num = quotient;
+        };
+        loop {
+            if result.len() >= 43 {
+                break;
+            }
+            result.append('A');
+        };
+        result = result.reverse();
+        result.append('=');
+        result
+    }
+}
 
 fn base64_chars() -> Array<u8> {
     let mut result = array![

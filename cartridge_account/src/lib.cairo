@@ -242,8 +242,7 @@ mod Account {
             } else {
                 let mut signature = signature;
                 let signature = Serde::<WebauthnSignature>::deserialize(ref signature).unwrap();
-                let tx_hash_bytes = hash.bytes_be_reversed();
-                self.verifyWebauthnSigner(signature, tx_hash_bytes)
+                self.verifyWebauthnSigner(signature, hash)
             }
         }
     }

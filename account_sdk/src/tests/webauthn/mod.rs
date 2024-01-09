@@ -2,7 +2,7 @@ mod utils;
 
 use starknet::{
     core::types::{BlockId, BlockTag},
-    signers::SigningKey,
+    signers::SigningKey, macros::felt,
 };
 
 use crate::abigen::account::WebauthnPubKey;
@@ -59,11 +59,12 @@ async fn test_verify_webauthn_explicit() {
     data.set_webauthn_public_key().await;
     let reader = data.account_reader();
 
-    let challenge = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".as_bytes();
-    let response = data.signer.sign(challenge);
+    let challenge = felt!("0x0169af1f6f99d35e0b80e0140235ec4a2041048868071a8654576223934726f5");
+    let challenge_bytes = challenge.to_bytes_be().to_vec();
+    let response = data.signer.sign(&challenge_bytes);
 
     let args =
-        VerifyWebauthnSignerArgs::from_response(origin, challenge.to_vec(), response.clone());
+        VerifyWebauthnSignerArgs::from_response(origin, challenge_bytes, response.clone());
 
     let signature = WebauthnSignature {
         r: args.r.into(),
@@ -77,7 +78,7 @@ async fn test_verify_webauthn_explicit() {
     };
 
     let result = reader
-        .verifyWebauthnSigner(&signature, &challenge.to_vec())
+        .verifyWebauthnSigner(&signature, &challenge)
         .block_id(BlockId::Tag(BlockTag::Latest))
         .call()
         .await

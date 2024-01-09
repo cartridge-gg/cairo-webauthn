@@ -31,7 +31,7 @@ trait IWebauthn<TContractState> {
     fn verifyWebauthnSigner(
         self: @TContractState, 
         signature: WebauthnSignature,
-        tx_hash: Array<u8>,
+        tx_hash: felt252,
     ) -> bool;
 }
 
@@ -75,7 +75,7 @@ mod webauthn_component {
         fn verifyWebauthnSigner(
             self: @ComponentState<TContractState>, 
             signature: WebauthnSignature,
-            tx_hash: Array<u8>,
+            tx_hash: felt252,
         ) -> bool{
             let pub = match self.getWebauthnPubKey() {
                 Option::Some(pub) => pub,
