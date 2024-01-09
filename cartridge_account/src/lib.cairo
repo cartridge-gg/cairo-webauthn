@@ -64,6 +64,8 @@ mod Account {
     component!(path: webauthn_component, storage: webauthn, event: WebauthnEvent);
     #[abi(embed_v0)]
     impl WebauthnImpl = webauthn_component::Webauthn<ContractState>;
+    #[abi(embed_v0)]
+    impl WebauthnCamelImpl = webauthn_component::WebauthnCamel<ContractState>;
 
     #[storage]
     struct Storage {
@@ -222,7 +224,7 @@ mod Account {
                     SessionImpl::validate_session_serialized(self, self.get_public_key(), signature, calls.span())
                 },
                 SignatureType::WebauthnV1 => {
-                    WebauthnImpl::verifyWebauthnSignerSerialized(self, signature, tx_hash)
+                    WebauthnImpl::verify_webauthn_signer_serialized(self, signature, tx_hash)
                 }
             }
         }

@@ -23,7 +23,7 @@ async fn test_set_webauthn_public_key() {
     let reader = data.account_reader();
 
     let public_key = reader
-        .getWebauthnPubKey()
+        .get_webauthn_pub_key()
         .block_id(BlockId::Tag(BlockTag::Latest))
         .call()
         .await
@@ -37,7 +37,7 @@ async fn test_set_webauthn_public_key() {
     data.set_webauthn_public_key().await;
 
     let public_key = reader
-        .getWebauthnPubKey()
+        .get_webauthn_pub_key()
         .block_id(BlockId::Tag(BlockTag::Latest))
         .call()
         .await
@@ -79,7 +79,7 @@ async fn test_verify_webauthn_explicit() {
     };
 
     let result = reader
-        .verifyWebauthnSigner(&signature, &challenge)
+        .verify_webauthn_signer(&signature, &challenge)
         .block_id(BlockId::Tag(BlockTag::Latest))
         .call()
         .await
@@ -101,7 +101,7 @@ async fn test_verify_webauthn_execute() {
     let (pub_x, pub_y) = data.webauthn_public_key();
 
     let result = webauthn_executor
-        .setWebauthnPubKey(&WebauthnPubKey {
+        .set_webauthn_pub_key(&WebauthnPubKey {
             x: pub_x.into(),
             y: pub_y.into(),
         })

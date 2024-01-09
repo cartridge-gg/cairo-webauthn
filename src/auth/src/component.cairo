@@ -23,7 +23,8 @@ struct WebauthnSignature {
 // Based on https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo
 #[starknet::component]
 mod webauthn_component {
-    use core::array::ArrayTrait;
+    use webauthn_auth::interface::IWebauthn;
+use core::array::ArrayTrait;
     use core::result::ResultTrait;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use starknet::account::Call;
@@ -46,23 +47,22 @@ mod webauthn_component {
         const INVALID_SIGNATURE: felt252 = 'Account: invalid signature';
     }
 
-
     #[embeddable_as(Webauthn)]
     impl WebauthnImpl<
         TContractState, +HasComponent<TContractState>
     > of webauthn_auth::interface::IWebauthn<ComponentState<TContractState>> {
-        fn setWebauthnPubKey (
+        fn set_webauthn_pub_key (
         ref self: ComponentState<TContractState>, 
         public_key: WebauthnPubKey,
         ) {
             self.public_key.write(Option::Some(public_key));
         }
-        fn getWebauthnPubKey (
+        fn get_webauthn_pub_key (
             self: @ComponentState<TContractState>, 
         ) -> Option<WebauthnPubKey>{
             self.public_key.read()
         }
-        fn verifyWebauthnSigner(
+        fn verify_webauthn_signer(
             self: @ComponentState<TContractState>, 
             signature: WebauthnSignature,
             tx_hash: felt252,
@@ -93,7 +93,7 @@ mod webauthn_component {
                 signature.authenticator_data
             ).is_ok()
         }
-        fn verifyWebauthnSignerSerialized(
+        fn verify_webauthn_signer_serialized(
             self: @ComponentState<TContractState>, 
             signature: Span<felt252>,
             tx_hash: felt252,
@@ -105,6 +105,38 @@ mod webauthn_component {
             } else {
                 Errors::INVALID_SIGNATURE
             }
+        }
+    }
+
+
+    #[embeddable_as(WebauthnCamel)]
+    impl WebauthnImplCamel<
+        TContractState, +HasComponent<TContractState>
+    > of webauthn_auth::interface::IWebauthnCamel<ComponentState<TContractState>> {
+        fn setWebauthnPubKey (
+        ref self: ComponentState<TContractState>, 
+        public_key: WebauthnPubKey,
+        ) {
+            self.set_webauthn_pub_key(public_key);
+        }
+        fn getWebauthnPubKey (
+            self: @ComponentState<TContractState>, 
+        ) -> Option<WebauthnPubKey>{
+            self.get_webauthn_pub_key()
+        }
+        fn verifyWebauthnSigner(
+            self: @ComponentState<TContractState>, 
+            signature: WebauthnSignature,
+            tx_hash: felt252,
+        ) -> bool{
+            self.verify_webauthn_signer(signature, tx_hash)
+        }
+        fn verifyWebauthnSignerSerialized(
+            self: @ComponentState<TContractState>, 
+            signature: Span<felt252>,
+            tx_hash: felt252,
+        ) -> felt252{
+            self.verify_webauthn_signer_serialized(signature, tx_hash) 
         }
     }
 
