@@ -67,6 +67,7 @@ async fn test_verify_webauthn_explicit() {
         VerifyWebauthnSignerArgs::from_response(origin, challenge_bytes, response.clone());
 
     let signature = WebauthnSignature {
+        signature_type: crate::webauthn_signer::WEBAUTHN_SIGNATURE_TYPE,
         r: args.r.into(),
         s: args.s.into(),
         type_offset: args.type_offset,

@@ -126,6 +126,7 @@ where
         );
 
         let result = WebauthnSignature {
+            signature_type: super::WEBAUTHN_SIGNATURE_TYPE,
             r: args.r.into(),
             s: args.s.into(),
             type_offset: args.type_offset,

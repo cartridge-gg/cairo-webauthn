@@ -131,22 +131,13 @@ mod Account {
         }
 
         fn __validate__(self: @ContractState, mut calls: Array<Call>) -> felt252 {
-            let signature_type = self.validate_transaction();
-            let tx_info = get_tx_info().unbox();
-
-            if signature_type == starknet::VALIDATED {
-                starknet::VALIDATED
-            } else if signature_type == 'Session Token v1' {
-                SessionImpl::validate_session_serialized(self, self.get_public_key(), tx_info.signature, calls.span())
-            } else {
-                signature_type
-            }
+            self.validate_transaction(calls)
         }
 
         fn is_valid_signature(
             self: @ContractState, hash: felt252, signature: Array<felt252>
         ) -> felt252 {
-            if self._is_valid_signature(hash, signature.span()) {
+            if self._is_valid_ecdsa_signature(hash, signature.span()) {
                 starknet::VALIDATED
             } else {
                 0
@@ -166,7 +157,7 @@ mod Account {
     #[external(v0)]
     impl DeclarerImpl of interface::IDeclarer<ContractState> {
         fn __validate_declare__(self: @ContractState, class_hash: felt252) -> felt252 {
-            self.validate_transaction()
+            self.validate_ecdsa_transaction()
         }
     }
 
@@ -202,7 +193,7 @@ mod Account {
         contract_address_salt: felt252,
         _public_key: felt252
     ) -> felt252 {
-        self.validate_transaction()
+        self.validate_ecdsa_transaction()
     }
 
     //
@@ -216,11 +207,28 @@ mod Account {
             self._set_public_key(_public_key);
         }
 
-        fn validate_transaction(self: @ContractState) -> felt252 {
+        fn validate_transaction(self: @ContractState, mut calls: Array<Call>) -> felt252 {
             let tx_info = get_tx_info().unbox();
             let tx_hash = tx_info.transaction_hash;
             let mut signature = tx_info.signature;
-            if self._is_valid_signature(tx_hash, signature) {
+            if signature.len() == 2_u32 {
+                return self.validate_ecdsa_transaction();
+            } 
+            let signature_type = *signature.at(0_u32);
+            if signature_type == 'Session Token v1' {
+                SessionImpl::validate_session_serialized(self, self.get_public_key(), signature, calls.span())
+            } else if signature_type == 'Webauthn v1' {
+                WebauthnImpl::verifyWebauthnSignerSerialized(self, signature, tx_hash)
+            } else {
+                Errors::INVALID_SIGNATURE
+            }
+        }
+
+        fn validate_ecdsa_transaction(self: @ContractState) -> felt252 {
+            let tx_info = get_tx_info().unbox();
+            let tx_hash = tx_info.transaction_hash;
+            let mut signature = tx_info.signature;
+            if self._is_valid_ecdsa_signature(tx_hash, signature) {
                 starknet::VALIDATED
             } else {
                 Errors::INVALID_SIGNATURE
@@ -232,7 +240,7 @@ mod Account {
             self.emit(OwnerAdded { new_owner_guid: new_public_key });
         }
 
-        fn _is_valid_signature(
+        fn _is_valid_ecdsa_signature(
             self: @ContractState, hash: felt252, signature: Span<felt252>
         ) -> bool {
             if signature.len() == 2_u32 {
@@ -240,9 +248,7 @@ mod Account {
                     hash, self.Account_public_key.read(), *signature.at(0_u32), *signature.at(1_u32)
                 )
             } else {
-                let mut signature = signature;
-                let signature = Serde::<WebauthnSignature>::deserialize(ref signature).unwrap();
-                self.verifyWebauthnSigner(signature, hash)
+                false
             }
         }
     }

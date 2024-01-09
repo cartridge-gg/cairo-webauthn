@@ -9,6 +9,7 @@ struct WebauthnPubKey{
 
 #[derive(Drop, Serde)]
 struct WebauthnSignature {
+    signature_type: felt252,
     r: u256, // 'r' part from ecdsa
     s: u256, // 's' part from ecdsa
     type_offset: usize, // offset to 'type' field in json
@@ -33,12 +34,18 @@ trait IWebauthn<TContractState> {
         signature: WebauthnSignature,
         tx_hash: felt252,
     ) -> bool;
+    fn verifyWebauthnSignerSerialized(
+        self: @TContractState, 
+        signature: Span<felt252>,
+        tx_hash: felt252,
+    ) -> felt252;
 }
 
 // Based on https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo
 #[starknet::component]
 mod webauthn_component {
-    use core::result::ResultTrait;
+    use core::array::ArrayTrait;
+use core::result::ResultTrait;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use starknet::account::Call;
     use ecdsa::check_ecdsa_signature;
@@ -54,6 +61,10 @@ mod webauthn_component {
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
+    }
+
+    mod Errors {
+        const INVALID_SIGNATURE: felt252 = 'Account: invalid signature';
     }
 
 
@@ -102,6 +113,19 @@ mod webauthn_component {
                 signature.origin, 
                 signature.authenticator_data
             ).is_ok()
+        }
+        fn verifyWebauthnSignerSerialized(
+            self: @ComponentState<TContractState>, 
+            signature: Span<felt252>,
+            tx_hash: felt252,
+        ) -> felt252{
+            let mut signature = signature;
+            let signature = Serde::<WebauthnSignature>::deserialize(ref signature).unwrap();
+            if self.verifyWebauthnSigner(signature, tx_hash) {
+                starknet::VALIDATED
+            } else {
+                Errors::INVALID_SIGNATURE
+            }
         }
     }
 
