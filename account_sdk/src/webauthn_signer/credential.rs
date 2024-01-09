@@ -12,8 +12,8 @@ pub struct CliendData {
 
 impl CliendData {
     pub fn new(challenge: impl AsRef<[u8]>, origin: String) -> Self {
-        use base64::{engine::general_purpose::STANDARD, Engine as _};
-        let challenge = STANDARD.encode(challenge);
+        use base64::{engine::general_purpose::URL_SAFE, Engine as _};
+        let challenge = URL_SAFE.encode(challenge);
 
         Self {
             type_: "webauthn.get".into(),

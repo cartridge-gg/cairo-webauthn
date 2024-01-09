@@ -2,6 +2,7 @@
 // OpenZeppelin Contracts for Cairo v0.7.0 (account/account.cairo)
 
 mod interface;
+mod bytes_be_reversed;
 
 use starknet::testing;
 use starknet::secp256r1::Secp256r1Point;
@@ -24,6 +25,7 @@ mod Account {
     use core::option::OptionTrait;
     use core::array::SpanTrait;
     use core::to_byte_array::FormatAsByteArray;
+    use cartridge_account::bytes_be_reversed::BytesBeReversed;
     use webauthn_auth::component::IWebauthn;
     use core::array::ArrayTrait;
     use core::starknet::SyscallResultTrait;
@@ -41,6 +43,7 @@ mod Account {
     use webauthn_session::session_component;
     use webauthn_auth::component::{webauthn_component, WebauthnSignature};
     use serde::Serde;
+    use cartridge_account::bytes_be_reversed::BytesBeReversedImpl;
 
     const TRANSACTION_VERSION: felt252 = 1;
     // 2**128 + TRANSACTION_VERSION
@@ -239,19 +242,8 @@ mod Account {
             } else {
                 let mut signature = signature;
                 let signature = Serde::<WebauthnSignature>::deserialize(ref signature).unwrap();
-                let tx_hash_mock = {
-                    let mut tx_hash_mock = ArrayTrait::new();
-                    tx_hash_mock.append(97);
-                    tx_hash_mock.append(97);
-                    tx_hash_mock.append(97);
-                    tx_hash_mock.append(97);
-                    tx_hash_mock.append(97);
-                    tx_hash_mock.append(97);
-                    tx_hash_mock.append(97);
-                    tx_hash_mock.append(97);
-                    tx_hash_mock
-                };
-                self.verifyWebauthnSigner(signature, tx_hash_mock)
+                let tx_hash_bytes = 0x0169af1f6f99d35e0b80e0140235ec4a2041048868071a8654576223934726f5.bytes_be_reversed();
+                self.verifyWebauthnSigner(signature, tx_hash_bytes)
             }
         }
     }

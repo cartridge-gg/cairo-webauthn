@@ -97,12 +97,12 @@ fn verify_challenge(
     client_data_json: @Array<u8>, challenge_offset: usize, challenge: Array<u8>
 ) -> Result<(), AuthnError> {
     let mut i: usize = 0;
-    let challenge = Base64UrlEncoder::encode(challenge);
+    let challenge = Base64UrlEncoder::encode(challenge.span().slice(0, 31).snapshot.clone());
     let challenge_len: usize = challenge.len();
     loop {
         // Base64UrlEncoder at the moment pads with '=' => remove -1 later {assumes len == 43} or 
         // additionally break on '=' sign
-        if i == challenge_len - 1 {
+        if i >= challenge_len - 1 {
             break Result::Ok(());
         }
         if *client_data_json.at(challenge_offset + i) != *challenge.at(i) {
