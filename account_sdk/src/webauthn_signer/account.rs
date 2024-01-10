@@ -119,11 +119,8 @@ where
         let challenge = tx_hash.to_bytes_be().to_vec();
         let assertion = self.signer.sign(&challenge);
 
-        let args = VerifyWebauthnSignerArgs::from_response(
-            self.origin.clone(),
-            challenge,
-            assertion,
-        );
+        let args =
+            VerifyWebauthnSignerArgs::from_response(self.origin.clone(), challenge, assertion);
 
         let result = WebauthnSignature {
             signature_type: super::WEBAUTHN_SIGNATURE_TYPE,
