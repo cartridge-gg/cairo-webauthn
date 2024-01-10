@@ -82,7 +82,7 @@ where
         to_felts(
             &calls
                 .iter()
-                .map(|call| SerializableCall::from(call))
+                .map(SerializableCall::from)
                 .collect::<Vec<_>>(),
         )
     }
