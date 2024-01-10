@@ -138,7 +138,7 @@ mod Account {
         fn is_valid_signature(
             self: @ContractState, hash: felt252, signature: Array<felt252>
         ) -> felt252 {
-            if self._is_valid_ecdsa_signature(hash, signature.span()) {
+            if self.is_valid_ecdsa_signature(hash, signature.span()) {
                 starknet::VALIDATED
             } else {
                 0
@@ -233,7 +233,7 @@ mod Account {
             let tx_info = get_tx_info().unbox();
             let tx_hash = tx_info.transaction_hash;
             let mut signature = tx_info.signature;
-            if self._is_valid_ecdsa_signature(tx_hash, signature) {
+            if self.is_valid_ecdsa_signature(tx_hash, signature) {
                 starknet::VALIDATED
             } else {
                 Errors::INVALID_SIGNATURE
@@ -245,7 +245,7 @@ mod Account {
             self.emit(OwnerAdded { new_owner_guid: new_public_key });
         }
 
-        fn _is_valid_ecdsa_signature(
+        fn is_valid_ecdsa_signature(
             self: @ContractState, hash: felt252, signature: Span<felt252>
         ) -> bool {
             if signature.len() == 2_u32 {
