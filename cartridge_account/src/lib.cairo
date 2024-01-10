@@ -64,8 +64,6 @@ mod Account {
     component!(path: webauthn_component, storage: webauthn, event: WebauthnEvent);
     #[abi(embed_v0)]
     impl WebauthnImpl = webauthn_component::Webauthn<ContractState>;
-    #[abi(embed_v0)]
-    impl WebauthnCamelImpl = webauthn_component::WebauthnCamel<ContractState>;
 
     #[storage]
     struct Storage {

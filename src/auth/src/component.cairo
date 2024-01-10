@@ -38,11 +38,6 @@ use core::array::ArrayTrait;
         public_key: Option<WebauthnPubKey>,
     }
 
-    #[event]
-    #[derive(Drop, starknet::Event)]
-    enum Event {
-    }
-
     mod Errors {
         const INVALID_SIGNATURE: felt252 = 'Account: invalid signature';
     }
@@ -67,7 +62,7 @@ use core::array::ArrayTrait;
             signature: WebauthnSignature,
             tx_hash: felt252,
         ) -> bool{
-            let pub = match self.getWebauthnPubKey() {
+            let pub = match self.get_webauthn_pub_key() {
                 Option::Some(pub) => pub,
                 Option::None => { return false; }
             };
@@ -100,51 +95,11 @@ use core::array::ArrayTrait;
         ) -> felt252{
             let mut signature = signature;
             let signature = Serde::<WebauthnSignature>::deserialize(ref signature).unwrap();
-            if self.verifyWebauthnSigner(signature, tx_hash) {
+            if self.verify_webauthn_signer(signature, tx_hash) {
                 starknet::VALIDATED
             } else {
                 Errors::INVALID_SIGNATURE
             }
         }
-    }
-
-
-    #[embeddable_as(WebauthnCamel)]
-    impl WebauthnImplCamel<
-        TContractState, +HasComponent<TContractState>
-    > of webauthn_auth::interface::IWebauthnCamel<ComponentState<TContractState>> {
-        fn setWebauthnPubKey (
-        ref self: ComponentState<TContractState>, 
-        public_key: WebauthnPubKey,
-        ) {
-            self.set_webauthn_pub_key(public_key);
-        }
-        fn getWebauthnPubKey (
-            self: @ComponentState<TContractState>, 
-        ) -> Option<WebauthnPubKey>{
-            self.get_webauthn_pub_key()
-        }
-        fn verifyWebauthnSigner(
-            self: @ComponentState<TContractState>, 
-            signature: WebauthnSignature,
-            tx_hash: felt252,
-        ) -> bool{
-            self.verify_webauthn_signer(signature, tx_hash)
-        }
-        fn verifyWebauthnSignerSerialized(
-            self: @ComponentState<TContractState>, 
-            signature: Span<felt252>,
-            tx_hash: felt252,
-        ) -> felt252{
-            self.verify_webauthn_signer_serialized(signature, tx_hash) 
-        }
-    }
-
-    #[generate_trait]
-    #[external(v0)]
-    impl InternalImpl<
-        TContractState, +HasComponent<TContractState>
-    > of InternalTrait<TContractState>  {
-        
     }
 }
