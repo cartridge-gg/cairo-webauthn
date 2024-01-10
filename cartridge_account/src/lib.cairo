@@ -2,6 +2,7 @@
 // OpenZeppelin Contracts for Cairo v0.7.0 (account/account.cairo)
 
 mod interface;
+mod signature_type;
 
 use starknet::testing;
 use starknet::secp256r1::Secp256r1Point;
@@ -41,6 +42,7 @@ mod Account {
     use webauthn_session::session_component;
     use webauthn_auth::component::{webauthn_component, WebauthnSignature};
     use serde::Serde;
+    use super::signature_type::{SignatureType, SignatureTypeImpl};
 
     const TRANSACTION_VERSION: felt252 = 1;
     // 2**128 + TRANSACTION_VERSION
@@ -211,13 +213,17 @@ mod Account {
             if signature.len() == 2_u32 {
                 return self.validate_ecdsa_transaction();
             } 
-            let signature_type = *signature.at(0_u32);
-            if signature_type == 'Session Token v1' {
-                SessionImpl::validate_session_serialized(self, self.get_public_key(), signature, calls.span())
-            } else if signature_type == 'Webauthn v1' {
-                WebauthnImpl::verifyWebauthnSignerSerialized(self, signature, tx_hash)
-            } else {
-                Errors::INVALID_SIGNATURE
+            let signature_type = match SignatureTypeImpl::new(*signature.at(0_u32)) {
+                Option::Some(signature_type) => signature_type,
+                Option::None(_) => { return Errors::INVALID_SIGNATURE; },
+            };
+            match signature_type {
+                SignatureType::SessionTokenV1 => {
+                    SessionImpl::validate_session_serialized(self, self.get_public_key(), signature, calls.span())
+                },
+                SignatureType::WebauthnV1 => {
+                    WebauthnImpl::verifyWebauthnSignerSerialized(self, signature, tx_hash)
+                }
             }
         }
 

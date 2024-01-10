@@ -8,3 +8,5 @@ mod component;
 
 #[cfg(test)]
 mod tests;
+
+const WEBAUTHN_V1: felt252 = 'Webauthn v1';

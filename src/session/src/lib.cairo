@@ -22,6 +22,8 @@ mod interface;
 #[cfg(test)]
 mod tests;
 
+const SESSION_TOKEN_V1: felt252 = 'Session Token v1';
+
 // Based on https://github.com/argentlabs/starknet-plugin-account/blob/3c14770c3f7734ef208536d91bbd76af56dc2043/contracts/plugins/SessionKey.cairo
 #[starknet::component]
 mod session_component {
