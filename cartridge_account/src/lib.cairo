@@ -212,14 +212,16 @@ mod Account {
             let mut signature = tx_info.signature;
             if signature.len() == 2_u32 {
                 return self.validate_ecdsa_transaction();
-            } 
+            }
             let signature_type = match SignatureTypeImpl::new(*signature.at(0_u32)) {
                 Option::Some(signature_type) => signature_type,
                 Option::None(_) => { return Errors::INVALID_SIGNATURE; },
             };
             match signature_type {
                 SignatureType::SessionTokenV1 => {
-                    SessionImpl::validate_session_serialized(self, self.get_public_key(), signature, calls.span())
+                    SessionImpl::validate_session_serialized(
+                        self, self.get_public_key(), signature, calls.span()
+                    )
                 },
                 SignatureType::WebauthnV1 => {
                     WebauthnImpl::verify_webauthn_signer_serialized(self, signature, tx_hash)

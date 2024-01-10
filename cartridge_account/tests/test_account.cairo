@@ -9,7 +9,9 @@ use openzeppelin::token::erc20::interface::IERC20DispatcherTrait;
 use openzeppelin::utils::serde::SerializedAppend;
 use openzeppelin::utils::selectors;
 
-use snforge_std::{declare, ContractClassTrait, TxInfoMock, TxInfoMockTrait, start_spoof, start_prank};
+use snforge_std::{
+    declare, ContractClassTrait, TxInfoMock, TxInfoMockTrait, start_spoof, start_prank
+};
 
 use starknet::ContractAddress;
 use starknet::contract_address_const;
