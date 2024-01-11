@@ -20,6 +20,9 @@ Cargo.lock
 # Envs
 **/.cargo/
 
+# Scarb
+**/Scarb.lock
+
 # IDEs and editors
 **/.vscode/
 **/.idea/
