@@ -14,7 +14,6 @@ trait IPublicKey<TState> {
 }
 
 
-
 #[starknet::contract]
 mod Account {
     use core::option::OptionTrait;
