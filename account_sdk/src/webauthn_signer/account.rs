@@ -79,12 +79,7 @@ where
     P: Provider + Send,
 {
     fn encode_calls(&self, calls: &[Call]) -> Vec<FieldElement> {
-        to_felts(
-            &calls
-                .iter()
-                .map(SerializableCall::from)
-                .collect::<Vec<_>>(),
-        )
+        to_felts(&calls.iter().map(SerializableCall::from).collect::<Vec<_>>())
     }
 }
 

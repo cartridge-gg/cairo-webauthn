@@ -108,10 +108,7 @@ impl Session {
             })
         })?;
 
-        assert!(
-            !self.session_token().is_empty(),
-            "Session token is empty"
-        );
+        assert!(!self.session_token().is_empty(), "Session token is empty");
 
         Ok(SessionSignature {
             signature_type: SESSION_SIGNATURE_TYPE,
