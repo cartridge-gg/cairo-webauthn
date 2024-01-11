@@ -3,7 +3,7 @@ config := --account katana-0 \
 	--rpc http://0.0.0.0:5050
 
 # Build files helpers.
-build := ./crates/cartridge_account/target/dev/cartridge_account_
+build := ./target/dev/cartridge_account_
 sierra := .contract_class.json
 artifacts := ./crates/cartridge_account/abi/
 
