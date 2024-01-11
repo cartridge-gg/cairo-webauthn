@@ -4,4 +4,4 @@ mod erc20_methods_test;
 pub mod runners;
 mod runners_test;
 mod stark_pair_auth_test;
-mod webauthn_signer_test;
+mod webauthn;

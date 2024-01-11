@@ -71,9 +71,9 @@ impl Session {
 
         let call_hashes = calls.iter().map(compute_call_hash).collect::<Vec<_>>();
 
-        for i in 0..calls.len() {
+        for (i, call) in calls.iter().enumerate() {
             let proof = calculate_merkle_proof(&call_hashes, i);
-            let call_with_proof = CallWithProof(calls[i].clone(), proof);
+            let call_with_proof = CallWithProof(call.clone(), proof);
             self.calls.push(call_with_proof);
         }
 
@@ -108,10 +108,7 @@ impl Session {
             })
         })?;
 
-        assert!(
-            self.session_token().is_empty() == false,
-            "Session token is empty"
-        );
+        assert!(!self.session_token().is_empty(), "Session token is empty");
 
         Ok(SessionSignature {
             signature_type: SESSION_SIGNATURE_TYPE,

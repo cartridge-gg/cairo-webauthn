@@ -3,8 +3,8 @@ version = 1
 
 [[package]]
 name = "alexandria_data_structures"
-version = "0.1.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria?tag=cairo-v2.3.0-rc0#ae1d5149ff601a7ac5b39edc867d33ebd83d7f4f"
+version = "0.2.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria#085f17c87cf6d168032ef5840c39b8e18012284f"
 dependencies = [
  "alexandria_encoding",
 ]
@@ -12,15 +12,16 @@ dependencies = [
 [[package]]
 name = "alexandria_encoding"
 version = "0.1.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria?tag=cairo-v2.3.0-rc0#ae1d5149ff601a7ac5b39edc867d33ebd83d7f4f"
+source = "git+https://github.com/keep-starknet-strange/alexandria#085f17c87cf6d168032ef5840c39b8e18012284f"
 dependencies = [
  "alexandria_math",
+ "alexandria_numeric",
 ]
 
 [[package]]
 name = "alexandria_math"
 version = "0.2.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria?tag=cairo-v2.3.0-rc0#ae1d5149ff601a7ac5b39edc867d33ebd83d7f4f"
+source = "git+https://github.com/keep-starknet-strange/alexandria#085f17c87cf6d168032ef5840c39b8e18012284f"
 dependencies = [
  "alexandria_data_structures",
 ]
@@ -28,7 +29,15 @@ dependencies = [
 [[package]]
 name = "alexandria_merkle_tree"
 version = "0.1.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria?tag=cairo-v2.3.0-rc0#ae1d5149ff601a7ac5b39edc867d33ebd83d7f4f"
+source = "git+https://github.com/keep-starknet-strange/alexandria#085f17c87cf6d168032ef5840c39b8e18012284f"
+
+[[package]]
+name = "alexandria_numeric"
+version = "0.1.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria#085f17c87cf6d168032ef5840c39b8e18012284f"
+dependencies = [
+ "alexandria_math",
+]
 
 [[package]]
 name = "cartridge_account"

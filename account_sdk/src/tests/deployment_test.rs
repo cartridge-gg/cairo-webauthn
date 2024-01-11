@@ -105,5 +105,5 @@ async fn test_deploy_and_call() {
     let deployed_address = deploy(client, &account, felt!("1337"), class_hash).await;
 
     let contract = CartridgeAccount::new(deployed_address, account);
-    contract.getPublicKey().call().await.unwrap();
+    contract.get_public_key().call().await.unwrap();
 }

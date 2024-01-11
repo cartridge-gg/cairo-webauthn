@@ -41,5 +41,5 @@ async fn test_authorize_execute() {
         .await
         .unwrap();
 
-    new_account.getPublicKey().call().await.unwrap();
+    new_account.get_public_key().call().await.unwrap();
 }
