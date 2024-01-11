@@ -3,7 +3,7 @@ use core::debug::PrintTrait;
 use core::option::OptionTrait;
 use webauthn_auth::webauthn::verify_user_flags;
 use webauthn_auth::types::AuthenticatorData;
-use array::ArrayTrait;
+use core::array::ArrayTrait;
 
 #[test]
 #[available_gas(20000000000)]
