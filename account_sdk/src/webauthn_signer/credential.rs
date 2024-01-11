@@ -43,12 +43,12 @@ pub struct AuthenticatorData {
     // ...
 }
 
-impl Into<Vec<u8>> for AuthenticatorData {
-    fn into(self) -> Vec<u8> {
+impl From<AuthenticatorData> for Vec<u8> {
+    fn from(value: AuthenticatorData) -> Self {
         let mut data = Vec::new();
-        data.extend_from_slice(&self.rp_id_hash);
-        data.push(self.flags);
-        data.extend_from_slice(&self.sign_count.to_be_bytes());
+        data.extend_from_slice(&value.rp_id_hash);
+        data.push(value.flags);
+        data.extend_from_slice(&value.sign_count.to_be_bytes());
         data
     }
 }

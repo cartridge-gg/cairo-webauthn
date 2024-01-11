@@ -13,19 +13,13 @@ trait IPublicKey<TState> {
     fn get_public_key(self: @TState) -> felt252;
 }
 
-#[starknet::interface]
-trait IPublicKeyCamel<TState> {
-    fn setPublicKey(ref self: TState, newPublicKey: felt252);
-    fn getPublicKey(self: @TState) -> felt252;
-}
-
 
 #[starknet::contract]
 mod Account {
     use core::option::OptionTrait;
     use core::array::SpanTrait;
     use core::to_byte_array::FormatAsByteArray;
-    use webauthn_auth::component::IWebauthn;
+    use webauthn_auth::interface::IWebauthn;
     use core::array::ArrayTrait;
     use core::starknet::SyscallResultTrait;
     use core::traits::Into;
@@ -51,15 +45,11 @@ mod Account {
     component!(path: src5_component, storage: src5, event: SRC5Event);
     #[abi(embed_v0)]
     impl SRC5Impl = src5_component::SRC5Impl<ContractState>;
-    #[abi(embed_v0)]
-    impl SRC5CamelImpl = src5_component::SRC5CamelImpl<ContractState>;
     impl SRC5InternalImpl = src5_component::InternalImpl<ContractState>;
 
     component!(path: session_component, storage: session, event: SessionEvent);
     #[abi(embed_v0)]
     impl SessionImpl = session_component::Session<ContractState>;
-    #[abi(embed_v0)]
-    impl SessionCamelImpl = session_component::SessionCamel<ContractState>;
 
     component!(path: webauthn_component, storage: webauthn, event: WebauthnEvent);
     #[abi(embed_v0)]
@@ -136,20 +126,11 @@ mod Account {
         fn is_valid_signature(
             self: @ContractState, hash: felt252, signature: Array<felt252>
         ) -> felt252 {
-            if self._is_valid_ecdsa_signature(hash, signature.span()) {
+            if self.is_valid_ecdsa_signature(hash, signature.span()) {
                 starknet::VALIDATED
             } else {
                 0
             }
-        }
-    }
-
-    #[external(v0)]
-    impl SRC6CamelOnlyImpl of interface::ISRC6CamelOnly<ContractState> {
-        fn isValidSignature(
-            self: @ContractState, hash: felt252, signature: Array<felt252>
-        ) -> felt252 {
-            SRC6Impl::is_valid_signature(self, hash, signature)
         }
     }
 
@@ -172,18 +153,6 @@ mod Account {
             self._set_public_key(new_public_key);
         }
     }
-
-    #[external(v0)]
-    impl PublicKeyCamelImpl of super::IPublicKeyCamel<ContractState> {
-        fn getPublicKey(self: @ContractState) -> felt252 {
-            self.Account_public_key.read()
-        }
-
-        fn setPublicKey(ref self: ContractState, newPublicKey: felt252) {
-            PublicKeyImpl::set_public_key(ref self, newPublicKey);
-        }
-    }
-
 
     #[external(v0)]
     fn __validate_deploy__(
@@ -212,17 +181,19 @@ mod Account {
             let mut signature = tx_info.signature;
             if signature.len() == 2_u32 {
                 return self.validate_ecdsa_transaction();
-            } 
+            }
             let signature_type = match SignatureTypeImpl::new(*signature.at(0_u32)) {
                 Option::Some(signature_type) => signature_type,
                 Option::None(_) => { return Errors::INVALID_SIGNATURE; },
             };
             match signature_type {
                 SignatureType::SessionTokenV1 => {
-                    SessionImpl::validate_session_serialized(self, self.get_public_key(), signature, calls.span())
+                    SessionImpl::validate_session_serialized(
+                        self, self.get_public_key(), signature, calls.span()
+                    )
                 },
                 SignatureType::WebauthnV1 => {
-                    WebauthnImpl::verifyWebauthnSignerSerialized(self, signature, tx_hash)
+                    WebauthnImpl::verify_webauthn_signer_serialized(self, signature, tx_hash)
                 }
             }
         }
@@ -231,7 +202,7 @@ mod Account {
             let tx_info = get_tx_info().unbox();
             let tx_hash = tx_info.transaction_hash;
             let mut signature = tx_info.signature;
-            if self._is_valid_ecdsa_signature(tx_hash, signature) {
+            if self.is_valid_ecdsa_signature(tx_hash, signature) {
                 starknet::VALIDATED
             } else {
                 Errors::INVALID_SIGNATURE
@@ -243,7 +214,7 @@ mod Account {
             self.emit(OwnerAdded { new_owner_guid: new_public_key });
         }
 
-        fn _is_valid_ecdsa_signature(
+        fn is_valid_ecdsa_signature(
             self: @ContractState, hash: felt252, signature: Span<felt252>
         ) -> bool {
             if signature.len() == 2_u32 {

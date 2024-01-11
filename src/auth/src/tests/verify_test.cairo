@@ -368,8 +368,6 @@ fn test_1() {
 
     match verify_result {
         Result::Ok => (),
-        Result::Err(e) => {
-            assert(false, AuthnErrorIntoFelt252::into(e))
-        }
+        Result::Err(e) => { assert(false, AuthnErrorIntoFelt252::into(e)) }
     }
 }
