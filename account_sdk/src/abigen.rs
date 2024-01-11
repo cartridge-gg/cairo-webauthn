@@ -8,6 +8,7 @@ pub mod account {
             openzeppelin::introspection::src5::SRC5::Event as SRC5Event;
             webauthn_session::session_component::Event as SessionEvent;
             webauthn_session::signature::SessionSignature as SessionSignature;
+            webauthn_auth::component::webauthn_component::Event as WebauthnEvent;
         }
     );
 }

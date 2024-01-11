@@ -1,3 +1,4 @@
+use serde::Serialize;
 use starknet::core::types::FieldElement;
 
 use crate::abigen::account::U256 as AbiU256;
@@ -17,12 +18,10 @@ impl From<U256> for AbiU256 {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct VerifyWebauthnSignerArgs {
-    pub pub_x: AbiU256,
-    pub pub_y: AbiU256,
-    pub r: AbiU256,
-    pub s: AbiU256,
+    pub r: U256,
+    pub s: U256,
     pub type_offset: u32,
     pub challenge_offset: u32,
     pub origin_offset: u32,
@@ -32,14 +31,17 @@ pub struct VerifyWebauthnSignerArgs {
     pub authenticator_data: Vec<u8>,
 }
 
+pub fn pub_key_to_felts(pub_key: ([u8; 32], [u8; 32])) -> (U256, U256) {
+    let (pub_x, pub_y) = (felt_pair(&pub_key.0), felt_pair(&pub_key.1));
+    (pub_x, pub_y)
+}
+
 impl VerifyWebauthnSignerArgs {
     pub fn from_response(
-        pub_key: ([u8; 32], [u8; 32]),
         origin: String,
         challenge: Vec<u8>,
         response: AuthenticatorAssertionResponse,
     ) -> Self {
-        let (pub_x, pub_y) = (felt_pair(&pub_key.0), felt_pair(&pub_key.1));
         let (r, s) = (
             felt_pair(&response.signature[0..32].try_into().unwrap()),
             felt_pair(&response.signature[32..64].try_into().unwrap()),
@@ -48,10 +50,8 @@ impl VerifyWebauthnSignerArgs {
         let challenge_offset = find_value_index(&response.client_data_json, "challenge").unwrap();
         let origin_offset = find_value_index(&response.client_data_json, "origin").unwrap();
         Self {
-            pub_x: pub_x.into(),
-            pub_y: pub_y.into(),
-            r: r.into(),
-            s: s.into(),
+            r,
+            s,
             type_offset: type_offset as u32,
             challenge_offset: challenge_offset as u32,
             origin_offset: origin_offset as u32,

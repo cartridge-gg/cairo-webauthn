@@ -2,6 +2,7 @@
 // OpenZeppelin Contracts for Cairo v0.7.0 (account/account.cairo)
 
 mod interface;
+mod signature_type;
 
 use starknet::testing;
 use starknet::secp256r1::Secp256r1Point;
@@ -12,17 +13,13 @@ trait IPublicKey<TState> {
     fn get_public_key(self: @TState) -> felt252;
 }
 
-#[starknet::interface]
-trait IPublicKeyCamel<TState> {
-    fn setPublicKey(ref self: TState, newPublicKey: felt252);
-    fn getPublicKey(self: @TState) -> felt252;
-}
-
 
 #[starknet::contract]
 mod Account {
     use core::option::OptionTrait;
     use core::array::SpanTrait;
+    use core::to_byte_array::FormatAsByteArray;
+    use webauthn_auth::interface::IWebauthn;
     use core::array::ArrayTrait;
     use core::starknet::SyscallResultTrait;
     use core::traits::Into;
@@ -37,6 +34,9 @@ mod Account {
     use starknet::secp256r1::{Secp256r1Point, Secp256r1Impl};
     use webauthn_auth::webauthn::verify;
     use webauthn_session::session_component;
+    use webauthn_auth::component::{webauthn_component, WebauthnSignature};
+    use serde::Serde;
+    use super::signature_type::{SignatureType, SignatureTypeImpl};
 
     const TRANSACTION_VERSION: felt252 = 1;
     // 2**128 + TRANSACTION_VERSION
@@ -45,15 +45,15 @@ mod Account {
     component!(path: src5_component, storage: src5, event: SRC5Event);
     #[abi(embed_v0)]
     impl SRC5Impl = src5_component::SRC5Impl<ContractState>;
-    #[abi(embed_v0)]
-    impl SRC5CamelImpl = src5_component::SRC5CamelImpl<ContractState>;
     impl SRC5InternalImpl = src5_component::InternalImpl<ContractState>;
 
     component!(path: session_component, storage: session, event: SessionEvent);
     #[abi(embed_v0)]
     impl SessionImpl = session_component::Session<ContractState>;
+
+    component!(path: webauthn_component, storage: webauthn, event: WebauthnEvent);
     #[abi(embed_v0)]
-    impl SessionCamelImpl = session_component::SessionCamel<ContractState>;
+    impl WebauthnImpl = webauthn_component::Webauthn<ContractState>;
 
     #[storage]
     struct Storage {
@@ -61,7 +61,9 @@ mod Account {
         #[substorage(v0)]
         src5: src5_component::Storage,
         #[substorage(v0)]
-        session: session_component::Storage
+        session: session_component::Storage,
+        #[substorage(v0)]
+        webauthn: webauthn_component::Storage,
     }
 
     #[event]
@@ -70,7 +72,8 @@ mod Account {
         OwnerAdded: OwnerAdded,
         OwnerRemoved: OwnerRemoved,
         SRC5Event: src5_component::Event,
-        SessionEvent: session_component::Event
+        SessionEvent: session_component::Event,
+        WebauthnEvent: webauthn_component::Event,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -107,7 +110,6 @@ mod Account {
             let sender = get_caller_address();
             assert(sender.is_zero(), Errors::INVALID_CALLER);
 
-            // Check tx version
             let tx_info = get_tx_info().unbox();
             let version = tx_info.version;
             if version != TRANSACTION_VERSION {
@@ -118,22 +120,13 @@ mod Account {
         }
 
         fn __validate__(self: @ContractState, mut calls: Array<Call>) -> felt252 {
-            let signature_type = self.validate_transaction();
-            let tx_info = get_tx_info().unbox();
-
-            if signature_type == starknet::VALIDATED {
-                starknet::VALIDATED
-            } else if signature_type == 'Session Token v1' {
-                SessionImpl::validate_session_serialized(self, self.get_public_key(), tx_info.signature, calls.span())
-            } else {
-                signature_type
-            }
+            self.validate_transaction(calls)
         }
 
         fn is_valid_signature(
             self: @ContractState, hash: felt252, signature: Array<felt252>
         ) -> felt252 {
-            if self._is_valid_signature(hash, signature.span()) {
+            if self.is_valid_ecdsa_signature(hash, signature.span()) {
                 starknet::VALIDATED
             } else {
                 0
@@ -142,18 +135,9 @@ mod Account {
     }
 
     #[external(v0)]
-    impl SRC6CamelOnlyImpl of interface::ISRC6CamelOnly<ContractState> {
-        fn isValidSignature(
-            self: @ContractState, hash: felt252, signature: Array<felt252>
-        ) -> felt252 {
-            SRC6Impl::is_valid_signature(self, hash, signature)
-        }
-    }
-
-    #[external(v0)]
     impl DeclarerImpl of interface::IDeclarer<ContractState> {
         fn __validate_declare__(self: @ContractState, class_hash: felt252) -> felt252 {
-            self.validate_transaction()
+            self.validate_ecdsa_transaction()
         }
     }
 
@@ -171,66 +155,13 @@ mod Account {
     }
 
     #[external(v0)]
-    impl PublicKeyCamelImpl of super::IPublicKeyCamel<ContractState> {
-        fn getPublicKey(self: @ContractState) -> felt252 {
-            self.Account_public_key.read()
-        }
-
-        fn setPublicKey(ref self: ContractState, newPublicKey: felt252) {
-            PublicKeyImpl::set_public_key(ref self, newPublicKey);
-        }
-    }
-
-    #[generate_trait]
-    #[external(v0)]
-    impl WebauthnSignerCamelImpl of IWebauthnSignerCamel {
-        fn verifyWebauthnSigner(
-            self: @ContractState, 
-            pub_x: u256,
-            pub_y: u256, // public key as point on elliptic curve
-            r: u256, // 'r' part from ecdsa
-            s: u256, // 's' part from ecdsa
-            type_offset: usize, // offset to 'type' field in json
-            challenge_offset: usize, // offset to 'challenge' field in json
-            origin_offset: usize, // offset to 'origin' field in json
-            client_data_json: Array<u8>, // json with client_data as 1-byte array 
-            challenge: Array<u8>, // challenge as 1-byte array
-            origin: Array<u8>, //  array origin as 1-byte array
-            authenticator_data: Array<u8>
-        ) -> bool {
-            let pub_key = match 
-                Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y){
-                    Result::Ok(pub_key) => pub_key,
-                    Result::Err(e) => { return false; }
-                };
-            let pub_key = match pub_key {
-                Option::Some(pub_key) => pub_key,
-                Option::None(_) => { return false; }
-            };
-            verify(
-                pub_key, 
-                r, 
-                s, 
-                type_offset, 
-                challenge_offset, 
-                origin_offset, 
-                client_data_json, 
-                challenge, 
-                origin, 
-                authenticator_data
-            ).is_ok()
-        }
-    }
-
-
-    #[external(v0)]
     fn __validate_deploy__(
         self: @ContractState,
         class_hash: felt252,
         contract_address_salt: felt252,
         _public_key: felt252
     ) -> felt252 {
-        self.validate_transaction()
+        self.validate_ecdsa_transaction()
     }
 
     //
@@ -244,22 +175,38 @@ mod Account {
             self._set_public_key(_public_key);
         }
 
-        fn validate_transaction(self: @ContractState) -> felt252 {
+        fn validate_transaction(self: @ContractState, mut calls: Array<Call>) -> felt252 {
             let tx_info = get_tx_info().unbox();
             let tx_hash = tx_info.transaction_hash;
             let mut signature = tx_info.signature;
             if signature.len() == 2_u32 {
-                assert(self._is_valid_signature(tx_hash, signature), Errors::INVALID_SIGNATURE);
-                return starknet::VALIDATED;
-            } 
-
-            let signature_type = *signature.at(0);
-
-            if signature_type == starknet::VALIDATED {
-                assert(false, Errors::INVALID_SIGNATURE);
+                return self.validate_ecdsa_transaction();
             }
+            let signature_type = match SignatureTypeImpl::new(*signature.at(0_u32)) {
+                Option::Some(signature_type) => signature_type,
+                Option::None(_) => { return Errors::INVALID_SIGNATURE; },
+            };
+            match signature_type {
+                SignatureType::SessionTokenV1 => {
+                    SessionImpl::validate_session_serialized(
+                        self, self.get_public_key(), signature, calls.span()
+                    )
+                },
+                SignatureType::WebauthnV1 => {
+                    WebauthnImpl::verify_webauthn_signer_serialized(self, signature, tx_hash)
+                }
+            }
+        }
 
-            signature_type
+        fn validate_ecdsa_transaction(self: @ContractState) -> felt252 {
+            let tx_info = get_tx_info().unbox();
+            let tx_hash = tx_info.transaction_hash;
+            let mut signature = tx_info.signature;
+            if self.is_valid_ecdsa_signature(tx_hash, signature) {
+                starknet::VALIDATED
+            } else {
+                Errors::INVALID_SIGNATURE
+            }
         }
 
         fn _set_public_key(ref self: ContractState, new_public_key: felt252) {
@@ -267,12 +214,10 @@ mod Account {
             self.emit(OwnerAdded { new_owner_guid: new_public_key });
         }
 
-        fn _is_valid_signature(
+        fn is_valid_ecdsa_signature(
             self: @ContractState, hash: felt252, signature: Span<felt252>
         ) -> bool {
-            let valid_length = signature.len() == 2_u32;
-
-            if valid_length {
+            if signature.len() == 2_u32 {
                 check_ecdsa_signature(
                     hash, self.Account_public_key.read(), *signature.at(0_u32), *signature.at(1_u32)
                 )
