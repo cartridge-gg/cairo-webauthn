@@ -6,7 +6,6 @@ use core::traits::TryInto;
 use core::clone::Clone;
 use core::option::OptionTrait;
 use debug::PrintTrait;
-use webauthn_session::is_valid_signature;
 use webauthn_auth::webauthn::{WebauthnStoreTrait, WebauthnAuthenticatorTrait, verify};
 use starknet::Felt252TryIntoContractAddress;
 use array::ArrayTrait;
@@ -102,21 +101,22 @@ fn verify_interface(
     let origin = data.arr_slice(client_data_json_len + challenge_len, origin_len);
     let auth_index = client_data_json_len + challenge_len + origin_len;
     let authenticator_data = data.arr_slice(auth_index, data.len() - auth_index);
-    match verify(
-        pub_p,
-        r,
-        s,
-        type_offset,
-        challenge_offset,
-        origin_offset,
-        client_data_json,
-        challenge,
-        origin,
-        authenticator_data
-    ) {
-        Result::Ok => 0,
-        Result::Err(_) => 1
-    }
+    // match verify(
+    //     pub_p,
+    //     r,
+    //     s,
+    //     type_offset,
+    //     challenge_offset,
+    //     origin_offset,
+    //     client_data_json,
+    //     challenge,
+    //     origin,
+    //     authenticator_data
+    // ) {
+    //     Result::Ok => 0,
+    //     Result::Err(_) => 1
+    // }
+    1
 }
 // #[derive(Drop, Clone)]
 // struct WebauthnStore {

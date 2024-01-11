@@ -40,6 +40,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "dev_sdk"
+version = "0.1.0"
+dependencies = [
+ "alexandria_data_structures",
+ "alexandria_encoding",
+ "webauthn_auth",
+ "webauthn_session",
+]
+
+[[package]]
 name = "webauthn_auth"
 version = "0.1.0"
 dependencies = [

@@ -2,6 +2,7 @@
 members = [
     "crates/webauthn/auth",
     "crates/webauthn/session",
+    "crates/cairo_client/cairo"
 ]
 name = "webauthn"
 version = "0.1.0"
