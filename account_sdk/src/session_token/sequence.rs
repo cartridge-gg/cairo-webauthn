@@ -12,11 +12,11 @@ impl Default for CallSequence {
     }
 }
 
-impl Into<Vec<FieldElement>> for CallSequence {
-    fn into(self) -> Vec<FieldElement> {
+impl From<CallSequence> for Vec<FieldElement> {
+    fn from(val: CallSequence) -> Self {
         let mut result = Vec::new();
-        result.push(self.calls.len().into());
-        result.extend(self.calls.into_iter().flatten());
+        result.push(val.calls.len().into());
+        result.extend(val.calls.into_iter().flatten());
         result
     }
 }

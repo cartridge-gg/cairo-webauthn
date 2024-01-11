@@ -3,7 +3,7 @@ use p256::{
     elliptic_curve::sec1::Coordinates,
 };
 use rand_core::OsRng;
-use starknet::core::types::FieldElement;
+use starknet::{core::types::FieldElement, macros::felt};
 
 use crate::webauthn_signer::credential::{AuthenticatorData, CliendData};
 
@@ -16,6 +16,10 @@ pub mod credential;
 pub type U256 = (FieldElement, FieldElement);
 pub type Secp256r1Point = (U256, U256);
 
+// "Webauthn v1"
+pub const WEBAUTHN_SIGNATURE_TYPE: FieldElement = felt!("0x576562617574686e207631");
+
+#[derive(Debug, Clone)]
 pub struct P256r1Signer {
     pub signing_key: SigningKey,
     rp_id: String,
@@ -41,7 +45,7 @@ impl P256r1Signer {
             y.as_slice().try_into().unwrap(),
         )
     }
-    pub fn sign(&self, challenge: String) -> AuthenticatorAssertionResponse {
+    pub fn sign(&self, challenge: &[u8]) -> AuthenticatorAssertionResponse {
         use sha2::{digest::Update, Digest, Sha256};
 
         let authenticator_data = AuthenticatorData {
@@ -70,6 +74,6 @@ impl P256r1Signer {
 fn test_signer() {
     let rp_id = "https://localhost:8080".to_string();
     let signer = P256r1Signer::random(rp_id);
-    let calldata = signer.sign("842903840923".into());
+    let calldata = signer.sign("842903840923".as_bytes());
     dbg!(&calldata);
 }
