@@ -1,3 +1,4 @@
+use alexandria_data_structures::array_ext::ArrayTraitExt;
 use core::array::SpanTrait;
 use array::ArrayTrait;
 use integer::upcast;
@@ -8,7 +9,7 @@ use traits::{Into, TryInto, Drop, PartialEq};
 use starknet::secp256r1::Secp256r1Point;
 use alexandria_math::{sha256::sha256, BitShift};
 
-use alexandria_encoding::base64::Base64UrlEncoder;
+use alexandria_encoding::base64::Base64UrlFeltEncoder;
 
 use webauthn_auth::ecdsa::verify_ecdsa;
 use webauthn_auth::errors::{AuthnError, StoreError, RTSEIntoRTAE};
@@ -51,7 +52,7 @@ fn verify(
     challenge_offset: usize, // offset to 'challenge' field in json
     origin_offset: usize, // offset to 'origin' field in json
     client_data_json: Array<u8>, // json with client_data as 1-byte array 
-    challenge: Array<u8>, // challenge as 1-byte
+    challenge: felt252, // challenge as 1-byte
     origin: Array<u8>, //  array origin as 1-byte array
     authenticator_data: Array<u8> // authenticator data as 1-byte array
 ) -> Result<(), AuthnError> {
@@ -73,9 +74,7 @@ fn verify(
     // 16. Verify that the User Present (0) and User Verified (2) bits of the flags in authData is set.
     let ad: AuthenticatorData = match authenticator_data.clone().try_into() {
         Option::Some(x) => x,
-        Option::None => {
-            return AuthnError::UserFlagsMismatch.into();
-        }
+        Option::None => { return AuthnError::UserFlagsMismatch.into(); }
     };
     verify_user_flags(@ad, true)?;
 
@@ -94,132 +93,21 @@ fn verify(
 }
 
 fn verify_challenge(
-    client_data_json: @Array<u8>, challenge_offset: usize, challenge: Array<u8>
+    client_data_json: @Array<u8>, challenge_offset: usize, challenge: felt252
 ) -> Result<(), AuthnError> {
     let mut i: usize = 0;
-    let challenge = Base64UrlEncoder::encode(challenge);
-    let challenge_len: usize = challenge.len();
+    let mut encoded = Base64UrlFeltEncoder::encode(challenge);
+    let encoded_len: usize = encoded.len();
     loop {
-        // Base64UrlEncoder at the moment pads with '=' => remove -1 later {assumes len == 43} or 
-        // additionally break on '=' sign
-        if i == challenge_len - 1 {
+        if i >= encoded_len {
             break Result::Ok(());
         }
-        if *client_data_json.at(challenge_offset + i) != *challenge.at(i) {
+        if *client_data_json.at(challenge_offset + i) != *encoded.at(i) {
             break Result::Err(AuthnError::ChallengeMismatch);
         }
         i += 1_usize;
     }
 }
-
-// According to https://www.w3.org/TR/webauthn/#sctn-verifying-assertion
-// Couldn't find a way to create a struct with all the necessary generic implementations
-// There was either some name resolution problem or a recursive (cyclic) compiler bug
-// Or I'm stupid
-// There is a 'parallel' implementation solution that would split this method into separate chunks,
-// and in the particular points (now dealt with by the generic traits) outsource the control flow 
-// to the user, trough for example some state-transition abstraction.
-// This is would ?probably? be better suited for Cairo use cases.
-// Another considerations: 
-//  Current approach - visually closer to the specification
-//  Parallel approach - easier testing
-// Either way the inner workings of the method stay the same.
-// fn verify_authentication_assertion<
-//     // Store:
-//     StoreT,
-//     impl WebauthnStoreTImpl: WebauthnStoreTrait<StoreT>,
-//     impl SDrop: Drop<StoreT>,
-//     // Authenticator:
-//     AuthenticatorT,
-//     impl WebauthnAuthenticatorTImpl: WebauthnAuthenticatorTrait<AuthenticatorT>,
-//     impl ADrop: Drop<AuthenticatorT>,
-//     // Utils
-//     impl UTF8DecoderImpl: UTF8Decoder,
-//     impl JSONClientDataParserImpl: JSONClientDataParser,
-//     impl OriginCheckerImpl: OriginChecker
-// >(
-//     // Can answer queries about prior registrations eg. a database driver
-//     store: StoreT,
-//     // An authenticator abstraction 
-//     authenticator: AuthenticatorT,
-//     // Options configured by the relying party needs for the ceremony
-//     options: PublicKeyCredentialRequestOptions,
-//     // Some(...) if the user was identified before the ceremony, 
-//     // eg. via a username or cookie, None otherwise
-//     preidentified_user_handle: Option<Array<u8>>,
-//     // Config options specific to the needs of this assertion
-//     assertion_options: AssertionOptions
-// ) -> Result<(), AuthnError> {
-//     // 1. 
-//     match @options.allow_credentials {
-//         Option::Some(c) => {
-//             match store.verify_allow_credentials(c) {
-//                 Result::Ok => (),
-//                 Result::Err => {
-//                     return AuthnError::TransportNotAllowed.into();
-//                 }
-//             }
-//         },
-//         Option::None => (),
-//     };
-//     // 2.
-//     let credential = match @authenticator.navigator_credentials_get(@options) {
-//         Result::Ok(c) => c,
-//         Result::Err => {
-//             return AuthnError::GetCredentialRejected.into();
-//         }
-//     };
-//     // 3. 
-//     let response = match @credential.response {
-//         AuthenticatorResponse::Attestation(_) => {
-//             return AuthnError::ResponseIsNotAttestation.into();
-//         },
-//         AuthenticatorResponse::Assertion(r) => r.clone()
-//     };
-//     // 4. pass (extensions) 
-//     // 5. 
-//     match @options.allow_credentials {
-//         Option::Some(c) => {
-//             if !allow_credentials_contain_credential(c, credential) {
-//                 return AuthnError::CredentialNotAllowed.into();
-//             };
-//         },
-//         Option::None => (),
-//     };
-//     // 6. AND 7. 
-//     let credential_public_key = find_and_verify_credential_source::<StoreT,
-//     WebauthnStoreTImpl,
-//     SDrop>(@store, @preidentified_user_handle, credential, response)?;
-//     // 8.
-//     let c_data = response.client_data_json.clone();
-//     let auth_data = response.authenticator_data.clone();
-//     let sig = response.signature.clone();
-//     // 9. 
-//     let json_text = UTF8DecoderImpl::decode(c_data.clone());
-//     // 10.
-//     let c = JSONClientDataParserImpl::parse(json_text);
-//     // 11. pass (string verification) TODO:
-//     // 12. 
-//     if c.challenge != Base64UrlEncoder::encode(options.challenge) {
-//         return AuthnError::ChallengeMismatch.into();
-//     };
-//     // 13. 
-//     if !OriginCheckerImpl::check(c.origin) {
-//         return AuthnError::OriginMismatch.into();
-//     };
-//     // 14. pass TODO:
-//     // 15. 
-//     let auth_data_struct = expand_auth_data_and_verify_rp_id_hash(
-//         auth_data.clone(), assertion_options.expected_rp_id
-//     )?;
-//     // 16. AND 17.
-//     verify_user_flags(@auth_data_struct, assertion_options.force_user_verified)?;
-//     // 18. pass (extensions) 
-//     // 19.
-//     let hash = sha256(c_data);
-//     // 20. 
-//     verify_signature(hash, auth_data, credential_public_key, sig)
-// }
 
 // Steps 6. and 7. of the verify_authentication_assertion(..) method
 // This should be exactly according to the specification
@@ -237,9 +125,9 @@ fn find_and_verify_credential_source<
 ) -> Result<PublicKey, AuthnError> {
     let pk = match @preidentified_user_handle {
         Option::Some(user) => {
-            let pk_1 = RTSEIntoRTAE::<PublicKey>::into(
-                store.retrieve_public_key(credential.raw_id)
-            )?;
+            let pk_1 = RTSEIntoRTAE::<
+                PublicKey
+            >::into(store.retrieve_public_key(credential.raw_id))?;
             let pk_2 = RTSEIntoRTAE::<PublicKey>::into(store.retrieve_public_key(*user))?;
             if pk_1 != pk_2 {
                 return AuthnError::IdentifiedUsersMismatch.into();
@@ -256,16 +144,14 @@ fn find_and_verify_credential_source<
             pk_1
         },
         Option::None => {
-            let pk_1 = RTSEIntoRTAE::<PublicKey>::into(
-                store.retrieve_public_key(credential.raw_id)
-            )?;
+            let pk_1 = RTSEIntoRTAE::<
+                PublicKey
+            >::into(store.retrieve_public_key(credential.raw_id))?;
             let pk_2 = match response.user_handle {
-                Option::Some(handle) => RTSEIntoRTAE::<PublicKey>::into(
-                    store.retrieve_public_key(credential.raw_id)
-                )?,
-                Option::None => {
-                    return AuthnError::IdentifiedUsersMismatch.into();
-                },
+                Option::Some(handle) => RTSEIntoRTAE::<
+                    PublicKey
+                >::into(store.retrieve_public_key(credential.raw_id))?,
+                Option::None => { return AuthnError::IdentifiedUsersMismatch.into(); },
             };
             if pk_1 != pk_2 {
                 return AuthnError::IdentifiedUsersMismatch.into();
@@ -283,9 +169,7 @@ fn expand_auth_data_and_verify_rp_id_hash(
 ) -> Result<AuthenticatorData, AuthnError> {
     let auth_data_struct: AuthenticatorData = match auth_data.try_into() {
         Option::Some(ad) => ad,
-        Option::None => {
-            return AuthnError::InvalidAuthData.into();
-        }
+        Option::None => { return AuthnError::InvalidAuthData.into(); }
     };
     if sha256(expected_rp_id) == auth_data_struct.rp_id_hash {
         Result::Ok(auth_data_struct)
@@ -353,15 +237,11 @@ fn verify_signature(
     let concatenation = concatenate(@auth_data, @hash);
     let (r, s) = match extract_r_and_s_from_array(@sig) {
         Option::Some(p) => p,
-        Option::None => {
-            return AuthnError::InvalidSignature.into();
-        }
+        Option::None => { return AuthnError::InvalidSignature.into(); }
     };
     let pub_key_point: Secp256r1Point = match credential_public_key.try_into() {
         Option::Some(p) => p,
-        Option::None => {
-            return AuthnError::InvalidPublicKey.into();
-        }
+        Option::None => { return AuthnError::InvalidPublicKey.into(); }
     };
     match verify_ecdsa(pub_key_point, concatenation, r, s) {
         Result::Ok => Result::Ok(()),

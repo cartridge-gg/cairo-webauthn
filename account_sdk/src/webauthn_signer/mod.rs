@@ -3,7 +3,7 @@ use p256::{
     elliptic_curve::sec1::Coordinates,
 };
 use rand_core::OsRng;
-use starknet::core::types::FieldElement;
+use starknet::{core::types::FieldElement, macros::felt};
 
 use crate::webauthn_signer::credential::{AuthenticatorData, CliendData};
 
@@ -15,6 +15,9 @@ pub mod credential;
 
 pub type U256 = (FieldElement, FieldElement);
 pub type Secp256r1Point = (U256, U256);
+
+// "Webauthn v1"
+pub const WEBAUTHN_SIGNATURE_TYPE: FieldElement = felt!("0x576562617574686e207631");
 
 #[derive(Debug, Clone)]
 pub struct P256r1Signer {

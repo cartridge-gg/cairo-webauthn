@@ -83,7 +83,7 @@ where
         let account = self.single_owner_account().await;
         let new_account_executor = self.single_owner_executor().await;
         let set_execution: Execution<'_, _> =
-            new_account_executor.setWebauthnPubKey(&WebauthnPubKey {
+            new_account_executor.set_webauthn_pub_key(&WebauthnPubKey {
                 x: pub_x.into(),
                 y: pub_y.into(),
             });

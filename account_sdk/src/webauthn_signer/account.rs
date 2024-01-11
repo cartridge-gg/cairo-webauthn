@@ -79,12 +79,7 @@ where
     P: Provider + Send,
 {
     fn encode_calls(&self, calls: &[Call]) -> Vec<FieldElement> {
-        to_felts(
-            &calls
-                .iter()
-                .map(|call| SerializableCall::from(call))
-                .collect::<Vec<_>>(),
-        )
+        to_felts(&calls.iter().map(SerializableCall::from).collect::<Vec<_>>())
     }
 }
 
@@ -115,17 +110,15 @@ where
         execution: &RawExecution,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
-        let _tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
-        let challenge = "aaaaaaaa".as_bytes();
-        let assertion = self.signer.sign(challenge);
+        let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
+        let challenge = tx_hash.to_bytes_be().to_vec();
+        let assertion = self.signer.sign(&challenge);
 
-        let args = VerifyWebauthnSignerArgs::from_response(
-            self.origin.clone(),
-            challenge.to_vec(),
-            assertion,
-        );
+        let args =
+            VerifyWebauthnSignerArgs::from_response(self.origin.clone(), challenge, assertion);
 
         let result = WebauthnSignature {
+            signature_type: super::WEBAUTHN_SIGNATURE_TYPE,
             r: args.r.into(),
             s: args.s.into(),
             type_offset: args.type_offset,
