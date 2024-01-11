@@ -25,9 +25,7 @@ fn verify_ecdsa(
     let hash = sha256(msg);
     let hash_u256 = match extract_u256_from_u8_array(@hash, 0) {
         Option::Some(h) => h,
-        Option::None => {
-            return Result::Err(VerifyEcdsaError::WrongArgument);
-        }
+        Option::None => { return Result::Err(VerifyEcdsaError::WrongArgument); }
     };
     verify_hashed_ecdsa(public_key_pt, hash_u256, r, s)
 }
@@ -50,9 +48,7 @@ fn verify_hashed_ecdsa(
 
     let s_inv = match mod_inv(s, n) {
         Option::Some(inv) => inv,
-        Option::None => {
-            return Result::Err(VerifyEcdsaError::WrongArgument);
-        }
+        Option::None => { return Result::Err(VerifyEcdsaError::WrongArgument); }
     };
 
     //Possible optimisation: Shamir's trick can be used
@@ -61,27 +57,19 @@ fn verify_hashed_ecdsa(
 
     let G_times_u_1 = match G.mul(u_1) {
         Result::Ok(p) => p,
-        Result::Err => {
-            return Result::Err(VerifyEcdsaError::SyscallError);
-        }
+        Result::Err => { return Result::Err(VerifyEcdsaError::SyscallError); }
     };
     let Q_times_u_2 = match public_key_pt.mul(u_2) {
         Result::Ok(p) => p,
-        Result::Err => {
-            return Result::Err(VerifyEcdsaError::SyscallError);
-        }
+        Result::Err => { return Result::Err(VerifyEcdsaError::SyscallError); }
     };
     let P = match G_times_u_1.add(Q_times_u_2) {
         Result::Ok(p) => p,
-        Result::Err => {
-            return Result::Err(VerifyEcdsaError::SyscallError);
-        }
+        Result::Err => { return Result::Err(VerifyEcdsaError::SyscallError); }
     };
     let (P_x, _P_y) = match P.get_coordinates() {
         Result::Ok(cords) => cords,
-        Result::Err => {
-            return Result::Err(VerifyEcdsaError::SyscallError);
-        }
+        Result::Err => { return Result::Err(VerifyEcdsaError::SyscallError); }
     };
 
     if r == (P_x % n) {

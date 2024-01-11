@@ -39,7 +39,7 @@ pub fn compute_session_hash(
     let mut hasher = PoseidonHasher::new();
     hasher.update(STARKNET_MESSAGE_FELT);
     hasher.update(domain_hash);
-    hasher.update(account.into());
+    hasher.update(account);
     hasher.update(message_hash);
     hasher.finalize()
 }
@@ -72,9 +72,9 @@ fn hash_message(
     hasher.finalize()
 }
 
-pub fn calculate_merkle_proof(call_hashes: &Vec<FieldElement>, index: usize) -> Vec<FieldElement> {
+pub fn calculate_merkle_proof(call_hashes: &[FieldElement], index: usize) -> Vec<FieldElement> {
     let mut proof = vec![];
-    compute_proof(call_hashes.clone(), index, &mut proof);
+    compute_proof(call_hashes.to_owned(), index, &mut proof);
     proof
 }
 

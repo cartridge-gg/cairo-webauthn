@@ -2,7 +2,7 @@ use starknet::account::Call;
 use core::serde::Serde;
 
 #[derive(Drop, Serde, starknet::Store)]
-struct WebauthnPubKey{
+struct WebauthnPubKey {
     x: u256,
     y: u256,
 }
@@ -24,7 +24,7 @@ struct WebauthnSignature {
 #[starknet::component]
 mod webauthn_component {
     use webauthn_auth::interface::IWebauthn;
-use core::array::ArrayTrait;
+    use core::array::ArrayTrait;
     use core::result::ResultTrait;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use starknet::account::Call;
@@ -46,53 +46,46 @@ use core::array::ArrayTrait;
     impl WebauthnImpl<
         TContractState, +HasComponent<TContractState>
     > of webauthn_auth::interface::IWebauthn<ComponentState<TContractState>> {
-        fn set_webauthn_pub_key (
-        ref self: ComponentState<TContractState>, 
-        public_key: WebauthnPubKey,
+        fn set_webauthn_pub_key(
+            ref self: ComponentState<TContractState>, public_key: WebauthnPubKey,
         ) {
             self.public_key.write(Option::Some(public_key));
         }
-        fn get_webauthn_pub_key (
-            self: @ComponentState<TContractState>, 
-        ) -> Option<WebauthnPubKey>{
+        fn get_webauthn_pub_key(self: @ComponentState<TContractState>,) -> Option<WebauthnPubKey> {
             self.public_key.read()
         }
         fn verify_webauthn_signer(
-            self: @ComponentState<TContractState>, 
-            signature: WebauthnSignature,
-            tx_hash: felt252,
-        ) -> bool{
+            self: @ComponentState<TContractState>, signature: WebauthnSignature, tx_hash: felt252,
+        ) -> bool {
             let pub = match self.get_webauthn_pub_key() {
                 Option::Some(pub) => pub,
                 Option::None => { return false; }
             };
-            let pub_key = match 
-                Secp256r1Impl::secp256_ec_new_syscall(pub.x, pub.y){
-                    Result::Ok(pub_key) => pub_key,
-                    Result::Err(e) => { return false; }
-                };
+            let pub_key = match Secp256r1Impl::secp256_ec_new_syscall(pub.x, pub.y) {
+                Result::Ok(pub_key) => pub_key,
+                Result::Err(e) => { return false; }
+            };
             let pub_key = match pub_key {
-                    Option::Some(pub_key) => pub_key,
-                    Option::None => { return false; }
-                };
+                Option::Some(pub_key) => pub_key,
+                Option::None => { return false; }
+            };
             verify(
-                pub_key, 
-                signature.r, 
-                signature.s, 
-                signature.type_offset, 
-                signature.challenge_offset, 
-                signature.origin_offset, 
-                signature.client_data_json, 
-                tx_hash, 
-                signature.origin, 
+                pub_key,
+                signature.r,
+                signature.s,
+                signature.type_offset,
+                signature.challenge_offset,
+                signature.origin_offset,
+                signature.client_data_json,
+                tx_hash,
+                signature.origin,
                 signature.authenticator_data
-            ).is_ok()
+            )
+                .is_ok()
         }
         fn verify_webauthn_signer_serialized(
-            self: @ComponentState<TContractState>, 
-            signature: Span<felt252>,
-            tx_hash: felt252,
-        ) -> felt252{
+            self: @ComponentState<TContractState>, signature: Span<felt252>, tx_hash: felt252,
+        ) -> felt252 {
             let mut signature = signature;
             let signature = Serde::<WebauthnSignature>::deserialize(ref signature).unwrap();
             if self.verify_webauthn_signer(signature, tx_hash) {

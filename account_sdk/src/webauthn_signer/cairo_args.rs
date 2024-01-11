@@ -33,7 +33,7 @@ pub struct VerifyWebauthnSignerArgs {
 
 pub fn pub_key_to_felts(pub_key: ([u8; 32], [u8; 32])) -> (U256, U256) {
     let (pub_x, pub_y) = (felt_pair(&pub_key.0), felt_pair(&pub_key.1));
-    (pub_x.into(), pub_y.into())
+    (pub_x, pub_y)
 }
 
 impl VerifyWebauthnSignerArgs {
@@ -50,8 +50,8 @@ impl VerifyWebauthnSignerArgs {
         let challenge_offset = find_value_index(&response.client_data_json, "challenge").unwrap();
         let origin_offset = find_value_index(&response.client_data_json, "origin").unwrap();
         Self {
-            r: r.into(),
-            s: s.into(),
+            r,
+            s,
             type_offset: type_offset as u32,
             challenge_offset: challenge_offset as u32,
             origin_offset: origin_offset as u32,

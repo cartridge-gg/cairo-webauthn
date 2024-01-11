@@ -74,9 +74,7 @@ fn verify(
     // 16. Verify that the User Present (0) and User Verified (2) bits of the flags in authData is set.
     let ad: AuthenticatorData = match authenticator_data.clone().try_into() {
         Option::Some(x) => x,
-        Option::None => {
-            return AuthnError::UserFlagsMismatch.into();
-        }
+        Option::None => { return AuthnError::UserFlagsMismatch.into(); }
     };
     verify_user_flags(@ad, true)?;
 
@@ -101,7 +99,6 @@ fn verify_challenge(
     let mut encoded = Base64UrlFeltEncoder::encode(challenge);
     let encoded_len: usize = encoded.len();
     loop {
-        
         if i >= encoded_len {
             break Result::Ok(());
         }
@@ -128,9 +125,9 @@ fn find_and_verify_credential_source<
 ) -> Result<PublicKey, AuthnError> {
     let pk = match @preidentified_user_handle {
         Option::Some(user) => {
-            let pk_1 = RTSEIntoRTAE::<PublicKey>::into(
-                store.retrieve_public_key(credential.raw_id)
-            )?;
+            let pk_1 = RTSEIntoRTAE::<
+                PublicKey
+            >::into(store.retrieve_public_key(credential.raw_id))?;
             let pk_2 = RTSEIntoRTAE::<PublicKey>::into(store.retrieve_public_key(*user))?;
             if pk_1 != pk_2 {
                 return AuthnError::IdentifiedUsersMismatch.into();
@@ -147,16 +144,14 @@ fn find_and_verify_credential_source<
             pk_1
         },
         Option::None => {
-            let pk_1 = RTSEIntoRTAE::<PublicKey>::into(
-                store.retrieve_public_key(credential.raw_id)
-            )?;
+            let pk_1 = RTSEIntoRTAE::<
+                PublicKey
+            >::into(store.retrieve_public_key(credential.raw_id))?;
             let pk_2 = match response.user_handle {
-                Option::Some(handle) => RTSEIntoRTAE::<PublicKey>::into(
-                    store.retrieve_public_key(credential.raw_id)
-                )?,
-                Option::None => {
-                    return AuthnError::IdentifiedUsersMismatch.into();
-                },
+                Option::Some(handle) => RTSEIntoRTAE::<
+                    PublicKey
+                >::into(store.retrieve_public_key(credential.raw_id))?,
+                Option::None => { return AuthnError::IdentifiedUsersMismatch.into(); },
             };
             if pk_1 != pk_2 {
                 return AuthnError::IdentifiedUsersMismatch.into();
@@ -174,9 +169,7 @@ fn expand_auth_data_and_verify_rp_id_hash(
 ) -> Result<AuthenticatorData, AuthnError> {
     let auth_data_struct: AuthenticatorData = match auth_data.try_into() {
         Option::Some(ad) => ad,
-        Option::None => {
-            return AuthnError::InvalidAuthData.into();
-        }
+        Option::None => { return AuthnError::InvalidAuthData.into(); }
     };
     if sha256(expected_rp_id) == auth_data_struct.rp_id_hash {
         Result::Ok(auth_data_struct)
@@ -244,15 +237,11 @@ fn verify_signature(
     let concatenation = concatenate(@auth_data, @hash);
     let (r, s) = match extract_r_and_s_from_array(@sig) {
         Option::Some(p) => p,
-        Option::None => {
-            return AuthnError::InvalidSignature.into();
-        }
+        Option::None => { return AuthnError::InvalidSignature.into(); }
     };
     let pub_key_point: Secp256r1Point = match credential_public_key.try_into() {
         Option::Some(p) => p,
-        Option::None => {
-            return AuthnError::InvalidPublicKey.into();
-        }
+        Option::None => { return AuthnError::InvalidPublicKey.into(); }
     };
     match verify_ecdsa(pub_key_point, concatenation, r, s) {
         Result::Ok => Result::Ok(()),
