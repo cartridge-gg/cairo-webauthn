@@ -29,10 +29,7 @@ impl ImplSignatureProofs of SignatureProofsTrait {
         if proofs_flat.len() % single_proof_len != 0 {
             return Option::None(());
         }
-        Option::Some(SignatureProofs {
-            proofs_flat,
-            single_proof_len
-        })
+        Option::Some(SignatureProofs { proofs_flat, single_proof_len })
     }
 
     fn len(self: SignatureProofs) -> usize {
@@ -41,7 +38,7 @@ impl ImplSignatureProofs of SignatureProofsTrait {
         }
         U32Div::div(self.proofs_flat.len(), self.single_proof_len)
     }
-    
+
     fn at(self: SignatureProofs, index: usize) -> Span<felt252> {
         self.proofs_flat.slice(index * self.single_proof_len, self.single_proof_len)
     }

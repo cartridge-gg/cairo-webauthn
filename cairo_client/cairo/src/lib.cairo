@@ -36,17 +36,16 @@ fn testing(a: MyStruct, b: Array<felt252>, c: Array<felt252>, d: Array<felt252>,
 
 fn main() {
     let pub_key = Secp256r1Impl::secp256_ec_new_syscall(
-	    104967586276524112165136420848571543889145022871617809227185613247970118558132,
-	    28809706358176254426074279673041700809583625420180899505741393676573453514447
-	);
+        104967586276524112165136420848571543889145022871617809227185613247970118558132,
+        28809706358176254426074279673041700809583625420180899505741393676573453514447
+    );
     match pub_key {
         Result::Ok(_) => (),
         Result::Err(e) => e.print()
     };
 }
 
-fn verify_interface_2( 
-) {
+fn verify_interface_2() {
     let pub_p = Secp256r1Impl::secp256_ec_new_syscall(0_u256, 0_u256);
     match pub_p {
         Result::Ok(_) => (),
@@ -54,11 +53,7 @@ fn verify_interface_2(
     };
 }
 
-fn test_order(
-    a: Array<felt252>,
-    b: Array<felt252>,
-    c: Array<felt252>,
-) {
+fn test_order(a: Array<felt252>, b: Array<felt252>, c: Array<felt252>,) {
     (*a[0]).print();
     a.len().print();
     (*b[0]).print();
@@ -67,12 +62,12 @@ fn test_order(
     c.len().print();
 }
 
-trait ArraySlice{
+trait ArraySlice {
     fn arr_slice(self: @Array<u8>, start: usize, len: usize) -> Array<u8>;
 }
 
 impl ArraySliceImpl of ArraySlice {
-    fn arr_slice(self: @Array<u8>, start: usize, len: usize) -> Array<u8>{
+    fn arr_slice(self: @Array<u8>, start: usize, len: usize) -> Array<u8> {
         self.span().slice(start, len).snapshot.clone()
     }
 }
@@ -90,19 +85,15 @@ fn verify_interface(
     challenge_offset: usize, // offset to 'challenge' field in json
     origin_offset: usize, // offset to 'origin' field in json
     client_data_json_len: usize,
-    challenge_len: usize, 
-    origin_len: usize, 
+    challenge_len: usize,
+    origin_len: usize,
     data: Array<u8>, // json + chalenge + origin + auth_data
 ) -> usize {
-    let pub_x = u256 {
-        low: pub_1, high: pub_0
-    };
-    
-    let pub_y = u256 {
-        low: pub_3, high: pub_2
-    };
+    let pub_x = u256 { low: pub_1, high: pub_0 };
+
+    let pub_y = u256 { low: pub_3, high: pub_2 };
     let pub_p = Secp256r1Impl::secp256_ec_new_syscall(pub_x, pub_y).unwrap_syscall().unwrap();
-    
+
     let r = u256 { low: r_1, high: r_0 };
     let s = u256 { low: s_1, high: s_0 };
 

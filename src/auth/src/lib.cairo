@@ -5,6 +5,7 @@ mod types;
 mod helpers;
 mod errors;
 mod component;
+mod interface;
 
 #[cfg(test)]
 mod tests;

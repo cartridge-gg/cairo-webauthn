@@ -42,17 +42,16 @@ impl ImplIntoMap<
         loop {
             match self.pop_front() {
                 Option::Some(i) => target.append(i.into()),
-                Option::None => {
-                    break;
-                }
+                Option::None => { break; }
             };
         };
         target
     }
 }
 
-impl ImplPublicKeyCredentialDescriptorIntoArrayu8 of Into<PublicKeyCredentialDescriptor,
-Array<u16>> {
+impl ImplPublicKeyCredentialDescriptorIntoArrayu8 of Into<
+    PublicKeyCredentialDescriptor, Array<u16>
+> {
     fn into(self: PublicKeyCredentialDescriptor) -> Array<u16> {
         self.id
     }
@@ -91,15 +90,11 @@ fn concatenate(a: @Array<u8>, b: @Array<u8>) -> Array<u8> {
 fn extract_r_and_s_from_array(arr: @Array<u8>) -> Option<(u256, u256)> {
     let r = match extract_u256_from_u8_array(arr, 0) {
         Option::Some(r) => r,
-        Option::None => {
-            return Option::None;
-        }
+        Option::None => { return Option::None; }
     };
     let s = match extract_u256_from_u8_array(arr, 32) {
         Option::Some(s) => s,
-        Option::None => {
-            return Option::None;
-        }
+        Option::None => { return Option::None; }
     };
     Option::Some((r, s))
 }
