@@ -144,7 +144,6 @@ mod session_component {
     }
 
 
-
     #[generate_trait]
     impl InternalImpl<
         TContractState, +HasComponent<TContractState>
