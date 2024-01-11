@@ -28,7 +28,7 @@ mod webauthn_component {
     use core::result::ResultTrait;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use starknet::account::Call;
-    use ecdsa::check_ecdsa_signature;
+    use core::ecdsa::check_ecdsa_signature;
     use starknet::secp256r1::{Secp256r1Point, Secp256r1Impl};
     use webauthn_auth::webauthn::verify;
     use super::{WebauthnPubKey, WebauthnSignature};
