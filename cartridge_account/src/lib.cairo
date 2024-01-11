@@ -13,12 +13,6 @@ trait IPublicKey<TState> {
     fn get_public_key(self: @TState) -> felt252;
 }
 
-#[starknet::interface]
-trait IPublicKeyCamel<TState> {
-    fn setPublicKey(ref self: TState, newPublicKey: felt252);
-    fn getPublicKey(self: @TState) -> felt252;
-}
-
 
 #[starknet::contract]
 mod Account {
@@ -51,15 +45,11 @@ mod Account {
     component!(path: src5_component, storage: src5, event: SRC5Event);
     #[abi(embed_v0)]
     impl SRC5Impl = src5_component::SRC5Impl<ContractState>;
-    #[abi(embed_v0)]
-    impl SRC5CamelImpl = src5_component::SRC5CamelImpl<ContractState>;
     impl SRC5InternalImpl = src5_component::InternalImpl<ContractState>;
 
     component!(path: session_component, storage: session, event: SessionEvent);
     #[abi(embed_v0)]
     impl SessionImpl = session_component::Session<ContractState>;
-    #[abi(embed_v0)]
-    impl SessionCamelImpl = session_component::SessionCamel<ContractState>;
 
     component!(path: webauthn_component, storage: webauthn, event: WebauthnEvent);
     #[abi(embed_v0)]
@@ -145,15 +135,6 @@ mod Account {
     }
 
     #[external(v0)]
-    impl SRC6CamelOnlyImpl of interface::ISRC6CamelOnly<ContractState> {
-        fn isValidSignature(
-            self: @ContractState, hash: felt252, signature: Array<felt252>
-        ) -> felt252 {
-            SRC6Impl::is_valid_signature(self, hash, signature)
-        }
-    }
-
-    #[external(v0)]
     impl DeclarerImpl of interface::IDeclarer<ContractState> {
         fn __validate_declare__(self: @ContractState, class_hash: felt252) -> felt252 {
             self.validate_ecdsa_transaction()
@@ -172,18 +153,6 @@ mod Account {
             self._set_public_key(new_public_key);
         }
     }
-
-    #[external(v0)]
-    impl PublicKeyCamelImpl of super::IPublicKeyCamel<ContractState> {
-        fn getPublicKey(self: @ContractState) -> felt252 {
-            self.Account_public_key.read()
-        }
-
-        fn setPublicKey(ref self: ContractState, newPublicKey: felt252) {
-            PublicKeyImpl::set_public_key(ref self, newPublicKey);
-        }
-    }
-
 
     #[external(v0)]
     fn __validate_deploy__(
