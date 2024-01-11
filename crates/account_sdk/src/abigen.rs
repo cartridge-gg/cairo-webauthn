@@ -3,7 +3,7 @@ pub mod account {
 
     abigen!(
         CartridgeAccount,
-        "./abi/account.abi.json",
+        "./crates/cartridge_account/abi/account.abi.json",
         type_aliases {
             openzeppelin::introspection::src5::SRC5::Event as SRC5Event;
             webauthn_session::session_component::Event as SessionEvent;
@@ -16,5 +16,5 @@ pub mod account {
 pub mod erc20 {
     use cainome::rs::abigen;
 
-    abigen!(Erc20Contract, "./abi/erc20.abi.json");
+    abigen!(Erc20Contract, "./crates/cartridge_account/abi/erc20.abi.json");
 }

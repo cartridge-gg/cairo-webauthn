@@ -3,16 +3,16 @@ config := --account katana-0 \
 	--rpc http://0.0.0.0:5050
 
 # Build files helpers.
-build := ./cartridge_account/target/dev/cartridge_account_
+build := ./crates/cartridge_account/target/dev/cartridge_account_
 sierra := .contract_class.json
-artifacts := ./abi/
+artifacts := ./crates/cartridge_account/abi/
 
 # Contract params for deploy.
 test_pubkey = 0x1234
 katana_0 = 0x517ececd29116499f4a1b64b094da79ba08dfd54a3edaa316134c41f8160973
 
 generate_artifacts:
-	scarb --manifest-path ./cartridge_account/Scarb.toml build
+	scarb --manifest-path ./crates/cartridge_account/Scarb.toml build
 	mkdir -p ${artifacts}
 
 	jq .abi ${build}Account${sierra} > ${artifacts}account.abi.json

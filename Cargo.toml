@@ -1,8 +1,8 @@
 [workspace]
 resolver = "2"
 members = [
-    "cairo_client",
-    "account_sdk"
+    "crates/cairo_client",
+    "crates/account_sdk"
 ]
 
 [workspace.package]
