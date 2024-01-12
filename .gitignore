@@ -23,6 +23,9 @@ Cargo.lock
 # Scarb
 **/Scarb.lock
 
+# StarkNet Foundry
+**/.snfoundry_cache/
+
 # IDEs and editors
 **/.vscode/
 **/.idea/

@@ -4,29 +4,48 @@ A library for webauthn credential authentication.
 The library is under development.
 
 ## Project structure
+
 - **account_sdk** - a rust project to export and test functions for interacting with the custom account contract.
-- **cairo_client** - a rust project to test cairo code by directly calling cairo functions from rust.
 - **cartidge_account** - a cairo project with a custom account contract.
-- **src** - a cairo project with backend methods that will allow for various authentication methods in the custom contact.
 - **test_gen_scripts** - a python library to programatically generate cryptographic cairo tests.
+- **webauthn** - cairo components to use in contracts.
 
 The project has a global rust workspace.
 
 ## account_sdk
+
 This is a rust project, that will eventually be compiled to wasm. It's purpose is to export and test functions for interacting with the custom account contract. The testing framework implemented within uses [dojo/katana](https://github.com/dojoengine/dojo) underneath. Each test starts its own katana network, deploys a contract and performs operations on it. Naturally, you must have `katana` installed to run the tests. You can specify the path to the `katana` executable in the `account_sdk/KatanaConfig.toml` file. Note that if you have `dojo` installed and in `PATH` the path can remain simply as `katana`.
 
 ### Running the tests
+
 To run the tests you first have to compile (to sierra and casm) the contract in the `cartidge_account` folder:
+
 ```bash
 make generate_artifacts
 ```
+
+StarkNet Foundry tests:
+
+```bash
+snforge test -p cartridge_account
+```
+
+Scarb tests:
+
+```bash
+scarb test -p webauthn_*
+```
+
 After the contract is compiled run the tests using `cargo`:
+
 ```bash
 cargo test
 ```
+
 The scarb builds the contract and saves the compiled code in the `cartridge_account/target` folder. The tests then fetch (at compile time) the comipled code and deploy it to the local network. Note that obviously the contract needs to be recompiled for any changes to be applied in the compiled code.
 
 ## src
+
 This is a cairo project with backend methods that will allow for various authentication methods in the custom contact.
 Written based on [this specification](https://www.w3.org/TR/webauthn/).
 
@@ -47,7 +66,9 @@ To again generate the tests:
 ```shell
 python test_gen_scripts/main.py
 ```
+
 ## test_gen_scripts
+
 This is a python library to programatically generate cryptographic cairo tests.
 
 ### Python Enviroment
