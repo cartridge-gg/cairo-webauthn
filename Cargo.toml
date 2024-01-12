@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/account_sdk"]
+members = ["crates/account_sdk", "crates/webauthn/tests"]
 
 [workspace.package]
 edition = "2021"
