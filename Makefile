@@ -5,7 +5,7 @@ config := --account katana-0 \
 # Build files helpers.
 build := ./target/dev/cartridge_account_
 sierra := .contract_class.json
-artifacts := ./crates/cartridge_account/abi/
+artifacts := ./target/abi/
 
 # Contract params for deploy.
 test_pubkey = 0x1234

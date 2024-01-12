@@ -2,6 +2,7 @@
 // OpenZeppelin Contracts for Cairo v0.7.0 (account/account.cairo)
 
 mod interface;
+mod erc20;
 mod signature_type;
 
 use starknet::testing;
