@@ -4,6 +4,7 @@ A library for webauthn credential authentication.
 The library is under development.
 
 ## Project structure
+The project consists of several subfolders located in the ```crates``` directory:
 
 - **account_sdk** - a rust project to export and test functions for interacting with the custom account contract.
 - **cartidge_account** - a cairo project with a custom account contract.
@@ -21,7 +22,7 @@ This is a rust project, that will eventually be compiled to wasm. It's purpose i
 To run the tests you first have to compile (to sierra and casm) the contract in the `cartidge_account` folder:
 
 ```bash
-make generate_artifacts
+make
 ```
 
 StarkNet Foundry tests:
