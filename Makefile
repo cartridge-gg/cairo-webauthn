@@ -30,3 +30,6 @@ deploy-katana:
 test-session: generate_artifacts
 	rm -rf ./account_sdk/log
 	cargo test --manifest-path account_sdk/Cargo.toml session -- --nocapture
+
+clean:
+	rm -rf ./target
