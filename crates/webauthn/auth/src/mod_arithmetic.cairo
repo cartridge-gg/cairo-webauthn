@@ -1,8 +1,6 @@
-use integer::u512_safe_div_rem_by_u256;
-use integer::U256TryIntoNonZero;
-use core::traits::TryInto;
-use option::OptionTrait;
-use integer::u256_wide_mul;
+use core::integer::u512_safe_div_rem_by_u256;
+use core::integer::U256TryIntoNonZero;
+use core::integer::u256_wide_mul;
 
 fn mod_inv(a: u256, n: u256) -> Option<u256> {
     let (gcd, x, _) = extended_gcd(a, n);

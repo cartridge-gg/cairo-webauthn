@@ -3,7 +3,7 @@
 // See test_gen_scripts/auth/expand_auth_data_test.py for details
 use core::traits::Into;
 use core::option::OptionTrait;
-use result::ResultTrait;
+use core::result::ResultTrait;
 use webauthn_auth::ecdsa::{verify_ecdsa, verify_hashed_ecdsa, VerifyEcdsaError};
 use webauthn_auth::types::AuthenticatorData;
 use webauthn_auth::webauthn::ImplArrayu8TryIntoAuthData;
@@ -12,7 +12,7 @@ use webauthn_auth::webauthn::expand_auth_data_and_verify_rp_id_hash;
 use starknet::secp256r1::Secp256r1Impl;
 use starknet::secp256r1::Secp256r1Point;
 use starknet::SyscallResultTrait;
-use array::ArrayTrait;
+use core::array::ArrayTrait;
 
 #[test]
 #[available_gas(200000000000)]

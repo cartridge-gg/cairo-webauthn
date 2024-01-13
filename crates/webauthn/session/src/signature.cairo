@@ -1,6 +1,5 @@
 use core::integer::U32Div;
 use core::Into;
-use debug::PrintTrait;
 
 // The layout of the span should look like:
 // [r, s, session_key, session_expires, root, proof_len, proofs_len, { proofs ... } , session_token_len, { session_token ... }]

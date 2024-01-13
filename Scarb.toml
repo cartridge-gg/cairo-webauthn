@@ -1,17 +1,20 @@
 [workspace]
 members = [
+    "crates/cartridge_account",
     "crates/webauthn/auth",
     "crates/webauthn/session",
-    "crates/cairo_client/cairo"
 ]
-name = "webauthn"
+
+[workspace.package]
+edition = "2023_10"
 version = "0.1.0"
-description = "Cairo webauthn library"
-homepage = "https://github.com/keep-starknet-strange/alexandria/"
 
 [workspace.dependencies]
-
-[scripts]
-all = "scarb build && scarb test"
-
-# See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest
+alexandria_data_structures = { git = "https://github.com/keep-starknet-strange/alexandria", commit = "085f17c87cf6d168032ef5840c39b8e18012284f" }
+alexandria_encoding = { git = "https://github.com/keep-starknet-strange/alexandria", commit = "085f17c87cf6d168032ef5840c39b8e18012284f" }
+alexandria_merkle_tree = { git = "https://github.com/keep-starknet-strange/alexandria", commit = "085f17c87cf6d168032ef5840c39b8e18012284f" }
+openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.8.0" }
+snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry", tag = "v0.14.0" }
+starknet = "2.4.3"
+webauthn_auth = { path = "crates/webauthn/auth" }
+webauthn_session = { path = "crates/webauthn/session" }

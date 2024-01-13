@@ -3,7 +3,7 @@
 // See test_gen_scripts/auth/helpers_test.py for details
 use core::traits::Into;
 use core::option::OptionTrait;
-use array::ArrayTrait;
+use core::array::ArrayTrait;
 use webauthn_auth::helpers::extract_u256_from_u8_array;
 use webauthn_auth::helpers::extract_r_and_s_from_array;
 

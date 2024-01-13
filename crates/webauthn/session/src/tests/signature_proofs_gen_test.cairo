@@ -3,7 +3,7 @@
 // See test_gen_scripts/session/signature_proofs_test.py for details
 use core::traits::Into;
 use core::option::OptionTrait;
-use array::ArrayTrait;
+use core::array::ArrayTrait;
 use webauthn_session::signature::ImplSignatureProofs;
 
 #[test]
