@@ -7,7 +7,7 @@ use webauthn_auth::ecdsa::{verify_ecdsa, verify_hashed_ecdsa, VerifyEcdsaError};
 use starknet::secp256r1::Secp256r1Impl;
 use starknet::secp256r1::Secp256r1Point;
 use starknet::SyscallResultTrait;
-use array::ArrayTrait;
+use core::array::ArrayTrait;
 
 #[test]
 #[available_gas(200000000000)]

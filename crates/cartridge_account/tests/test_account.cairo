@@ -10,7 +10,7 @@ use openzeppelin::utils::serde::SerializedAppend;
 use openzeppelin::utils::selectors;
 
 use snforge_std::{
-    declare, ContractClassTrait, TxInfoMock, TxInfoMockTrait, start_spoof, start_prank
+    declare, ContractClassTrait, CheatTarget, TxInfoMock, TxInfoMockTrait, start_spoof, start_prank
 };
 
 use starknet::ContractAddress;
@@ -112,10 +112,10 @@ fn test_account() {
     // Mock the transaction version
     let mut tx_info = TxInfoMockTrait::default();
     tx_info.version = Option::Some(TRANSACTION_VERSION);
-    start_spoof(account_address, tx_info);
+    start_spoof(CheatTarget::One(account_address), tx_info);
 
     let caller_address = contract_address_const::<0>();
-    start_prank(account_address, caller_address);
+    start_prank(CheatTarget::One(account_address), caller_address);
 
     assert(erc20.balance_of(account_address) == 1000, 'Initial balance should be equal');
 

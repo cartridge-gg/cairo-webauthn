@@ -1,15 +1,14 @@
 use core::starknet::SyscallResultTrait;
-use option::OptionTrait;
+use core::option::OptionTrait;
 use core::clone::Clone;
 use core::clone::TCopyClone;
 use core::serde::Serde;
 use core::starknet::secp256_trait::Secp256PointTrait;
 use core::traits::Into;
-use array::ArrayTrait;
-use integer::upcast;
-use debug::PrintTrait;
+use core::array::ArrayTrait;
+use core::integer::upcast;
 
-use result::ResultTrait;
+use core::result::ResultTrait;
 use starknet::secp256r1;
 use starknet::secp256r1::Secp256r1Point;
 use starknet::secp256r1::Secp256r1Impl;
