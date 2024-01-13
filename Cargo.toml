@@ -1,10 +1,34 @@
 [workspace]
 resolver = "2"
-members = [
-    "cairo_client",
-    "account_sdk"
-]
+members = ["crates/account_sdk"]
 
 [workspace.package]
 edition = "2021"
 version = "0.1.0"
+
+[workspace.dependencies]
+anyhow = "1"
+async-trait = "0.1"
+base64 = "0.21"
+cainome = { git = "https://github.com/cartridge-gg/cainome", tag = "v0.1.8", features = [
+    "abigen-rs",
+] }
+cairo-lang-starknet = "2.4"
+futures = "0.3"
+lazy_static = "1"
+p256 = "0.13"
+primitive-types = { version = "0.12", default-features = false }
+rand_core = { version = "0.6", features = ["getrandom"] }
+serde = "1"
+serde_json = "1"
+sha2 = "0.10"
+starknet = "0.8"
+starknet-crypto = "0.6"
+thiserror = "1"
+tokio = { version = "1", features = ["macros"] }
+toml = "0.8"
+u256-literal = "1"
+url = "2"
+wasm-bindgen = "0.2"
+webauthn-authenticator-rs = { version = "0.4" }
+webauthn-rs-proto = "0.4"
