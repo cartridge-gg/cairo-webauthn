@@ -3,9 +3,9 @@ use core::box::BoxTrait;
 use core::array::SpanTrait;
 use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
 use starknet::account::Call;
-use result::ResultTrait;
-use option::OptionTrait;
-use array::ArrayTrait;
+use core::result::ResultTrait;
+use core::option::OptionTrait;
+use core::array::ArrayTrait;
 use core::{TryInto, Into};
 use starknet::contract_address::ContractAddress;
 use alexandria_merkle_tree::merkle_tree::{
@@ -35,7 +35,7 @@ mod session_component {
     use starknet::account::Call;
     use webauthn_session::signature::{SessionSignature, SignatureProofs, SignatureProofsTrait};
     use webauthn_session::hash::{compute_session_hash, compute_call_hash};
-    use ecdsa::check_ecdsa_signature;
+    use core::ecdsa::check_ecdsa_signature;
     use alexandria_merkle_tree::merkle_tree::{
         Hasher, MerkleTree, poseidon::PoseidonHasherImpl, MerkleTreeTrait
     };

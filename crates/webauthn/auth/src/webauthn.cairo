@@ -1,11 +1,11 @@
 use alexandria_data_structures::array_ext::ArrayTraitExt;
 use core::array::SpanTrait;
-use array::ArrayTrait;
-use integer::upcast;
-use option::OptionTrait;
-use result::ResultTrait;
-use clone::Clone;
-use traits::{Into, TryInto, Drop, PartialEq};
+use core::array::ArrayTrait;
+use core::integer::upcast;
+use core::option::OptionTrait;
+use core::result::ResultTrait;
+use core::clone::Clone;
+use core::traits::{Into, TryInto, Drop, PartialEq};
 use starknet::secp256r1::Secp256r1Point;
 use alexandria_math::{sha256::sha256, BitShift};
 

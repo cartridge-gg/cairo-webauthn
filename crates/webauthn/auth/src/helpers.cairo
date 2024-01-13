@@ -1,12 +1,12 @@
-use array::ArrayTrait;
-use traits::PartialEq;
-use traits::Into;
-use clone::Clone;
+use core::array::ArrayTrait;
+use core::traits::PartialEq;
+use core::traits::Into;
+use core::clone::Clone;
 use webauthn_auth::types::{
     PublicKeyCredentialDescriptor, PublicKeyCredential, CollectedClientData, DomString
 };
 use alexandria_math::BitShift;
-use integer::upcast;
+use core::integer::upcast;
 
 
 trait ContainsTrait<A, T> {
