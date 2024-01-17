@@ -1,6 +1,7 @@
 #[cfg(test)]
-mod webauthn;
+mod auth;
 
-
-
-
+#[cfg(test)]
+mod helpers;
+#[cfg(test)]
+pub use helpers::*;

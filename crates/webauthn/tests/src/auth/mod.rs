@@ -1,4 +1,7 @@
 use cairo_args_runner::{arg_array, felt_vec, arg_value};
+
+mod mod_arithmetic;
+
 #[test]
 fn test_contains_trait() {
     let target = "../../../target/dev/webauthn_auth.sierra.json";
