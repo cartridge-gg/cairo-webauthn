@@ -8,3 +8,7 @@ version.workspace = true
 [dependencies]
 starknet.workspace = true
 cairo-args-runner = { path="/home/szymon/dev/cairo-args-runner" }
+proptest = "1.4.0"
+p256.workspace = true
+account-sdk.workspace = true
+u256 = "0.1.0"

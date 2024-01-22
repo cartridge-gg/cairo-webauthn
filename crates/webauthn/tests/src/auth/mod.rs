@@ -1,6 +1,7 @@
 use cairo_args_runner::{arg_array, felt_vec, arg_value};
 
 mod mod_arithmetic;
+mod verify_signature;
 
 #[test]
 fn test_contains_trait() {
