@@ -12,3 +12,4 @@ proptest = "1.4.0"
 p256.workspace = true
 account-sdk.workspace = true
 u256 = "0.1.0"
+sha2.workspace = true

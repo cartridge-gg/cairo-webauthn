@@ -4,11 +4,11 @@ use p256::{
     elliptic_curve::rand_core::OsRng,
 };
 
-use crate::{Function, FunctionTrait as _, FunctionUnspecified};
+use crate::{Function, FunctionReturnLength, FunctionTrait as _};
 
 use super::{ArgsBuilder, FeltSerialize, P256r1PublicKey};
 
-const VERIFY_SIGNATURE: FunctionUnspecified = Function::new_unspecified("verify_signature");
+const VERIFY_SIGNATURE: FunctionReturnLength<2> = Function::new("verify_signature");
 
 fn verify_signature(
     hash: &[u8],
@@ -27,7 +27,7 @@ fn verify_signature(
         .add_struct(pub_key.to_felts())
         .add_array(r.into_iter().copied().chain(s.iter().copied()));
     let result = VERIFY_SIGNATURE.run(args.build());
-    result == vec![0.into(), 0.into()]
+    result == [0.into(), 0.into()]
 }
 
 #[test]
