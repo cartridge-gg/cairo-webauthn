@@ -115,3 +115,16 @@ fn test_verify_signature_should_fail_1() {
         false
     )
 }
+
+#[test]
+fn test_verify_signature_should_fail_2() {
+    let hash: &[u8] = b"1234567890987654321";
+    let auth_data = b"dummy auth data";
+    let signing_key = SigningKey::random(&mut OsRng);
+    let other_signing_key = SigningKey::random(&mut OsRng);
+    let (signature, _) = signing_key.sign(&vec![auth_data, hash].concat());
+    assert_eq!(
+        verify_signature(hash, auth_data, other_signing_key, signature),
+        false
+    )
+}
