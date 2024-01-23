@@ -1,5 +1,4 @@
 use account_sdk::webauthn_signer::P256VerifyingKeyConverter;
-use cairo_args_runner::Felt252;
 use p256::{
     ecdsa::{signature::Signer, Signature, SigningKey},
     elliptic_curve::rand_core::OsRng,
@@ -7,63 +6,9 @@ use p256::{
 
 use crate::{Function, FunctionTrait as _, FunctionUnspecified};
 
-use super::{ArgsBuilder, FeltSerialize};
+use super::{ArgsBuilder, FeltSerialize, P256r1PublicKey};
 
 const VERIFY_SIGNATURE: FunctionUnspecified = Function::new_unspecified("verify_signature");
-
-pub struct CairoU256 {
-    low: Felt252,
-    high: Felt252,
-}
-
-impl CairoU256 {
-    pub fn new(low: Felt252, high: Felt252) -> Self {
-        Self { low, high }
-    }
-    pub fn from_bytes_be(low: &[u8; 16], high: &[u8; 16]) -> Self {
-        Self::new(Felt252::from_bytes_be(low), Felt252::from_bytes_be(high))
-    }
-    pub fn from_byte_slice_be(bytes: &[u8; 32]) -> Self {
-        let (low, high): (&[u8; 16], &[u8; 16]) = (
-            bytes[16..].try_into().unwrap(),
-            bytes[..16].try_into().unwrap(),
-        );
-        Self::from_bytes_be(low, high)
-    }
-}
-
-impl FeltSerialize for CairoU256 {
-    fn to_felts(self) -> Vec<Felt252> {
-        vec![self.low, self.high]
-    }
-}
-
-struct P256r1PublicKey {
-    x: CairoU256,
-    y: CairoU256,
-}
-
-impl P256r1PublicKey {
-    pub fn new(x: CairoU256, y: CairoU256) -> Self {
-        Self { x, y }
-    }
-    pub fn from_bytes_be(x: &[u8; 32], y: &[u8; 32]) -> Self {
-        Self::new(
-            CairoU256::from_byte_slice_be(x),
-            CairoU256::from_byte_slice_be(y),
-        )
-    }
-}
-
-impl FeltSerialize for P256r1PublicKey {
-    fn to_felts(self) -> Vec<Felt252> {
-        self.x
-            .to_felts()
-            .into_iter()
-            .chain(self.y.to_felts())
-            .collect()
-    }
-}
 
 fn verify_signature(
     hash: &[u8],
