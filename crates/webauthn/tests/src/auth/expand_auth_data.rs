@@ -1,15 +1,45 @@
-use cairo_args_runner::Felt252;
-
-use crate::{
-    auth::ArgsBuilder, Function, FunctionReturnLength, FunctionTrait, FunctionUnspecified,
-};
+use cairo_args_runner::{Arg, Felt252};
 
 use super::FeltSerialize;
+use crate::{
+    auth::ArgsBuilder, Function, FunctionReturnLength, FunctionTrait, FunctionUnspecified,
+    SpecifiedResultMemory,
+};
+use cairo_args_runner::SuccessfulRun;
 
-/// ```extended_gcd(u256, u256) -> (u256, u256, u256)```
-const EXPAND_AUTH_DATA: FunctionUnspecified =
-    Function::new_unspecified("expand_auth_data_endpoint");
+struct AuthDataFunction;
 
+impl FunctionTrait<AuthenticatorData, Vec<Arg>> for AuthDataFunction {
+    fn transform_arguments(&self, args: Vec<Arg>) -> Vec<Arg> {
+        args
+    }
+
+    fn transform_result(
+        &self,
+        result: Result<SuccessfulRun, cairo_args_runner::errors::SierraRunnerError>,
+    ) -> AuthenticatorData {
+        let result = result.unwrap();
+        let felts: Vec<Felt252> = result.value;
+        let rp_id_hash: Vec<u8> = result.memory
+            [felts[0].to_bigint().try_into().unwrap()..felts[1].to_bigint().try_into().unwrap()]
+            .iter()
+            .map(|x| x.clone().unwrap().to_bigint().try_into().unwrap())
+            .collect();
+        AuthenticatorData {
+            rp_id_hash: rp_id_hash.try_into().unwrap(),
+            flags: felts[2].to_bigint().try_into().unwrap(),
+            sign_count: felts[3].to_bigint().try_into().unwrap(),
+        }
+    }
+
+    fn name(&self) -> &str {
+        "expand_auth_data_endpoint"
+    }
+}
+
+const EXPAND_AUTH_DATA: AuthDataFunction = AuthDataFunction;
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct AuthenticatorData {
     pub rp_id_hash: [u8; 32],
     pub flags: u8,
@@ -45,9 +75,8 @@ impl FeltSerialize for AuthenticatorData {
 }
 
 fn expand_auth_data(auth_data: AuthenticatorData) -> bool {
-    let result = EXPAND_AUTH_DATA.run(ArgsBuilder::new().add_array(auth_data.to_felts()).build());
-    dbg!(result);
-    true
+    let result = EXPAND_AUTH_DATA.run(ArgsBuilder::new().add_array(auth_data.clone().to_felts()).build());
+    auth_data == result
 }
 
 #[test]

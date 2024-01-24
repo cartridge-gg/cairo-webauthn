@@ -38,6 +38,12 @@ pub trait FunctionTrait<T, P> {
     fn name(&self) -> &str;
 }
 
+#[derive(Debug, PartialEq)]
+pub struct SpecifiedResultMemory<T> {
+    result: T,
+    memory: Vec<Option<Felt252>>,
+}
+
 impl<'a, const N: usize, P> FunctionTrait<[Felt252; N], Vec<P>> for FunctionReturnLength<'a, N>
 where
     P: Into<Arg>,
@@ -48,36 +54,6 @@ where
 
     fn transform_result(&self, result: Result<SuccessfulRun, SierraRunnerError>) -> [Felt252; N] {
         result.unwrap().value.try_into().unwrap()
-    }
-
-    fn name(&self) -> &str {
-        self.name
-    }
-}
-
-pub struct SpecifiedWithMemory<const N: usize> {
-    result: [Felt252; N],
-    memory: Vec<Option<Felt252>>,
-}
-
-impl<'a, const N: usize, P> FunctionTrait<SpecifiedWithMemory<N>, Vec<P>>
-    for FunctionReturnLength<'a, N>
-where
-    P: Into<Arg>,
-{
-    fn transform_arguments(&self, args: Vec<P>) -> Vec<Arg> {
-        args.into_iter().map(Into::into).collect()
-    }
-
-    fn transform_result(
-        &self,
-        result: Result<SuccessfulRun, SierraRunnerError>,
-    ) -> SpecifiedWithMemory<N> {
-        let r = result.unwrap();
-        SpecifiedWithMemory {
-            result: r.value.try_into().unwrap(),
-            memory: r.memory,
-        }
     }
 
     fn name(&self) -> &str {
