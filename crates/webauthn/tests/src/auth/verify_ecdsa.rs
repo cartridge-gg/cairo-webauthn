@@ -1,4 +1,5 @@
 use account_sdk::webauthn_signer::P256VerifyingKeyConverter;
+use cairo_args_runner::Felt252;
 use p256::{
     ecdsa::{signature::Signer, Signature, SigningKey},
     elliptic_curve::rand_core::OsRng,
@@ -31,12 +32,12 @@ fn verify_ecdsa(message: &[u8], signing_key: SigningKey, signature: Signature) -
         .add_struct(hash.to_felts())
         .add_struct(r.to_felts())
         .add_struct(s.to_felts());
-    let result = VERIFY_HASHED_ECDSA.run(args.build());
+    let result: [Felt252; 2] = VERIFY_HASHED_ECDSA.run(args.build());
     result == [0.into(), 0.into()]
 }
 
 #[test]
-fn verify_ecdsa_1() {
+fn test_verify_ecdsa_1() {
     let message: &[u8] = b"hello world";
     let signing_key = SigningKey::random(&mut OsRng);
     let (signature, _) = signing_key.sign(message);

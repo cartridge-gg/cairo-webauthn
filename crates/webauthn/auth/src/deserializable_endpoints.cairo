@@ -4,6 +4,8 @@ use starknet::secp256r1::Secp256r1Point;
 use webauthn_auth::errors::{AuthnError, RTSEIntoRTAE, AuthnErrorIntoFelt252};
 use webauthn_auth::ecdsa::verify_hashed_ecdsa;
 use core::traits::Into;
+use webauthn_auth::webauthn::ImplArrayu8TryIntoAuthData;
+use webauthn_auth::types::AuthenticatorData;
 
 fn verify_hashed_ecdsa_endpoint(
     public_key_pt: PublicKey, msg_hash: u256, r: u256, s: u256
@@ -13,4 +15,11 @@ fn verify_hashed_ecdsa_endpoint(
         Option::None => { return Result::Err(VerifyEcdsaError::WrongArgument); }
     };
     verify_hashed_ecdsa(pub_key_point, msg_hash, r, s)
+}
+
+fn expand_auth_data_endpoint(
+    auth_data: Array<u8>
+) -> AuthenticatorData {
+    let data: Option<AuthenticatorData> = ImplArrayu8TryIntoAuthData::try_into(auth_data);
+    return data.unwrap();
 }

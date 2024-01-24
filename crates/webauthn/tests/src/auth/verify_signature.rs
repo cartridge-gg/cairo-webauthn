@@ -1,4 +1,5 @@
 use account_sdk::webauthn_signer::P256VerifyingKeyConverter;
+use cairo_args_runner::Felt252;
 use p256::{
     ecdsa::{signature::Signer, Signature, SigningKey},
     elliptic_curve::rand_core::OsRng,
@@ -26,7 +27,7 @@ fn verify_signature(
         .add_array(auth_data.iter().cloned())
         .add_struct(pub_key.to_felts())
         .add_array(r.into_iter().copied().chain(s.iter().copied()));
-    let result = VERIFY_SIGNATURE.run(args.build());
+    let result: [Felt252; 2] = VERIFY_SIGNATURE.run(args.build());
     result == [0.into(), 0.into()]
 }
 
