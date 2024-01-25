@@ -6,7 +6,6 @@ use p256::{
 };
 
 use super::*;
-use crate::*;
 
 const VERIFY_SIGNATURE: Function<SimpleVecParser, ConstLenExtractor<2>> = Function::new(
     "verify_signature",

@@ -8,7 +8,7 @@ use p256::{
 use sha2::{digest::Update, Digest, Sha256};
 
 use super::*;
-use crate::*;
+
 const VERIFY_HASHED_ECDSA: Function<SimpleVecParser, ConstLenExtractor<2>> = Function::new(
     "verify_hashed_ecdsa_endpoint",
     SimpleVecParser::new(),
