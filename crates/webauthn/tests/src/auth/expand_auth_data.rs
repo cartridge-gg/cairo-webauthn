@@ -1,10 +1,7 @@
 use cairo_args_runner::{Arg, Felt252};
 
 use super::FeltSerialize;
-use crate::{
-    auth::ArgsBuilder, Function, FunctionReturnLength, FunctionTrait, FunctionUnspecified,
-    SpecifiedResultMemory,
-};
+use crate::{auth::ArgsBuilder, FunctionTrait};
 use cairo_args_runner::SuccessfulRun;
 
 struct AuthDataFunction;
@@ -75,7 +72,11 @@ impl FeltSerialize for AuthenticatorData {
 }
 
 fn expand_auth_data(auth_data: AuthenticatorData) -> bool {
-    let result = EXPAND_AUTH_DATA.run(ArgsBuilder::new().add_array(auth_data.clone().to_felts()).build());
+    let result = EXPAND_AUTH_DATA.run(
+        ArgsBuilder::new()
+            .add_array(auth_data.clone().to_felts())
+            .build(),
+    );
     auth_data == result
 }
 

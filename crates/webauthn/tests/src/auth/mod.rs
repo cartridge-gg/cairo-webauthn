@@ -1,6 +1,7 @@
 use cairo_args_runner::{arg_array, arg_value, felt_vec, Arg, Felt252};
 
 mod expand_auth_data;
+mod helpers;
 mod mod_arithmetic;
 mod verify_ecdsa;
 mod verify_signature;
@@ -10,6 +11,7 @@ pub struct ArgsBuilder {
     args: Vec<Arg>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct CairoU256 {
     low: Felt252,
     high: Felt252,
@@ -28,6 +30,9 @@ impl CairoU256 {
             bytes[..16].try_into().unwrap(),
         );
         Self::from_bytes_be(low, high)
+    }
+    pub fn zero() -> Self {
+        Self::new(Felt252::from(0), Felt252::from(0))
     }
 }
 
