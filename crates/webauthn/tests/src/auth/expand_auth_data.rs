@@ -44,6 +44,7 @@ pub struct AuthenticatorData {
 }
 
 impl AuthenticatorData {
+    #[allow(dead_code)]
     pub fn from_bytes(bytes: &[u8]) -> Self {
         let rp_id_hash = bytes[0..32].try_into().unwrap();
         let flags = bytes[32];
