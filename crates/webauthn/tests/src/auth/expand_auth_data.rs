@@ -1,20 +1,24 @@
-use cairo_args_runner::{Arg, Felt252};
+use cairo_args_runner::{errors::SierraRunnerError, Arg, Felt252};
 
-use super::FeltSerialize;
-use crate::{auth::ArgsBuilder, FunctionTrait};
+use super::{ArgsBuilder, FeltSerialize};
+use crate::{ArgumentParser, Function, FunctionTrait, ResultExtractor};
 use cairo_args_runner::SuccessfulRun;
 
-struct AuthDataFunction;
+struct AuthDataParser;
+impl ArgumentParser for AuthDataParser {
+    type Args = AuthenticatorData;
 
-impl FunctionTrait<AuthenticatorData, Vec<Arg>> for AuthDataFunction {
-    fn transform_arguments(&self, args: Vec<Arg>) -> Vec<Arg> {
-        args
+    fn parse(&self, args: Self::Args) -> Vec<Arg> {
+        ArgsBuilder::new().add_array(args.to_felts()).build()
     }
+}
 
-    fn transform_result(
-        &self,
-        result: Result<SuccessfulRun, cairo_args_runner::errors::SierraRunnerError>,
-    ) -> AuthenticatorData {
+struct AuthDataExtractor;
+
+impl ResultExtractor for AuthDataExtractor {
+    type Result = AuthenticatorData;
+
+    fn extract(&self, result: Result<SuccessfulRun, SierraRunnerError>) -> Self::Result {
         let result = result.unwrap();
         let felts: Vec<Felt252> = result.value;
         let rp_id_hash: Vec<u8> = result.memory
@@ -28,13 +32,13 @@ impl FunctionTrait<AuthenticatorData, Vec<Arg>> for AuthDataFunction {
             sign_count: felts[3].to_bigint().try_into().unwrap(),
         }
     }
-
-    fn name(&self) -> &str {
-        "expand_auth_data_endpoint"
-    }
 }
 
-const EXPAND_AUTH_DATA: AuthDataFunction = AuthDataFunction;
+const EXPAND_AUTH_DATA: Function<AuthDataParser, AuthDataExtractor> = Function::new(
+    "expand_auth_data_endpoint",
+    AuthDataParser,
+    AuthDataExtractor,
+);
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct AuthenticatorData {
@@ -72,15 +76,6 @@ impl FeltSerialize for AuthenticatorData {
     }
 }
 
-fn expand_auth_data(auth_data: AuthenticatorData) -> bool {
-    let result = EXPAND_AUTH_DATA.run(
-        ArgsBuilder::new()
-            .add_array(auth_data.clone().to_felts())
-            .build(),
-    );
-    auth_data == result
-}
-
 #[test]
 fn test_expand_auth_data_1() {
     let d: Vec<u8> = (0_u8..32_u8).into_iter().collect();
@@ -89,5 +84,5 @@ fn test_expand_auth_data_1() {
         flags: 0,
         sign_count: 0,
     };
-    assert!(expand_auth_data(auth_data));
+    assert_eq!(EXPAND_AUTH_DATA.run(auth_data.clone()), auth_data);
 }

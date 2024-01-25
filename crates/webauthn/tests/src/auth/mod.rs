@@ -1,6 +1,6 @@
 use cairo_args_runner::{arg_array, arg_value, felt_vec, Arg, Felt252};
 
-// mod expand_auth_data;
+mod expand_auth_data;
 mod helpers;
 mod mod_arithmetic;
 mod verify_ecdsa;
