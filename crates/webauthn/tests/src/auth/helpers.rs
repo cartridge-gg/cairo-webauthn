@@ -1,20 +1,27 @@
 use cairo_args_runner::{errors::SierraRunnerError, Arg, Felt252};
 
-use super::CairoU256;
-use crate::{auth::ArgsBuilder, FunctionTrait};
+use super::*;
+use crate::*;
 use cairo_args_runner::SuccessfulRun;
 
-struct Extractu256Fromu8ArrayFunction;
+// const EXTRACT_U256_FROM_U8_ARRAY:
 
-impl FunctionTrait<Option<CairoU256>, (Vec<u8>, usize)> for Extractu256Fromu8ArrayFunction {
-    fn transform_arguments(&self, args: (Vec<u8>, usize)) -> Vec<Arg> {
+struct U256ArrParser;
+
+impl ArgumentParser for U256ArrParser {
+    type Args = (Vec<u8>, usize);
+
+    fn parse(&self, args: (Vec<u8>, usize)) -> Vec<Arg> {
         ArgsBuilder::new().add_array(args.0).add_one(args.1).build()
     }
+}
 
-    fn transform_result(
-        &self,
-        result: Result<SuccessfulRun, SierraRunnerError>,
-    ) -> Option<CairoU256> {
+struct U256Extractor;
+
+impl ResultExtractor for U256Extractor {
+    type Result = Option<CairoU256>;
+
+    fn extract(&self, result: Result<SuccessfulRun, SierraRunnerError>) -> Self::Result {
         let result = result.unwrap();
         let felts: Vec<Felt252> = result.value;
         if felts[0] == Felt252::from(1) {
@@ -26,13 +33,10 @@ impl FunctionTrait<Option<CairoU256>, (Vec<u8>, usize)> for Extractu256Fromu8Arr
             })
         }
     }
-
-    fn name(&self) -> &str {
-        "extract_u256_from_u8_array_endpoint"
-    }
 }
 
-const EXTRACT_U256_FROM_U8_ARRAY: Extractu256Fromu8ArrayFunction = Extractu256Fromu8ArrayFunction;
+const EXTRACT_U256_FROM_U8_ARRAY: utils::Function<U256ArrParser, U256Extractor> =
+    Function::new("extract_u256_from_u8_array", U256ArrParser, U256Extractor);
 
 fn serialize_and_extract_u256(val: CairoU256, offset: usize) -> CairoU256 {
     let low = val.low.to_bytes_be();

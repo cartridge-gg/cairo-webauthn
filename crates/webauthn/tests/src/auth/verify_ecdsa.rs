@@ -5,12 +5,15 @@ use p256::{
     elliptic_curve::rand_core::OsRng,
 };
 
-use crate::{Function, FunctionReturnLength, FunctionTrait};
-
-use super::{ArgsBuilder, CairoU256, FeltSerialize, P256r1PublicKey};
 use sha2::{digest::Update, Digest, Sha256};
 
-const VERIFY_HASHED_ECDSA: FunctionReturnLength<2> = Function::new("verify_hashed_ecdsa_endpoint");
+use super::*;
+use crate::*;
+const VERIFY_HASHED_ECDSA: Function<SimpleVecParser, ConstLenExtractor<2>> = Function::new(
+    "verify_hashed_ecdsa_endpoint",
+    SimpleVecParser::new(),
+    ConstLenExtractor::new(),
+);
 
 fn verify_ecdsa(message: &[u8], signing_key: SigningKey, signature: Signature) -> bool {
     let (r, s) = (signature.r(), signature.s());

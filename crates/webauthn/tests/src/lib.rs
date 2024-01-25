@@ -2,6 +2,6 @@
 mod auth;
 
 #[cfg(test)]
-mod helpers;
+mod utils;
 #[cfg(test)]
-pub use helpers::*;
+pub use utils::*;
