@@ -9,7 +9,7 @@ use sha2::{digest::Update, Digest, Sha256};
 
 use super::*;
 
-const VERIFY_HASHED_ECDSA: Function<SimpleVecParser, ConstLenExtractor<2>> = Function::new(
+const VERIFY_HASHED_ECDSA: Function<SimpleVecParser, ConstLenExtractor<2>> = Function::new_webauthn(
     "verify_hashed_ecdsa_endpoint",
     SimpleVecParser::new(),
     ConstLenExtractor::new(),

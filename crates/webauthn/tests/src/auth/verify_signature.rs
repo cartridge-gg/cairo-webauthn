@@ -7,7 +7,7 @@ use p256::{
 
 use super::*;
 
-const VERIFY_SIGNATURE: Function<SimpleVecParser, ConstLenExtractor<2>> = Function::new(
+const VERIFY_SIGNATURE: Function<SimpleVecParser, ConstLenExtractor<2>> = Function::new_webauthn(
     "verify_signature",
     SimpleVecParser::new(),
     ConstLenExtractor::new(),

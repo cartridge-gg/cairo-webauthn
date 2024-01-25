@@ -4,7 +4,8 @@ use cairo_args_runner::errors::SierraRunnerError;
 use cairo_args_runner::SuccessfulRun;
 use cairo_args_runner::{Arg, Felt252};
 
-pub const SIERRA_TARGET: &'static str = "../../../target/dev/webauthn_auth.sierra.json";
+pub const WEBAUTHN_SIERRA_TARGET: &'static str = "../../../target/dev/webauthn_auth.sierra.json";
+pub const SESSION_SIERRA_TARGET: &'static str = "../../../target/dev/webauthn_session.sierra.json";
 
 #[derive(Debug, Clone, Copy)]
 pub struct Function<'a, AP, RE>
@@ -12,6 +13,7 @@ where
     AP: ArgumentParser,
     RE: ResultExtractor,
 {
+    pub sierra_target: &'a str,
     pub name: &'a str,
     pub parser: AP,
     pub extractor: RE,
@@ -28,12 +30,19 @@ where
     AP: ArgumentParser,
     RE: ResultExtractor,
 {
-    pub const fn new(name: &'a str, parser: AP, extractor: RE) -> Self {
+    pub const fn new_(sierra_target: &'a str, name: &'a str, parser: AP, extractor: RE) -> Self {
         Self {
+            sierra_target,
             name,
             parser,
             extractor,
         }
+    }
+    pub const fn new_webauthn(name: &'a str, parser: AP, extractor: RE) -> Self {
+        Self::new_(WEBAUTHN_SIERRA_TARGET, name, parser, extractor)
+    }
+    pub const fn new_session(name: &'a str, parser: AP, extractor: RE) -> Self {
+        Self::new_(SESSION_SIERRA_TARGET, name, parser, extractor)
     }
 }
 
@@ -48,7 +57,8 @@ where
 
     fn run(self, args: Self::Args) -> Self::Result {
         let parsed_args = self.parser.parse(args);
-        let result = cairo_args_runner::run_capture_memory(SIERRA_TARGET, self.name, &parsed_args);
+        let result =
+            cairo_args_runner::run_capture_memory(self.sierra_target, self.name, &parsed_args);
         self.extractor.extract(result)
     }
 }

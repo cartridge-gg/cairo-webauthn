@@ -4,7 +4,7 @@ use crate::prelude::*;
 
 /// ```extended_gcd(u256, u256) -> (u256, u256, u256)```
 const EXTENDED_GCD: Function<GCDParser, ConstLenExtractor<6>> =
-    Function::new("extended_gcd", GCDParser, ConstLenExtractor::new());
+    Function::new_webauthn("extended_gcd", GCDParser, ConstLenExtractor::new());
 
 struct GCDParser;
 impl ArgumentParser for GCDParser {

@@ -20,6 +20,7 @@ use webauthn_session::hash::{compute_session_hash, compute_call_hash};
 mod hash;
 mod signature;
 mod interface;
+mod deserializable_endpoints;
 
 #[cfg(test)]
 mod tests;

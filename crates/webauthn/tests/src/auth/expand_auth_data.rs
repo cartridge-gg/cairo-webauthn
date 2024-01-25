@@ -33,7 +33,7 @@ impl ResultExtractor for AuthDataExtractor {
     }
 }
 
-const EXPAND_AUTH_DATA: Function<AuthDataParser, AuthDataExtractor> = Function::new(
+const EXPAND_AUTH_DATA: Function<AuthDataParser, AuthDataExtractor> = Function::new_webauthn(
     "expand_auth_data_endpoint",
     AuthDataParser,
     AuthDataExtractor,

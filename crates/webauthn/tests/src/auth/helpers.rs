@@ -36,7 +36,7 @@ impl ResultExtractor for U256Extractor {
 }
 
 const EXTRACT_U256_FROM_U8_ARRAY: utils::Function<U256ArrParser, U256Extractor> =
-    Function::new("extract_u256_from_u8_array", U256ArrParser, U256Extractor);
+    Function::new_webauthn("extract_u256_from_u8_array", U256ArrParser, U256Extractor);
 
 fn serialize_and_extract_u256(val: CairoU256, offset: usize) -> CairoU256 {
     let low = val.low.to_bytes_be();
