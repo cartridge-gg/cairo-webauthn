@@ -30,7 +30,7 @@ where
     AP: ArgumentParser,
     RE: ResultExtractor,
 {
-    pub const fn new_(sierra_target: &'a str, name: &'a str, parser: AP, extractor: RE) -> Self {
+    pub const fn new(sierra_target: &'a str, name: &'a str, parser: AP, extractor: RE) -> Self {
         Self {
             sierra_target,
             name,
@@ -39,10 +39,10 @@ where
         }
     }
     pub const fn new_webauthn(name: &'a str, parser: AP, extractor: RE) -> Self {
-        Self::new_(WEBAUTHN_SIERRA_TARGET, name, parser, extractor)
+        Self::new(WEBAUTHN_SIERRA_TARGET, name, parser, extractor)
     }
     pub const fn new_session(name: &'a str, parser: AP, extractor: RE) -> Self {
-        Self::new_(SESSION_SIERRA_TARGET, name, parser, extractor)
+        Self::new(SESSION_SIERRA_TARGET, name, parser, extractor)
     }
 }
 
