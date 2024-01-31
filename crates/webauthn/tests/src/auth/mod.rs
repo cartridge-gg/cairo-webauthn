@@ -1,3 +1,5 @@
+use proptest::prelude::*;
+
 use crate::prelude::*;
 
 mod expand_auth_data;
@@ -28,6 +30,17 @@ impl CairoU256 {
     }
     pub fn zero() -> Self {
         Self::new(Felt252::from(0), Felt252::from(0))
+    }
+}
+
+impl Arbitrary for CairoU256 {
+    type Parameters = ();
+    type Strategy = BoxedStrategy<Self>;
+
+    fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
+        (any::<u128>(), any::<u128>())
+            .prop_map(|(low, high)| Self::new(low.into(), high.into()))
+            .boxed()
     }
 }
 

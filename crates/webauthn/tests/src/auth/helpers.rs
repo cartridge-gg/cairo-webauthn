@@ -1,10 +1,7 @@
-use cairo_args_runner::{errors::SierraRunnerError, Arg, Felt252};
-
 use super::*;
 use crate::*;
 use cairo_args_runner::SuccessfulRun;
-
-// const EXTRACT_U256_FROM_U8_ARRAY:
+use cairo_args_runner::{errors::SierraRunnerError, Arg, Felt252};
 
 struct U256ArrParser;
 
@@ -72,4 +69,13 @@ fn test_extract_u256_from_u8_array_2() {
 fn test_extract_u256_from_u8_array_fail_1() {
     let result = EXTRACT_U256_FROM_U8_ARRAY.run(([0u8; 32].to_vec(), 3));
     assert_eq!(result, None);
+}
+
+proptest! {
+    #[test]
+    fn test_extract_u256_from_u8_array_prop(
+        val in any::<CairoU256>()
+    ) {
+        assert_eq!(serialize_and_extract_u256(val.clone(), 0), val);
+    }
 }
