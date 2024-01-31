@@ -35,9 +35,9 @@ impl CairoU256 {
 
 impl Arbitrary for CairoU256 {
     type Parameters = ();
-    type Strategy = BoxedStrategy<Self>;
+    type Strategy = BoxedStrategy<CairoU256>;
 
-    fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
+    fn arbitrary_with(_args: ()) -> BoxedStrategy<CairoU256> {
         (any::<u128>(), any::<u128>())
             .prop_map(|(low, high)| Self::new(low.into(), high.into()))
             .boxed()

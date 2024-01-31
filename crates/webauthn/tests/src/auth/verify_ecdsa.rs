@@ -2,9 +2,10 @@ use account_sdk::webauthn_signer::P256VerifyingKeyConverter;
 use cairo_args_runner::Felt252;
 use p256::{
     ecdsa::{signature::Signer, Signature, SigningKey},
-    elliptic_curve::rand_core::OsRng,
+    elliptic_curve::{rand_core::OsRng, SecretKey},
 };
 
+use proptest::collection;
 use sha2::{digest::Update, Digest, Sha256};
 
 use super::*;
@@ -45,4 +46,20 @@ fn test_verify_ecdsa_1() {
     let signing_key = SigningKey::random(&mut OsRng);
     let (signature, _) = signing_key.sign(message);
     assert!(verify_ecdsa(message, signing_key, signature));
+}
+
+proptest! {
+    #[test]
+    fn test_verify_ecdsa_prop(
+        (message, signing_key) in
+            (
+                collection::vec(any::<u8>(), 1..100),
+                collection::vec(any::<u8>(), 32)
+                    .prop_map(|b| TryInto::<[u8; 32]>::try_into(b).unwrap())
+                    .prop_map(|b| SigningKey::from(SecretKey::from_bytes(&b.into()).unwrap()))
+            ),
+    ) {
+        let (signature, _) = signing_key.sign(&message);
+        assert!(verify_ecdsa(&message, signing_key, signature));
+    }
 }
