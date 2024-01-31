@@ -10,4 +10,3 @@ impl Felt252Strategy {
         prop::collection::vec(any::<u8>(), 32..=32).prop_map(|b| Felt252::from_bytes_be(&b))
     }
 }
-
