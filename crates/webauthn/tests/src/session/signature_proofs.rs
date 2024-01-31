@@ -2,9 +2,9 @@ use std::vec;
 
 use crate::prelude::*;
 
-struct SignatureProofsParser;
+pub struct SignatureProofsParser;
 
-type SigProofs = Vec<Vec<Felt252>>;
+pub type SigProofs = Vec<Vec<Felt252>>;
 
 impl ArgumentParser for SignatureProofsParser {
     type Args = (SigProofs, usize);
@@ -17,7 +17,7 @@ impl ArgumentParser for SignatureProofsParser {
     }
 }
 
-struct SignatureProofsExtractor;
+pub struct SignatureProofsExtractor;
 
 impl ResultExtractor for SignatureProofsExtractor {
     type Result = SigProofs;
@@ -40,7 +40,7 @@ impl ResultExtractor for SignatureProofsExtractor {
     }
 }
 
-const SIGNATURE_PROOFS: Function<SignatureProofsParser, SignatureProofsExtractor> =
+pub const SIGNATURE_PROOFS: Function<SignatureProofsParser, SignatureProofsExtractor> =
     Function::new_session(
         "signature_proofs_endpoint",
         SignatureProofsParser,
