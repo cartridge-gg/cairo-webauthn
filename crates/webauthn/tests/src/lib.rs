@@ -4,6 +4,8 @@ mod arg_builder;
 pub mod prelude;
 #[cfg(test)]
 mod utils;
+#[cfg(test)]
+mod prop_utils;
 
 #[cfg(test)]
 mod auth;
