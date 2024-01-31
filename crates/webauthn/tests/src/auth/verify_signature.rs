@@ -3,7 +3,9 @@ use cairo_args_runner::Felt252;
 use p256::{
     ecdsa::{signature::Signer, Signature, SigningKey},
     elliptic_curve::rand_core::OsRng,
+    SecretKey,
 };
+use proptest::collection;
 
 use super::*;
 
@@ -75,4 +77,21 @@ fn test_verify_signature_should_fail_2() {
         verify_signature(hash, auth_data, other_signing_key, signature),
         false
     )
+}
+
+proptest! {
+    #[test]
+    fn test_verify_signature_prop(
+        (hash, auth_data, signing_key) in
+            (
+                collection::vec(any::<u8>(), 1..100),
+                collection::vec(any::<u8>(), 1..100),
+                collection::vec(any::<u8>(), 32)
+                    .prop_map(|b| TryInto::<[u8; 32]>::try_into(b).unwrap())
+                    .prop_map(|b| SigningKey::from(SecretKey::from_bytes(&b.into()).unwrap()))
+            ),
+    ) {
+        let (signature, _) = signing_key.sign(&vec![auth_data.clone(), hash.clone()].concat());
+        assert!(verify_signature(&hash, &auth_data, signing_key, signature))
+    }
 }
