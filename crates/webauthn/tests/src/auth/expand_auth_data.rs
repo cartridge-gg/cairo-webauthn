@@ -1,4 +1,5 @@
 use cairo_args_runner::{errors::SierraRunnerError, Arg, Felt252};
+use proptest::{collection, prelude::*};
 
 use crate::prelude::*;
 use cairo_args_runner::SuccessfulRun;
@@ -46,6 +47,21 @@ pub struct AuthenticatorData {
     pub sign_count: u32,
 }
 
+impl Arbitrary for AuthenticatorData {
+    type Parameters = ();
+    type Strategy = proptest::strategy::BoxedStrategy<Self>;
+
+    fn arbitrary_with(_: Self::Parameters) -> Self::Strategy {
+        (collection::vec(any::<u8>(), 32), any::<u8>(), any::<u32>())
+            .prop_map(|(rp_id_hash, flags, sign_count)| Self {
+                rp_id_hash: rp_id_hash.try_into().unwrap(),
+                flags,
+                sign_count,
+            })
+            .boxed()
+    }
+}
+
 impl AuthenticatorData {
     #[allow(dead_code)]
     pub fn from_bytes(bytes: &[u8]) -> Self {
@@ -84,4 +100,13 @@ fn test_expand_auth_data_1() {
         sign_count: 0,
     };
     assert_eq!(EXPAND_AUTH_DATA.run(auth_data.clone()), auth_data);
+}
+
+proptest! {
+    #[test]
+    fn test_expand_auth_data_prop(
+        auth_data in any::<AuthenticatorData>(),
+    ) {
+        assert_eq!(EXPAND_AUTH_DATA.run(auth_data.clone()), auth_data);
+    }
 }
