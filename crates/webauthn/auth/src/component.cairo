@@ -37,7 +37,7 @@ mod webauthn_component {
 
     #[storage]
     struct Storage {
-        public_key: WebauthnPubKey,
+        public_key: Option<WebauthnPubKey>,
     }
 
     mod Errors {
@@ -54,15 +54,18 @@ mod webauthn_component {
         ) {
             assert_only_self();
 
-            self.public_key.write(public_key);
+            self.public_key.write(Option::Some(public_key));
         }
-        fn get_webauthn_pub_key(self: @ComponentState<TContractState>,) -> WebauthnPubKey {
+        fn get_webauthn_pub_key(self: @ComponentState<TContractState>,) -> Option<WebauthnPubKey> {
             self.public_key.read()
         }
         fn verify_webauthn_signer(
             self: @ComponentState<TContractState>, signature: WebauthnSignature, tx_hash: felt252,
         ) -> bool {
-            let pub = self.get_webauthn_pub_key();
+            let pub = match self.get_webauthn_pub_key() {
+                Option::Some(pub) => pub,
+                Option::None => { return false; }
+            };
             let pub_key = match Secp256r1Impl::secp256_ec_new_syscall(pub.x, pub.y) {
                 Result::Ok(pub_key) => pub_key,
                 Result::Err(e) => { return false; }
