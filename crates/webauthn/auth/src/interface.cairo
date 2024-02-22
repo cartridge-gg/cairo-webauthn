@@ -3,7 +3,7 @@ use webauthn_auth::component::{WebauthnPubKey, WebauthnSignature};
 #[starknet::interface]
 trait IWebauthn<TContractState> {
     fn set_webauthn_pub_key(ref self: TContractState, public_key: WebauthnPubKey,);
-    fn get_webauthn_pub_key(self: @TContractState,) -> Option<WebauthnPubKey>;
+    fn get_webauthn_pub_key(self: @TContractState,) -> WebauthnPubKey;
     fn verify_webauthn_signer(
         self: @TContractState, signature: WebauthnSignature, tx_hash: felt252,
     ) -> bool;
