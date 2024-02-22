@@ -28,6 +28,8 @@ mod webauthn_component {
     use core::result::ResultTrait;
     use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
     use starknet::account::Call;
+    use starknet::get_caller_address;
+    use starknet::get_contract_address;
     use core::ecdsa::check_ecdsa_signature;
     use starknet::secp256r1::{Secp256r1Point, Secp256r1Impl};
     use webauthn_auth::webauthn::verify;
@@ -40,6 +42,7 @@ mod webauthn_component {
 
     mod Errors {
         const INVALID_SIGNATURE: felt252 = 'Account: invalid signature';
+        const UNAUTHORIZED: felt252 = 'Account: unauthorized';
     }
 
     #[embeddable_as(Webauthn)]
@@ -49,6 +52,8 @@ mod webauthn_component {
         fn set_webauthn_pub_key(
             ref self: ComponentState<TContractState>, public_key: WebauthnPubKey,
         ) {
+            assert_only_self();
+
             self.public_key.write(Option::Some(public_key));
         }
         fn get_webauthn_pub_key(self: @ComponentState<TContractState>,) -> Option<WebauthnPubKey> {
@@ -94,5 +99,11 @@ mod webauthn_component {
                 Errors::INVALID_SIGNATURE
             }
         }
+    }
+
+    fn assert_only_self() {
+        let caller = get_caller_address();
+        let self = get_contract_address();
+        assert(self == caller, Errors::UNAUTHORIZED);
     }
 }
