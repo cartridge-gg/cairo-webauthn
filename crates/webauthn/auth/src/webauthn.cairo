@@ -45,7 +45,7 @@ trait WebauthnAuthenticatorTrait<T> {
 
 
 fn verify(
-    pub: Secp256r1Point, // public key as point on elliptic curve
+    pub_key: Secp256r1Point, // public key as point on elliptic curve
     r: u256, // 'r' part from ecdsa
     s: u256, // 's' part from ecdsa
     type_offset: usize, // offset to 'type' field in json
@@ -86,9 +86,9 @@ fn verify(
     // Compute message ready for verification.
     let result = concatenate(@authenticator_data, @client_data_hash);
 
-    match verify_ecdsa(pub, result, r, s) {
+    match verify_ecdsa(pub_key, result, r, s) {
         Result::Ok => Result::Ok(()),
-        Result::Err(e) => AuthnError::InvalidSignature.into()
+        Result::Err(_) => AuthnError::InvalidSignature.into()
     }
 }
 
@@ -148,7 +148,7 @@ fn find_and_verify_credential_source<
                 PublicKey
             >::into(store.retrieve_public_key(credential.raw_id))?;
             let pk_2 = match response.user_handle {
-                Option::Some(handle) => RTSEIntoRTAE::<
+                Option::Some(_handle) => RTSEIntoRTAE::<
                     PublicKey
                 >::into(store.retrieve_public_key(credential.raw_id))?,
                 Option::None => { return AuthnError::IdentifiedUsersMismatch.into(); },
@@ -245,6 +245,6 @@ fn verify_signature(
     };
     match verify_ecdsa(pub_key_point, concatenation, r, s) {
         Result::Ok => Result::Ok(()),
-        Result::Err(e) => AuthnError::InvalidSignature.into()
+        Result::Err(_) => AuthnError::InvalidSignature.into()
     }
 }

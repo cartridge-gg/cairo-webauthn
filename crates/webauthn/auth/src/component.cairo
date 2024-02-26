@@ -62,13 +62,13 @@ mod webauthn_component {
         fn verify_webauthn_signer(
             self: @ComponentState<TContractState>, signature: WebauthnSignature, tx_hash: felt252,
         ) -> bool {
-            let pub = match self.get_webauthn_pub_key() {
-                Option::Some(pub) => pub,
+            let pub_key = match self.get_webauthn_pub_key() {
+                Option::Some(pub_key) => pub_key,
                 Option::None => { return false; }
             };
-            let pub_key = match Secp256r1Impl::secp256_ec_new_syscall(pub.x, pub.y) {
+            let pub_key = match Secp256r1Impl::secp256_ec_new_syscall(pub_key.x, pub_key.y) {
                 Result::Ok(pub_key) => pub_key,
-                Result::Err(e) => { return false; }
+                Result::Err(_) => { return false; }
             };
             let pub_key = match pub_key {
                 Option::Some(pub_key) => pub_key,
