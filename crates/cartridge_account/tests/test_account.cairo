@@ -92,7 +92,7 @@ impl TransferCallImpl of TransferCallTrait {
         let mut calldata = array![];
         calldata.append_serde(self.recipient);
         calldata.append_serde(self.amount);
-        Call { to: self.erc20, selector: selectors::transfer, calldata: calldata }
+        Call { to: self.erc20, selector: selectors::transfer, calldata: calldata.span() }
     }
 }
 
