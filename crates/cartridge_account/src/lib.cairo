@@ -94,6 +94,7 @@ mod Account {
     // External
     //
 
+    // TODO: Remove this warning
     #[abi(embed_v0)]
     impl SRC6Impl of interface::ISRC6<ContractState> {
         fn __execute__(self: @ContractState, mut calls: Array<Call>) -> Array<Span<felt252>> {
