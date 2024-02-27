@@ -7,7 +7,7 @@ version.workspace = true
 
 [dependencies]
 starknet.workspace = true
-cairo-args-runner = { git="https://github.com/neotheprogramist/cairo-args-runner", branch = "thepinion"}
+cairo-args-runner = { git="https://github.com/neotheprogramist/cairo-args-runner", rev="5bafcbaa7090ee1a61271e5f5e654d045037a201"}
 proptest = "1.4.0"
 p256.workspace = true
 account-sdk.workspace = true
