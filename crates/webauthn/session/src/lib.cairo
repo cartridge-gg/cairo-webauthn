@@ -114,7 +114,7 @@ mod session_component {
 
             // Hashing all the calls
             loop {
-                let pub_key = match calls.pop_front() {
+                let _pub_key = match calls.pop_front() {
                     Option::Some(single) => { leaves.append(compute_call_hash(@single)); },
                     Option::None(_) => { break; },
                 };
