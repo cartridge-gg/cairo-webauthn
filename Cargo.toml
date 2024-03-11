@@ -25,7 +25,6 @@ sha2 = "0.10"
 starknet = "0.8"
 starknet-crypto = "0.6"
 thiserror = "1"
-tokio = { version = "1", features = ["macros"] }
 toml = "0.8"
 u256-literal = "1"
 url = "2"
