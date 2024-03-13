@@ -44,6 +44,7 @@ where
         signer: P256r1Signer,
         address: FieldElement,
         chain_id: FieldElement,
+        origin: String,
     ) -> Self {
         Self {
             provider,
@@ -51,8 +52,7 @@ where
             address,
             chain_id,
             block_id: BlockId::Tag(BlockTag::Latest),
-            // Not security critical, but should be agreed upon
-            origin: "starknet".to_string(),
+            origin,
         }
     }
 }

@@ -119,6 +119,7 @@ where
                 self.signer.clone(),
                 self.address,
                 self.runner.client().chain_id().await.unwrap(),
+                "starknet".to_string()
             ),
         )
     }
