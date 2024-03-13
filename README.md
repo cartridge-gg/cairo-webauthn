@@ -32,8 +32,7 @@ in the root directory.
 After you've compiled the cairo code you can compile rust to wasm using
 
 ```bash
-cd crates/account_sdk
-cargo build --target wasm32-unknown-unknown  --release
+cargo build -p account-sdk --target wasm32-unknown-unknown  --release
 ```
 
 ## Running the tests
