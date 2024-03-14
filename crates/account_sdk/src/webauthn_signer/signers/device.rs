@@ -1,0 +1,76 @@
+use async_trait::async_trait;
+use coset::CoseKey;
+use futures::channel::oneshot;
+use wasm_bindgen_futures::spawn_local;
+use wasm_webauthn::*;
+
+use crate::webauthn_signer::credential::{AuthenticatorAssertionResponse, AuthenticatorData};
+
+use super::Signer;
+
+#[derive(Debug, Clone)]
+pub struct DeviceSigner {
+    rp_id: String,
+    credential_id: Vec<u8>,
+    pub_key: CoseKey,
+}
+
+impl DeviceSigner {
+    pub fn new(rp_id: String, credential_id: Vec<u8>, pub_key: CoseKey) -> Self {
+        Self {
+            rp_id,
+            credential_id,
+            pub_key,
+        }
+    }
+}
+
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+impl Signer for DeviceSigner {
+    async fn sign(&self, challenge: &[u8]) -> AuthenticatorAssertionResponse {
+        let (sender, receiver) = oneshot::channel();
+
+        let mut credential = Credential::from(CredentialID(self.credential_id.clone()));
+        credential.public_key = Some(self.pub_key.clone());
+
+        let rp_id = self.rp_id.to_owned();
+        let challenge = challenge.to_vec();
+
+        spawn_local(async move {
+            let results = GetAssertionArgsBuilder::default()
+                .rp_id(Some(rp_id))
+                .credentials(Some(vec![credential]))
+                .challenge(challenge.to_vec())
+                .build()
+                .expect("invalid args")
+                .get_assertion()
+                .await
+                .expect("get assertion");
+
+            sender.send(results).expect("receiver dropped");
+        });
+
+        let GetAssertionResponse {
+            signature,
+            client_data_json,
+            flags,
+            counter,
+        } = receiver.await.expect("receiver dropped");
+
+        AuthenticatorAssertionResponse {
+            authenticator_data: AuthenticatorData {
+                rp_id_hash: [0; 32],
+                flags,
+                sign_count: counter,
+            },
+            client_data_json,
+            signature,
+            user_handle: None,
+        }
+    }
+
+    fn public_key_bytes(&self) -> ([u8; 32], [u8; 32]) {
+        unimplemented!("unimplemented public_key_bytes")
+    }
+}

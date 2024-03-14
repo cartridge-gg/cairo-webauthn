@@ -19,8 +19,9 @@ use std::sync::Arc;
 
 use crate::felt_ser::to_felts;
 
-use super::{cairo_args::VerifyWebauthnSignerArgs, P256r1Signer};
+use super::cairo_args::VerifyWebauthnSignerArgs;
 use crate::abigen::account::WebauthnSignature;
+use crate::webauthn_signer::signers::{p256r1::P256r1Signer, Signer};
 
 pub struct WebauthnAccount<P>
 where
@@ -112,7 +113,7 @@ where
     ) -> Result<Vec<FieldElement>, Self::SignError> {
         let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
         let challenge = tx_hash.to_bytes_be().to_vec();
-        let assertion = self.signer.sign(&challenge);
+        let assertion = self.signer.sign(&challenge).await;
 
         let args =
             VerifyWebauthnSignerArgs::from_response(self.origin.clone(), challenge, assertion);

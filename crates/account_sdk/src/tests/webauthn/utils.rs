@@ -11,6 +11,7 @@ use crate::{
     deploy_contract::FEE_TOKEN_ADDRESS,
     transaction_waiter::TransactionWaiter,
     webauthn_signer::account::WebauthnAccount,
+    webauthn_signer::signers::Signer,
 };
 use crate::{
     abigen::erc20::{Erc20Contract, U256},
@@ -18,7 +19,7 @@ use crate::{
 };
 use crate::{
     deploy_contract::single_owner_account, tests::runners::TestnetRunner,
-    webauthn_signer::P256r1Signer,
+    webauthn_signer::signers::p256r1::P256r1Signer,
 };
 
 use super::super::deployment_test::{declare, deploy};
