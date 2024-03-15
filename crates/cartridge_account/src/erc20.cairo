@@ -57,7 +57,7 @@ mod ERC20 {
     }
 
     #[generate_trait]
-    #[external(v0)]
+    #[abi(per_item)]
     impl ExternalImpl of ExternalTrait {
         fn burn(ref self: ContractState, value: u256) {
             let caller = get_caller_address();

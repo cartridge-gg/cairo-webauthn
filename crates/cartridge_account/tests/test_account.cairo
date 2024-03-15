@@ -92,7 +92,7 @@ impl TransferCallImpl of TransferCallTrait {
         let mut calldata = array![];
         calldata.append_serde(self.recipient);
         calldata.append_serde(self.amount);
-        Call { to: self.erc20, selector: selectors::transfer, calldata: calldata }
+        Call { to: self.erc20, selector: selectors::transfer, calldata: calldata.span() }
     }
 }
 
@@ -121,7 +121,7 @@ fn test_account() {
 
     let recipient = contract_address_const::<0x123>();
     let call = TransferCall { erc20: erc20_address, recipient: recipient, amount: 200 }.to_call();
-    let ret = account.__execute__(array![call]);
+    let _ret = account.__execute__(array![call]);
 
     // Verify that the transfer of tokens was succesful
     assert(erc20.balance_of(account_address) == 800, 'Should have remained');

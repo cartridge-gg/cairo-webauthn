@@ -6,6 +6,7 @@ mod helpers;
 mod errors;
 mod component;
 mod interface;
+mod deserializable_endpoints;
 
 #[cfg(test)]
 mod tests;

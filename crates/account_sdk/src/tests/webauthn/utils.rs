@@ -99,6 +99,7 @@ where
         set_execution.send().await.unwrap();
 
         TransactionWaiter::new(set_tx, self.runner.client())
+            .wait()
             .await
             .unwrap();
     }
@@ -112,7 +113,7 @@ where
     }
     pub async fn webauthn_executor(
         &self,
-    ) -> CartridgeAccount<WebauthnAccount<&JsonRpcClient<HttpTransport>>> {
+    ) -> CartridgeAccount<WebauthnAccount<&JsonRpcClient<HttpTransport>, P256r1Signer>> {
         CartridgeAccount::new(
             self.address,
             WebauthnAccount::new(

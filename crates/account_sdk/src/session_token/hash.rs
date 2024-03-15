@@ -1,5 +1,5 @@
 use starknet::{core::types::FieldElement, macros::felt};
-use starknet_crypto::PoseidonHasher;
+use starknet_crypto::{poseidon_hash, PoseidonHasher};
 
 use crate::abigen::account::{Call, SessionSignature};
 
@@ -17,13 +17,6 @@ const POLICY_TYPE_HASH: FieldElement =
     felt!("0x2f0026e78543f036f33e26a8f5891b88c58dc1e20cbbfaf0bb53274da6fa568");
 
 const STARKNET_MESSAGE_FELT: FieldElement = felt!("0x537461726b4e6574204d657373616765");
-
-fn hash_two_elements(a: FieldElement, b: FieldElement) -> FieldElement {
-    let mut hasher = PoseidonHasher::new();
-    hasher.update(a);
-    hasher.update(b);
-    hasher.finalize()
-}
 
 pub fn compute_session_hash(
     signature: SessionSignature,
@@ -89,9 +82,9 @@ pub fn compute_root(mut current_node: FieldElement, mut proof: Vec<FieldElement>
         // We need to check if the current node is smaller than the current element of the proof.
         // If it is, we need to swap the order of the hash.
         current_node = if current_node < proof_element {
-            hash_two_elements(current_node, proof_element)
+            poseidon_hash(current_node, proof_element)
         } else {
-            hash_two_elements(proof_element, current_node)
+            poseidon_hash(proof_element, current_node)
         };
     }
 }
@@ -122,16 +115,16 @@ fn compute_proof(mut nodes: Vec<FieldElement>, index: usize, proof: &mut Vec<Fie
     compute_proof(next_level, index_parent, proof)
 }
 
-fn get_next_level(nodes: &Vec<FieldElement>) -> Vec<FieldElement> {
+fn get_next_level(nodes: &[FieldElement]) -> Vec<FieldElement> {
     let mut next_level: Vec<FieldElement> = Vec::with_capacity(nodes.len() / 2);
     for i in 0..nodes.len() / 2 {
         let left = nodes[i * 2];
         let right = nodes[i * 2 + 1];
 
         let node = if left < right {
-            hash_two_elements(left, right)
+            poseidon_hash(left, right)
         } else {
-            hash_two_elements(right, left)
+            poseidon_hash(right, left)
         };
         next_level.push(node);
     }
@@ -142,11 +135,11 @@ fn get_next_level(nodes: &Vec<FieldElement>) -> Vec<FieldElement> {
 #[test]
 fn merkle_tree_poseidon_test() {
     // [Setup] Merkle tree.
-    let root = felt!("0x7abc09d19c8a03abd4333a23f7823975c7bdd325170f0d32612b8baa1457d47");
+    let root = felt!("0x48924a3b2a7a7b7cc1c9371357e95e322899880a6534bdfe24e96a828b9d780");
     let leaf = felt!("0x1");
     let valid_proof = vec![
         felt!("0x2"),
-        felt!("0x47ef3ad11ad3f8fc055281f1721acd537563ec134036bc4bd4de2af151f0832"),
+        felt!("0x338eb608d7e48306d01f5a8d4275dd85a52ba79aaf7a1a7b35808ba573c3669"),
     ];
     let leaves = vec![felt!("0x1"), felt!("0x2"), felt!("0x3")];
 

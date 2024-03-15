@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/account_sdk"]
+members = ["crates/account_sdk", "crates/webauthn/tests"]
 
 [workspace.package]
 edition = "2021"
@@ -26,11 +26,12 @@ sha2 = "0.10"
 starknet = "0.8"
 starknet-crypto = "0.6"
 thiserror = "1"
-tokio = { version = "1", features = ["macros", "time"] }
 toml = "0.8"
 u256-literal = "1"
 url = "2"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4.42"
 wasm-webauthn = "0.1.0"
+webauthn-rs-proto = "0.4"
 account-sdk = { path = "crates/account_sdk" }
+tokio = { version = "1", features = ["macros", "time"] }

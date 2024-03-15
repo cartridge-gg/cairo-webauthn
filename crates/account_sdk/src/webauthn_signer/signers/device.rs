@@ -30,18 +30,20 @@ impl DeviceSigner {
 impl Signer for DeviceSigner {
     async fn sign(&self, challenge: &[u8]) -> AuthenticatorAssertionResponse {
         let (sender, receiver) = oneshot::channel();
-
-        let mut credential = Credential::from(CredentialID(self.credential_id.clone()));
-        credential.public_key = Some(self.pub_key.clone());
-
+        let credential_id = self.credential_id.clone();
+        let pub_key = self.pub_key.clone();
         let rp_id = self.rp_id.to_owned();
         let challenge = challenge.to_vec();
 
         spawn_local(async move {
-            let results = GetAssertionArgsBuilder::default()
+            let mut credential = Credential::from(CredentialID(credential_id));
+            credential.public_key = Some(pub_key);
+
+            let results: GetAssertionResponse = GetAssertionArgsBuilder::default()
                 .rp_id(Some(rp_id))
                 .credentials(Some(vec![credential]))
                 .challenge(challenge.to_vec())
+                .uv(UserVerificationRequirement::Required)
                 .build()
                 .expect("invalid args")
                 .get_assertion()
