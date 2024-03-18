@@ -1,6 +1,5 @@
 use cairo_args_runner::Felt252;
 use proptest::prelude::*;
-use proptest::strategy::Strategy;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Felt252Strategy;

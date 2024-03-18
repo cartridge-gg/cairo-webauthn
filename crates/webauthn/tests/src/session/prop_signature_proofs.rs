@@ -1,6 +1,5 @@
 use cairo_args_runner::Felt252;
 use proptest::prelude::*;
-use proptest::strategy::Strategy;
 
 use crate::prop_utils::Felt252Strategy;
 use crate::session::signature_proofs::SIGNATURE_PROOFS;
