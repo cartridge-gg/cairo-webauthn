@@ -11,7 +11,7 @@ fn vec_vec_felt252_strategy(
 ) -> impl Strategy<Value = (Vec<Vec<Felt252>>, usize)> {
     (
         prop::collection::vec(
-            prop::collection::vec(Felt252Strategy::new(), inner_len..=inner_len),
+            prop::collection::vec(Felt252Strategy::new_strategy(), inner_len..=inner_len),
             outer_len..=outer_len,
         ),
         Just(inner_len),

@@ -32,3 +32,5 @@ Cargo.lock
 
 # Logs
 **/log/
+
+lcov.info
