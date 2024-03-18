@@ -16,13 +16,28 @@ The project has a global rust workspace.
 
 This is a rust project, that will eventually be compiled to wasm. It's purpose is to export and test functions for interacting with the custom account contract. The testing framework implemented within uses [dojo/katana](https://github.com/dojoengine/dojo) underneath. Each test starts its own katana network, deploys a contract and performs operations on it. Naturally, you must have `katana` installed to run the tests. You can specify the path to the `katana` executable in the `account_sdk/KatanaConfig.toml` file. Note that if you have `dojo` installed and in `PATH` the path can remain simply as `katana`.
 
-### Running the tests
 
-To run the tests you first have to compile (to sierra and casm) the contract in the `cartidge_account` folder:
+### Compiling the cairo code
+
+To build rust you first have to compile cairo. Run
 
 ```bash
 make
 ```
+
+in the root directory.
+
+### Building for web assembly
+
+After you've compiled the cairo code you can compile rust to wasm using
+
+```bash
+cargo build -p account-sdk --target wasm32-unknown-unknown  --release
+```
+
+## Running the tests
+
+Note, that to run the tests you first have to [compile](#compiling-the-cairo-code) (to sierra and casm) the contract in the `cartidge_account` folder.
 
 StarkNet Foundry tests:
 
