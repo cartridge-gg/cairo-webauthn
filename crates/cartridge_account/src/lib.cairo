@@ -94,7 +94,8 @@ mod Account {
     // External
     //
 
-    #[external(v0)]
+    // TODO: Remove this warning
+    #[abi(embed_v0)]
     impl SRC6Impl of interface::ISRC6<ContractState> {
         fn __execute__(self: @ContractState, mut calls: Array<Call>) -> Array<Span<felt252>> {
             // Avoid calls from other contracts
@@ -126,14 +127,14 @@ mod Account {
         }
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl DeclarerImpl of interface::IDeclarer<ContractState> {
         fn __validate_declare__(self: @ContractState, class_hash: felt252) -> felt252 {
             self.validate_ecdsa_transaction()
         }
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl PublicKeyImpl of super::IPublicKey<ContractState> {
         fn get_public_key(self: @ContractState) -> felt252 {
             self.Account_public_key.read()
@@ -240,6 +241,6 @@ mod Account {
 
     fn _execute_single_call(call: Call) -> Span<felt252> {
         let Call{to, selector, calldata } = call;
-        starknet::call_contract_syscall(to, selector, calldata.span()).unwrap()
+        starknet::call_contract_syscall(to, selector, calldata).unwrap()
     }
 }

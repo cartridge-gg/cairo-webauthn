@@ -14,6 +14,10 @@ trait ContainsTrait<A, T> {
 }
 
 
+fn test_array_contains(arr: Array<felt252>, val: felt252) -> bool {
+    arr.contains(@val)
+}
+
 impl ArrayTContainsImpl<T, impl Teq: PartialEq<T>> of ContainsTrait<Array<T>, T> {
     fn contains(self: @Array<T>, item: @T) -> bool {
         let la: usize = self.len();

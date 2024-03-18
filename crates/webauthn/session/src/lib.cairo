@@ -20,6 +20,7 @@ use webauthn_session::hash::{compute_session_hash, compute_call_hash};
 mod hash;
 mod signature;
 mod interface;
+mod deserializable_endpoints;
 
 #[cfg(test)]
 mod tests;
@@ -114,7 +115,7 @@ mod session_component {
 
             // Hashing all the calls
             loop {
-                let pub_key = match calls.pop_front() {
+                let _pub_key = match calls.pop_front() {
                     Option::Some(single) => { leaves.append(compute_call_hash(@single)); },
                     Option::None(_) => { break; },
                 };

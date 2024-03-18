@@ -3,13 +3,9 @@ use alexandria_data_structures::array_ext::ArrayTraitExt;
 use core::box::BoxTrait;
 use core::array::SpanTrait;
 use starknet::info::{TxInfo, get_tx_info, get_block_timestamp};
-use result::ResultTrait;
-use option::OptionTrait;
-use array::ArrayTrait;
 use core::{TryInto, Into};
 use starknet::{contract_address::ContractAddress};
-
-use webauthn_session::signature::{SessionSignature, FeltSpanTryIntoSignature, SignatureProofs};
+use webauthn_session::signature::{SessionSignature, SignatureProofs};
 use webauthn_session::hash::{compute_session_hash, compute_call_hash};
 use alexandria_merkle_tree::merkle_tree::{
     Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait
