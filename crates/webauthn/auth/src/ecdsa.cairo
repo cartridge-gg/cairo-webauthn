@@ -1,6 +1,6 @@
 use core::array::ArrayTrait;
 use core::debug::PrintTrait;
-use core::starknet::secp256_trait::Secp256PointTrait;
+use core::starknet::secp256_trait::{Secp256PointTrait, is_signature_entry_valid};
 use starknet::secp256r1::Secp256r1Point;
 use starknet::secp256r1::Secp256r1Impl;
 use starknet::secp256r1::Secp256r1PointImpl;
@@ -39,7 +39,8 @@ fn verify_ecdsa(
 fn verify_hashed_ecdsa(
     public_key_pt: Secp256r1Point, msg_hash: u256, r: u256, s: u256
 ) -> Result<(), VerifyEcdsaError> {
-    if check_bounds(r, s) == false {
+    if !is_signature_entry_valid::<Secp256r1Point>(r)
+        || !is_signature_entry_valid::<Secp256r1Point>(s) {
         return Result::Err(VerifyEcdsaError::WrongArgument);
     }
 
@@ -94,21 +95,5 @@ impl ImplVerifyEcdsaErrorIntoFelt252 of Into<VerifyEcdsaError, felt252> {
             VerifyEcdsaError::InvalidSignature => 'Invalid Signature!',
             VerifyEcdsaError::SyscallError => 'Syscall Error!',
         }
-    }
-}
-
-#[derive(Drop)]
-fn check_bounds(r: u256, s: u256) -> bool {
-    let n = Secp256r1Impl::get_curve_size();
-    if r > n {
-        false
-    } else if s > n {
-        false
-    } else if r < 1 {
-        false
-    } else if s < 1 {
-        false
-    } else {
-        true
     }
 }
