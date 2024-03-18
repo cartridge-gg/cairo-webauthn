@@ -1,5 +1,3 @@
-use cairo_args_runner::{Arg, Felt252};
-
 use crate::prelude::*;
 
 /// ```extended_gcd(u256, u256) -> (u256, u256, u256)```

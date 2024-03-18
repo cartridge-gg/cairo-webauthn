@@ -1,8 +1,6 @@
-use cairo_args_runner::{errors::SierraRunnerError, Arg, Felt252};
 use proptest::{collection, prelude::*};
 
 use crate::prelude::*;
-use cairo_args_runner::SuccessfulRun;
 
 struct AuthDataParser;
 impl ArgumentParser for AuthDataParser {

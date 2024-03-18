@@ -1,5 +1,4 @@
 use account_sdk::webauthn_signer::P256VerifyingKeyConverter;
-use cairo_args_runner::Felt252;
 use p256::{
     ecdsa::{signature::Signer, Signature, SigningKey},
     elliptic_curve::{rand_core::OsRng, SecretKey},
