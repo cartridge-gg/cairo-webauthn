@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use coset::CoseKey;
 use futures::channel::oneshot;
 use wasm_bindgen_futures::spawn_local;
 use wasm_webauthn::*;
@@ -11,16 +10,14 @@ use super::Signer;
 #[derive(Debug, Clone)]
 pub struct DeviceSigner {
     rp_id: String,
-    credential_id: Vec<u8>,
-    pub_key: CoseKey,
+    credential_id: Vec<u8>
 }
 
 impl DeviceSigner {
-    pub fn new(rp_id: String, credential_id: Vec<u8>, pub_key: CoseKey) -> Self {
+    pub fn new(rp_id: String, credential_id: Vec<u8>) -> Self {
         Self {
             rp_id,
-            credential_id,
-            pub_key,
+            credential_id
         }
     }
 }
@@ -31,18 +28,16 @@ impl Signer for DeviceSigner {
     async fn sign(&self, challenge: &[u8]) -> AuthenticatorAssertionResponse {
         let (sender, receiver) = oneshot::channel();
         let credential_id = self.credential_id.clone();
-        let pub_key = self.pub_key.clone();
         let rp_id = self.rp_id.to_owned();
         let challenge = challenge.to_vec();
 
         spawn_local(async move {
             let mut credential = Credential::from(CredentialID(credential_id));
-            credential.public_key = Some(pub_key);
 
             let results: GetAssertionResponse = GetAssertionArgsBuilder::default()
                 .rp_id(Some(rp_id))
                 .credentials(Some(vec![credential]))
-                .challenge(challenge.to_vec())
+                .challenge(challenge)
                 .uv(UserVerificationRequirement::Required)
                 .build()
                 .expect("invalid args")
