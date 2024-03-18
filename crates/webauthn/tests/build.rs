@@ -27,4 +27,5 @@ fn main() {
     // It's important since we always want to test against the latest version of the code
     println!("cargo:rerun-if-changed=../auth");
     println!("cargo:rerun-if-changed=../session");
+    println!("cargo:rerun-if-changed=../../../Scarb.toml");
 }
