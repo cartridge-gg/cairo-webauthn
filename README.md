@@ -43,7 +43,7 @@ cargo build -p account-sdk --target wasm32-unknown-unknown  --release
 
 Note, that to run the tests you first have to [compile](#compiling-the-cairo-code) (to sierra and casm) the contract in the `cartidge_account` folder.
 
-StarkNet Foundry tests:
+Starknet Foundry tests:
 
 ```bash
 snforge test -p cartridge_account

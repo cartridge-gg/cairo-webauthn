@@ -5,7 +5,7 @@ use proptest::prelude::*;
 pub struct Felt252Strategy;
 
 impl Felt252Strategy {
-    pub fn new() -> impl Strategy<Value = Felt252> {
+    pub fn new_strategy() -> impl Strategy<Value = Felt252> {
         prop::collection::vec(any::<u8>(), 32..=32).prop_map(|b| Felt252::from_bytes_be(&b))
     }
 }

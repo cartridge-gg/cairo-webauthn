@@ -29,6 +29,12 @@ impl ArgsBuilder {
     }
 }
 
+impl Default for ArgsBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub trait FeltSerialize {
     fn to_felts(self) -> Vec<Felt252>;
 }

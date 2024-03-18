@@ -91,7 +91,7 @@ impl FeltSerialize for AuthenticatorData {
 
 #[test]
 fn test_expand_auth_data_1() {
-    let d: Vec<u8> = (0_u8..32_u8).into_iter().collect();
+    let d: Vec<u8> = (0_u8..32_u8).collect();
     let auth_data = AuthenticatorData {
         rp_id_hash: d.try_into().unwrap(),
         flags: 0,
