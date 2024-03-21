@@ -18,9 +18,7 @@ fn verify_hashed_ecdsa_endpoint(
     verify_hashed_ecdsa(pub_key_point, msg_hash, r, s)
 }
 
-fn expand_auth_data_endpoint(
-    auth_data: Array<u8>
-) -> AuthenticatorData {
+fn expand_auth_data_endpoint(auth_data: Array<u8>) -> AuthenticatorData {
     let data: Option<AuthenticatorData> = ImplArrayu8TryIntoAuthData::try_into(auth_data);
     return data.unwrap();
 }

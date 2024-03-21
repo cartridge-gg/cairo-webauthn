@@ -4,8 +4,8 @@ use cairo_args_runner::errors::SierraRunnerError;
 use cairo_args_runner::SuccessfulRun;
 use cairo_args_runner::{Arg, Felt252};
 
-pub const WEBAUTHN_SIERRA_TARGET: &'static str = "../../../target/dev/webauthn_auth.sierra.json";
-pub const SESSION_SIERRA_TARGET: &'static str = "../../../target/dev/webauthn_session.sierra.json";
+pub const WEBAUTHN_SIERRA_TARGET: &str = "../../../target/dev/webauthn_auth.sierra.json";
+pub const SESSION_SIERRA_TARGET: &str = "../../../target/dev/webauthn_session.sierra.json";
 
 #[derive(Debug, Clone, Copy)]
 pub struct Function<'a, AP, RE>
