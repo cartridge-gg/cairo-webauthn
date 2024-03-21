@@ -19,7 +19,7 @@ use std::sync::Arc;
 
 use crate::felt_ser::to_felts;
 
-use super::cairo_args::VerifyWebauthnSignerArgs;
+use super::{cairo_args::VerifyWebauthnSignerArgs, signers::device::DeviceError};
 use crate::abigen::account::WebauthnSignature;
 use crate::webauthn_signer::signers::Signer;
 
@@ -84,6 +84,8 @@ where
 pub enum SignError {
     #[error("Signer error: {0}")]
     Signer(EcdsaSignError),
+    #[error("Device error: {0}")]
+    Device(DeviceError)
 }
 
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
@@ -110,7 +112,7 @@ where
     ) -> Result<Vec<FieldElement>, Self::SignError> {
         let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
         let challenge = tx_hash.to_bytes_be().to_vec();
-        let assertion = self.signer.sign(&challenge).await;
+        let assertion = self.signer.sign(&challenge).await?;
 
         let args =
             VerifyWebauthnSignerArgs::from_response(self.origin.clone(), challenge, assertion);

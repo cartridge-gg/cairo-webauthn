@@ -1,11 +1,24 @@
+use std::result::Result;
 use async_trait::async_trait;
 use futures::channel::oneshot;
 use wasm_bindgen_futures::spawn_local;
 use wasm_webauthn::*;
 
-use crate::webauthn_signer::credential::{AuthenticatorAssertionResponse, AuthenticatorData};
+use crate::webauthn_signer::{account::SignError, credential::{self, AuthenticatorAssertionResponse, AuthenticatorData}};
 
 use super::Signer;
+
+#[derive(Debug, thiserror::Error)]
+pub enum DeviceError {
+    #[error("Invalid args")]
+    InvalidArgs,
+    #[error("Create credential error: {0}")]
+    CreateCredential(String),
+    #[error("Get assertion error: {0}")]
+    GetAssertion(String),
+    #[error("Channel error: {0}")]
+    Channel(String)
+}
 
 #[derive(Debug, Clone)]
 pub struct DeviceSigner {
@@ -21,39 +34,50 @@ impl DeviceSigner {
         }
     }
 
-    pub async fn register(rp_id: String, user_name: String, challenge: &[u8]) -> Self {
+    pub async fn register(rp_id: String, user_name: String, challenge: &[u8]) -> Result<Self, SignError> {
         let MakeCredentialResponse {
             credential
-        } = Self::create_credential(rp_id.clone(), user_name, challenge).await;
+        } = Self::create_credential(rp_id.clone(), user_name, challenge).await?;
 
-        Self {
+        Ok(Self {
             rp_id,
             credential_id: credential.id.0
-        }
+        })
     }
 
-    async fn create_credential(rp_id: String, user_name: String, challenge: &[u8]) -> MakeCredentialResponse {
+    async fn create_credential(rp_id: String, user_name: String, challenge: &[u8]) -> Result<MakeCredentialResponse, SignError> {
         let (tx, rx) = oneshot::channel();
         let rp_id = rp_id.to_owned();
         let challenge = challenge.to_vec();
 
         spawn_local(async move {
-            let results: MakeCredentialResponse = MakeCredentialArgsBuilder::default()
+            let result = MakeCredentialArgsBuilder::default()
                 .rp_id(Some(rp_id))
                 .challenge(challenge)
                 .user_name(Some(user_name))
                 .uv(UserVerificationRequirement::Required)
-                .build().expect("invalid args")
-                .make_credential().await
-                .expect("make credential");
+                .build()
+                .expect("invalid args")
+                .make_credential().await;
 
-            tx.send(results).expect("receiver dropped")
+       
+            match result {
+                Ok(credential) => {
+                    let _ = tx.send(Ok(credential));
+                },
+                Err(e) => {
+                    let _ = tx.send(Err(DeviceError::CreateCredential(e.to_string())));
+                }
+            }
         });
 
-        rx.await.expect("receiver dropped")
+        match rx.await {
+            Ok(result) => result.map_err(SignError::Device),
+            Err(_) => Err(SignError::Device(DeviceError::Channel("receiver dropped".to_string())))
+        }
     }
 
-    async fn get_assertion(&self, challenge: &[u8]) -> GetAssertionResponse {
+    async fn get_assertion(&self, challenge: &[u8]) -> Result<GetAssertionResponse, SignError> {
         let (tx, rx) = oneshot::channel();
         let credential_id = self.credential_id.clone();
         let rp_id = self.rp_id.to_owned();
@@ -62,7 +86,7 @@ impl DeviceSigner {
         spawn_local(async move {
             let credential = Credential::from(CredentialID(credential_id));
 
-            let results: GetAssertionResponse = GetAssertionArgsBuilder::default()
+            let result = GetAssertionArgsBuilder::default()
                 .rp_id(Some(rp_id))
                 .credentials(Some(vec![credential]))
                 .challenge(challenge)
@@ -70,28 +94,37 @@ impl DeviceSigner {
                 .build()
                 .expect("invalid args")
                 .get_assertion()
-                .await
-                .expect("get assertion");
+                .await;
 
-            tx.send(results).expect("receiver dropped");
+            match result {
+                Ok(assertion) => {
+                    let _ = tx.send(Ok(assertion));
+                },
+                Err(e) => {
+                    let _ = tx.send(Err(DeviceError::GetAssertion(e.to_string())));
+                }
+            }
         });
 
-        rx.await.expect("receiver dropped")
+        match rx.await {
+            Ok(result) => result.map_err(SignError::Device),
+            Err(_) => Err(SignError::Device(DeviceError::Channel("receiver dropped".to_string())))
+        }
     }
 }
 
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl Signer for DeviceSigner {
-    async fn sign(&self, challenge: &[u8]) -> AuthenticatorAssertionResponse {
+    async fn sign(&self, challenge: &[u8]) -> Result<AuthenticatorAssertionResponse, SignError> {
         let GetAssertionResponse {
             signature,
             client_data_json,
             flags,
             counter,
-        } = self.get_assertion(challenge).await;
+        } = self.get_assertion(challenge).await?;
 
-        AuthenticatorAssertionResponse {
+        Ok(AuthenticatorAssertionResponse {
             authenticator_data: AuthenticatorData {
                 rp_id_hash: [0; 32],
                 flags,
@@ -100,7 +133,7 @@ impl Signer for DeviceSigner {
             client_data_json,
             signature,
             user_handle: None,
-        }
+        })
     }
 
     fn public_key_bytes(&self) -> ([u8; 32], [u8; 32]) {

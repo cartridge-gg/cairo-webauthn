@@ -1,4 +1,4 @@
-use crate::webauthn_signer::credential::{AuthenticatorData, CliendData};
+use crate::webauthn_signer::{account::SignError, credential::{AuthenticatorData, CliendData}};
 use async_trait::async_trait;
 use p256::{
     ecdsa::{signature::Signer as P256Signer, Signature, SigningKey, VerifyingKey},
@@ -34,7 +34,7 @@ impl Signer for P256r1Signer {
         P256VerifyingKeyConverter::new(*self.signing_key.verifying_key()).to_bytes()
     }
 
-    async fn sign(&self, challenge: &[u8]) -> AuthenticatorAssertionResponse {
+    async fn sign(&self, challenge: &[u8]) -> Result<AuthenticatorAssertionResponse, SignError> {
         use sha2::{digest::Update, Digest, Sha256};
 
         let authenticator_data = AuthenticatorData {
@@ -50,12 +50,12 @@ impl Signer for P256r1Signer {
         let signature: Signature = self.signing_key.try_sign(&to_sign).unwrap();
         let signature = signature.to_bytes().to_vec();
 
-        AuthenticatorAssertionResponse {
+        Ok(AuthenticatorAssertionResponse {
             authenticator_data,
             client_data_json,
             signature,
             user_handle: None,
-        }
+        })
     }
 }
 
