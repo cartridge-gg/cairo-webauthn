@@ -1,4 +1,7 @@
-use crate::webauthn_signer::{account::SignError, credential::{AuthenticatorData, CliendData}};
+use crate::webauthn_signer::{
+    account::SignError,
+    credential::{AuthenticatorData, CliendData},
+};
 use async_trait::async_trait;
 use p256::{
     ecdsa::{signature::Signer as P256Signer, Signature, SigningKey, VerifyingKey},

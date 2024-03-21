@@ -1,5 +1,5 @@
-use super::credential::AuthenticatorAssertionResponse;
 use super::account::SignError;
+use super::credential::AuthenticatorAssertionResponse;
 use async_trait::async_trait;
 
 pub mod device;

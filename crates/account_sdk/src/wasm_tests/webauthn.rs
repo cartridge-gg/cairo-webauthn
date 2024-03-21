@@ -1,8 +1,8 @@
 use wasm_bindgen_test::*;
 
-// FIXME: Currently wasm tests are failing with error below. 
+// FIXME: Currently wasm tests are failing with error below.
 //
-// Error: failed to deserialize wasm module          
+// Error: failed to deserialize wasm module
 
 // Caused by:
 //     0: failed to parse code section

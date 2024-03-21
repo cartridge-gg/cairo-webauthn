@@ -85,7 +85,7 @@ pub enum SignError {
     #[error("Signer error: {0}")]
     Signer(EcdsaSignError),
     #[error("Device error: {0}")]
-    Device(DeviceError)
+    Device(DeviceError),
 }
 
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
