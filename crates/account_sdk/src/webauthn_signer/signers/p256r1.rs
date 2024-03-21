@@ -82,11 +82,3 @@ impl P256VerifyingKeyConverter {
         )
     }
 }
-
-// #[tokio::test]
-// async fn test_signer() {
-//     let rp_id = "https://localhost:8080".to_string();
-//     let signer = P256r1Signer::random(rp_id);
-//     let calldata = signer.sign("842903840923".as_bytes()).await;
-//     dbg!(&calldata);
-// }

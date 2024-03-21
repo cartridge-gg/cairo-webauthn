@@ -9,6 +9,3 @@ pub mod session_token;
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(test)]
 pub mod tests;
-
-#[cfg(target_arch = "wasm32")]
-pub mod wasm_tests;

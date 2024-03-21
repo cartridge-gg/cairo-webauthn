@@ -14,7 +14,6 @@ cainome = { git = "https://github.com/piniom/cainome", tag="v0.2.4-expand", feat
     "abigen-rs", "expand-expr"
 ] }
 cairo-lang-starknet = "2.4.0"
-coset = { version = "0.3.4", features = ["std"] }
 futures = "0.3"
 lazy_static = "1"
 p256 = "0.13"

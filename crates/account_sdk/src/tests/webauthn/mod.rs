@@ -65,7 +65,11 @@ async fn test_verify_webauthn_explicit() {
 
     let challenge = felt!("0x0169af1f6f99d35e0b80e0140235ec4a2041048868071a8654576223934726f5");
     let challenge_bytes = challenge.to_bytes_be().to_vec();
-    let response = data.signer.sign(&challenge_bytes).await;
+    let response = data
+        .signer
+        .sign(&challenge_bytes)
+        .await
+        .expect("signer error");
 
     let args = VerifyWebauthnSignerArgs::from_response(origin, challenge_bytes, response.clone());
 
@@ -111,4 +115,12 @@ async fn test_verify_webauthn_execute() {
         .send()
         .await;
     result.unwrap();
+}
+
+#[tokio::test]
+async fn test_signer() {
+    let rp_id = "https://localhost:8080".to_string();
+    let signer = P256r1Signer::random(rp_id);
+    let calldata = signer.sign("842903840923".as_bytes()).await.unwrap();
+    dbg!(&calldata);
 }
