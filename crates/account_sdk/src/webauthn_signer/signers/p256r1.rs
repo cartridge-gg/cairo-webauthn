@@ -28,15 +28,15 @@ impl P256r1Signer {
         let signing_key = SigningKey::random(&mut OsRng);
         Self::new(rp_id, signing_key)
     }
+
+    pub fn public_key_bytes(&self) -> ([u8; 32], [u8; 32]) {
+        P256VerifyingKeyConverter::new(*self.signing_key.verifying_key()).to_bytes()
+    }
 }
 
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl Signer for P256r1Signer {
-    fn public_key_bytes(&self) -> ([u8; 32], [u8; 32]) {
-        P256VerifyingKeyConverter::new(*self.signing_key.verifying_key()).to_bytes()
-    }
-
     async fn sign(&self, challenge: &[u8]) -> Result<AuthenticatorAssertionResponse, SignError> {
         use sha2::{digest::Update, Digest, Sha256};
 

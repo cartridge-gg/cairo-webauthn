@@ -10,8 +10,7 @@ use crate::{
     abigen::account::{CartridgeAccount, CartridgeAccountReader, WebauthnPubKey},
     deploy_contract::FEE_TOKEN_ADDRESS,
     transaction_waiter::TransactionWaiter,
-    webauthn_signer::account::WebauthnAccount,
-    webauthn_signer::signers::Signer,
+    webauthn_signer::account::WebauthnAccount
 };
 use crate::{
     abigen::erc20::{Erc20Contract, U256},

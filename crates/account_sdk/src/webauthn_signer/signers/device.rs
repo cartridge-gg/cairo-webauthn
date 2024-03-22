@@ -147,8 +147,4 @@ impl Signer for DeviceSigner {
             user_handle: None,
         })
     }
-
-    fn public_key_bytes(&self) -> ([u8; 32], [u8; 32]) {
-        unimplemented!("unimplemented public_key_bytes")
-    }
 }
