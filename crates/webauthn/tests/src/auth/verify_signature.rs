@@ -1,4 +1,4 @@
-use account_sdk::webauthn_signer::P256VerifyingKeyConverter;
+use account_sdk::webauthn_signer::signers::p256r1::P256VerifyingKeyConverter;
 use p256::{
     ecdsa::{signature::Signer, Signature, SigningKey},
     elliptic_curve::rand_core::OsRng,
