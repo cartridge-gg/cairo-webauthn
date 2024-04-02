@@ -14,7 +14,7 @@ The project has a global rust workspace.
 
 ## account_sdk
 
-This is a rust project, that will eventually be compiled to wasm. It's purpose is to export and test functions for interacting with the custom account contract. The testing framework implemented within uses [dojo/katana](https://github.com/dojoengine/dojo) underneath. Each test starts its own katana network, deploys a contract and performs operations on it. Naturally, you must have `katana` installed to run the tests. You can specify the path to the `katana` executable in the `account_sdk/KatanaConfig.toml` file. Note that if you have `dojo` installed and in `PATH` the path can remain simply as `katana`.
+This is a rust project, that will eventually be compiled to wasm. It's purpose is to export and test functions for interacting with the custom account contract. The testing framework implemented within uses [dojo/katana](https://github.com/dojoengine/dojo) underneath. Each test starts its own katana network, deploys a contract and performs operations on it. Naturally, you must have `katana 0.5.1` installed to run the tests. You can specify the path to the `katana` executable in the `account_sdk/KatanaConfig.toml` file. Note that if you have `dojo` installed and in `PATH` the path can remain simply as `katana`.
 
 
 ### Compiling the cairo code
