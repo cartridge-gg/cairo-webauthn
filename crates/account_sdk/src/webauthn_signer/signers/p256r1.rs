@@ -1,6 +1,6 @@
 use crate::webauthn_signer::{
     account::SignError,
-    credential::{AuthenticatorData, CliendData},
+    credential::{AuthenticatorData, ClientData},
 };
 use async_trait::async_trait;
 use p256::{
@@ -45,7 +45,7 @@ impl Signer for P256r1Signer {
             flags: 0b00000101,
             sign_count: 0,
         };
-        let client_data_json = CliendData::new(challenge, self.rp_id.clone()).to_json();
+        let client_data_json = ClientData::new(challenge, self.rp_id.clone()).to_json();
         let client_data_hash = Sha256::new().chain(client_data_json.clone()).finalize();
 
         let mut to_sign = Into::<Vec<u8>>::into(authenticator_data.clone());

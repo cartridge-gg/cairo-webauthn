@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
-pub struct CliendData {
+pub struct ClientData {
     #[serde(rename = "type")]
     type_: String,
     challenge: String,
@@ -10,10 +10,10 @@ pub struct CliendData {
     cross_origin: bool,
 }
 
-impl CliendData {
+impl ClientData {
     pub fn new(challenge: impl AsRef<[u8]>, origin: String) -> Self {
-        use base64::{engine::general_purpose::URL_SAFE, Engine as _};
-        let challenge = URL_SAFE.encode(challenge);
+        use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
+        let challenge = URL_SAFE_NO_PAD.encode(challenge);
 
         Self {
             type_: "webauthn.get".into(),

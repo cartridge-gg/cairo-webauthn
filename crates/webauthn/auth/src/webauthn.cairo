@@ -97,7 +97,7 @@ fn verify_challenge(
 ) -> Result<(), AuthnError> {
     let mut i: usize = 0;
     let mut encoded = Base64UrlFeltEncoder::encode(challenge);
-    let encoded_len: usize = encoded.len();
+    let encoded_len: usize = encoded.len() - 1; // Ignore base64 padding '='
     loop {
         if i >= encoded_len {
             break Result::Ok(());
