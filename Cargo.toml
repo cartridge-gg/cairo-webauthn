@@ -14,6 +14,7 @@ cainome = { git = "https://github.com/piniom/cainome", tag="v0.2.4-expand", feat
     "abigen-rs", "expand-expr"
 ] }
 cairo-lang-starknet = "2.4.0"
+ecdsa = "0.16.9"
 futures = "0.3"
 lazy_static = "1"
 p256 = "0.13"
@@ -30,7 +31,7 @@ u256-literal = "1"
 url = "2"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4.42"
-wasm-webauthn = { git = "https://github.com/broody/wasm-webauthn" }
+wasm-webauthn = { git = "https://github.com/broody/wasm-webauthn", rev = "f54bdbc3b4c5da2679e6f74278295b3924b56db5" }
 webauthn-rs-proto = "0.4"
 account-sdk = { path = "crates/account_sdk" }
 tokio = { version = "1", features = ["macros", "time"] }
