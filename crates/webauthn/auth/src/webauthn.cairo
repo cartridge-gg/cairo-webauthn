@@ -59,8 +59,10 @@ fn verify(
     // 11. Verify that the value of C.type is the string webauthn.get
     // Skipping for now
 
+    let previous = core::testing::get_available_gas();
     // 12. Verify that the value of C.challenge equals the base64url encoding of options.challenge.
     verify_challenge(@client_data_json, challenge_offset, challenge)?;
+    println!("Gas usage of the \"verify_challenge\": {}\n", previous - core::testing::get_available_gas());
 
     // 13. Verify that the value of C.origin matches the Relying Party's origin.
     // Skipping for now.
@@ -71,25 +73,34 @@ fn verify(
     // Authenticator Data layout looks like: [ RP ID hash - 32 bytes ] [ Flags - 1 byte ] [ Counter - 4 byte ] [ ... ]
     // See: https://w3c.github.io/webauthn/#sctn-authenticator-data
 
+    let previous = core::testing::get_available_gas();
     // 16. Verify that the User Present (0) and User Verified (2) bits of the flags in authData is set.
     let ad: AuthenticatorData = match authenticator_data.clone().try_into() {
         Option::Some(x) => x,
         Option::None => { return AuthnError::UserFlagsMismatch.into(); }
     };
     verify_user_flags(@ad, true)?;
+    println!("Gas usage of the \"verify_user_flags\": {}\n", previous - core::testing::get_available_gas());
 
     // 17. Skipping extensions
 
+    let previous = core::testing::get_available_gas();
     // 18. Compute hash of client_data
     let client_data_hash = sha256(client_data_json);
+    println!("Gas usage of the \"sha256\": {}\n", previous - core::testing::get_available_gas());
 
+    let previous = core::testing::get_available_gas();
     // Compute message ready for verification.
     let result = concatenate(@authenticator_data, @client_data_hash);
+    println!("Gas usage of the \"concatenate\": {}\n", previous - core::testing::get_available_gas());
 
-    match verify_ecdsa(pub_key, result, r, s) {
+    let previous = core::testing::get_available_gas();
+    let output = match verify_ecdsa(pub_key, result, r, s) {
         Result::Ok => Result::Ok(()),
         Result::Err(_) => AuthnError::InvalidSignature.into()
-    }
+    };
+    println!("Gas usage of the \"verify_ecdsa\": {}\n", previous - core::testing::get_available_gas());
+    output
 }
 
 fn verify_challenge(

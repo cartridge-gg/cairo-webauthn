@@ -8,6 +8,9 @@ use core::result::ResultTrait;
 use starknet::secp256r1::Secp256Trait;
 use starknet::secp256r1::Secp256r1Point;
 
+use core::gas;
+use core::testing;
+
 
 #[test]
 #[available_gas(20000000000)]
@@ -322,6 +325,9 @@ fn test_1() {
     authenticator_data.append(0);
     authenticator_data.append(0);
 
+    
+    let previous = testing::get_available_gas();
+    
     let verify_result = verify(
         public_key_pt,
         r,
@@ -335,8 +341,12 @@ fn test_1() {
         authenticator_data
     );
 
+    println!("Gas usage of the \"verify\": {}\n", previous - testing::get_available_gas());
+
     match verify_result {
         Result::Ok => (),
         Result::Err(e) => { assert(false, AuthnErrorIntoFelt252::into(e)) }
     }
 }
+
+

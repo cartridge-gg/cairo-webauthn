@@ -22,12 +22,21 @@ use webauthn_auth::helpers::extract_u256_from_u8_array;
 fn verify_ecdsa(
     public_key_pt: Secp256r1Point, msg: Array<u8>, r: u256, s: u256
 ) -> Result<(), VerifyEcdsaError> {
+    let previous = core::testing::get_available_gas();
     let hash = sha256(msg);
+    println!("Gas usage of the \"sha256\": {}\n", previous - core::testing::get_available_gas());
+
+    let previous = core::testing::get_available_gas();
     let hash_u256 = match extract_u256_from_u8_array(@hash, 0) {
         Option::Some(h) => h,
         Option::None => { return Result::Err(VerifyEcdsaError::WrongArgument); }
     };
-    verify_hashed_ecdsa(public_key_pt, hash_u256, r, s)
+    println!("Gas usage of the \"extract_u256_from_u8_array\": {}\n", previous - core::testing::get_available_gas());
+    
+    let previous = core::testing::get_available_gas();
+    let output = verify_hashed_ecdsa(public_key_pt, hash_u256, r, s);
+    println!("Gas usage of the \"verify_hashed_ecdsa\": {}\n", previous - core::testing::get_available_gas());
+    output
 }
 
 // Verifies the signature of the hash given the other parameters (public key, r, s)
